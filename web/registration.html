@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes ">
+    <meta name="description" content="CTF Platform">
+    <title>CTF Platform</title>
+    <link href="css/jquery.ambiance.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/main.css" rel="stylesheet" media="screen">
+    <link href="css/registration.css" rel="stylesheet" media="screen">
+    <link href="compete/lib/dark-hive/jquery-ui-1.10.2.custom.css" rel="stylesheet" media="screen">
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-inner">
+        <a class="brand" href="/">CTF Platform</a>
+        <ul id="navbar" class="nav">
+        </ul>
+    </div>
+</div>
+<div class="container-narrow">
+    <div class="contentbox row-fluid">
+        <div class="row-fluid">
+            <div class="offset1 span10">
+                <p class="lead">
+                    CTF Platform registration is open to <strong>anyone</strong>.
+                </p>
+                <p>
+                    <strong>Not a student?</strong> Don't worry about the teacher or school name, just make something up. We suggest 'asdfasdg'.
+                </p>
+            </div>
+        </div>
+
+        <div class="row-fluid registration">
+            <div class="offset1 span10">
+                <form class="form-horizontal">
+                    <div class="control-group">
+                        <label class="control-label registration-label" for="reg-email">Email</label>
+
+                        <div class="controls registration-controls">
+                            <input id="reg-email" placeholder="Email" type="email">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label registration-label" for="reg-team">Team Name</label>
+
+                        <div class="controls registration-controls">
+                            <input id="reg-team" placeholder="Team Name" type="text">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label registration-label" for="reg-name">Teacher Name</label>
+
+                        <div class="controls registration-controls">
+                            <input id="reg-name" placeholder="Teacher Name" type="text">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label registration-label" for="reg-aff">School Name</label>
+
+                        <div class="controls registration-controls">
+                            <input id="reg-aff" placeholder="School Name" type="text">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label registration-label" for="reg-pass">Password</label>
+
+                        <div class="controls registration-controls">
+                            <input id="reg-pass" placeholder="Password" type="password">
+                        </div>
+                    </div>
+                    <div id="reg_group_vis_toggle" class="control-group" style="display: none;">
+                        <label class="control-label registration-label" for="reg-group">Group</label>
+
+                        <div class="controls registration-controls">
+                            <input id="reg-group" placeholder="Group" type="text">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="controls registration-controls">
+                            <button id="register-button" type="submit" class="btn btn-primary">
+                                Register
+                            </button>
+                            <button id="join-button" type="submit" class="btn btn-primary" style="display: none;">
+                                Join
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div id="create_group_link"><a href="#">Create a group of teams.</a></div>
+            </div>
+        </div>
+
+    </div>
+    <div id="footer"></div>
+</div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="js/jquery.ambiance.js"></script> 
+<script src="js/bootstrap.min.js"></script>
+<script src="js/dependencies.js"></script>
+<script src="js/registration.js"></script>
+<script>
+    $(function () {
+        display_navbar();
+        load_footer();
+    })
+</script>
+</body>
+</html>

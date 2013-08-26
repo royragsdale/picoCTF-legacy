@@ -1,0 +1,1 @@
+User API=================The User API is the API instance for normal users. We separate this from an Admin API in order to add debugging and monitoring functionality without affecting the maintainability, performance, and availability of the website. 
