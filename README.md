@@ -64,25 +64,25 @@ should clear things up if you are confused.
 
 An example problem document:
 
-`{
-    "autogen" : false,
-    "basescore" : 20,
-    "desc" : "<p>\nAfter opening the robot's front panel...</p>"
-    "displayname" : "Failure to Boot",
-    "grader" : "bluescreen.py",
-    "hint" : "It might be helpful to Google™ the error.",
-    "pid" : "512a8622b393a33f2cf9b37f",
-    "threshold" : 0,
-    "weightmap" : {}
-}`
+    {
+        "autogen" : false,
+        "basescore" : 20,
+        "desc" : "<p>\nAfter opening the robot's front panel...</p>"
+        "displayname" : "Failure to Boot",
+        "grader" : "bluescreen.py",
+        "hint" : "It might be helpful to Google™ the error.",
+        "pid" : "512a8622b393a33f2cf9b37f",
+        "threshold" : 0,
+        "weightmap" : {}
+    }
 
 Where bluescreen.py might be:
 
-`def grade(team,key):
-    if key.upper().find('FAT') != -1:
-        return True, 'Correct'
-    else:
-        return False, 'Incorrect'`                        
+    def grade(team,key):
+        if key.upper().find('FAT') != -1:
+            return True, 'Correct'
+        else:
+            return False, 'Incorrect'                        
                                               
 
 Setup and Configuration
