@@ -22,6 +22,10 @@ would actually serve picoctf.com/about.html; this isn't essential to get
 the site running, but if it isn't configured that way most of the links 
 in the site won't load the correct page.
 
+The simplest way to view problems is on the problems.html page. It is a 
+text-based display of all the problems a user has unlocked. These 
+problems are ordered by the point value that each problem is worth.
+
 AJAX API
 ------------
 
@@ -50,8 +54,15 @@ session cookie domain was 'picoctf.com'.
 Database
 ------------
 
-Problems are defined in the MongoDB collection 'problems'. You can see 
+Problems are defined in the MongoDB collection 'problems'. A collection 
+in MongoDB is analogous to a table in SQL-based systems. You can see 
 some examples of these in the 2013-Problems repository (the JSON files). 
+Keep in mind that you do not necessarily need to transfer these files to 
+your server. They are descriptions of documents to add to the problems 
+collection (MongoDB stores documents as [BSON](http://bsonspec.org/) 
+which is a superset of JSON). See the below example for how to add one 
+of these problem to an instance of the CTF Platform.
+
 The required information for each problem document is the 'basescore' 
 (number of points it is worth), 'desc', 'displayname', 'hint', 'pid' 
 (any unique string will work), and 'grader'. The 'grader' field is the 
@@ -67,7 +78,7 @@ An example problem document:
     {
         "autogen" : false,
         "basescore" : 20,
-        "desc" : "<p>\nAfter opening the robot's front panel...</p>"
+        "desc" : "<p>\nAfter opening the robot's front panel...</p>",
         "displayname" : "Failure to Boot",
         "grader" : "bluescreen.py",
         "hint" : "It might be helpful to Google™ the error.",
@@ -84,12 +95,16 @@ Where bluescreen.py might be:
         else:
             return False, 'Incorrect'                        
                                               
-So to insert this problem and be able to view it in the Basic Problem Viewer you need to 1) insert the problem document into the problems collection and 2) add bluescreen.py to the folder api/graders . If you are unfamiliar with using the mongo shell, here's how you would add the document under the simplest configuration:
+So to insert this problem and be able to view it in the Basic Problem 
+Viewer you need to 1) insert the problem document into the problems 
+collection and 2) add bluescreen.py to the folder api/graders . If you 
+are unfamiliar with using the mongo shell, here's how you would add the 
+document under the simplest configuration:
 
      $ mongo pico
         > db.problems.insert({"autogen" : false,
         "basescore" : 20,
-        "desc" : "<p>\nAfter opening the robot's front panel...</p>"
+        "desc" : "<p>\nAfter opening the robot's front panel...</p>",
         "displayname" : "Failure to Boot",
         "grader" : "bluescreen.py",
         "hint" : "It might be helpful to Google™ the error.",
@@ -98,6 +113,11 @@ So to insert this problem and be able to view it in the Basic Problem Viewer you
         "weightmap" : {}
         });
 
+Problem descriptions are cached in Memcached for each user for an hour 
+by default. So for all users to see the newly added problem you may need 
+to restart Memcached:
+
+    $ sudo service memcached restart
 
 Setup and Configuration
 ------------
