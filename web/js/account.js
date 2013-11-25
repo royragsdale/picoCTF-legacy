@@ -88,8 +88,7 @@
 
   window.submit_new_password = function() {
     return $.ajax({
-      type: 'POST'
-    }, {
+      type: 'POST',
       dataType: 'json',
       url: '/api/updatepass',
       data: {
