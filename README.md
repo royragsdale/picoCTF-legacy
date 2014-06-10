@@ -50,6 +50,10 @@ machine, but if you deploy it to a server it will have to either be set
 to the server's IP address or the FQDN of the server. In our case the 
 session cookie domain was 'picoctf.com'.
 
+Ensure that the SESSION_COOKIE_DOMAIN matches the domain on which 
+users access the site according to the same-origin policy. 127.0.0.1 is 
+not compatible with localhost.
+
 
 Database
 ------------
@@ -124,7 +128,12 @@ Setup and Configuration
 
 To install all the dependencies run scripts/install_deps.sh . 
 
-For a sample Nginx configuration, check out config/main-site .
+For a sample Nginx configuration, check out config/main-site . This 
+configuration is typically placed in /etc/nginx/sites-enabled/ . Check 
+out the official [Nginx Beginner's 
+Guide](http://nginx.org/en/docs/beginners_guide.html) for more 
+information. Nginx must be properly configured in order to route /api/ 
+requests to the Python API.
 
 To get the indexes up for MongoDB, use the init_mongo.js script. If the 
 database is called "pico", you would run: mongo pico init_mongo.js
