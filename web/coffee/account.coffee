@@ -7,7 +7,7 @@ window.load_group_memberships = ->
     else
       for g in data
         if g['owner'] == true then permission = 'owner' else permission = 'member'
-        html += """<div class="controls #{permission}" id="gid_#{g.id}">#{g.name}<div class="close remove-group-button">&times;</div></div>"""
+        html += """<div class="controls #{permission}" id="gid_#{g.gid}">#{g.name}<div class="close remove-group-button">&times;</div></div>"""
     html += "</div>"
     $('#group_membership_table').html html
     $('.remove-group-button').click (event) -> leave_group $(this).parent()

@@ -18,7 +18,7 @@
           } else {
             permission = 'member';
           }
-          html += "<div class=\"controls " + permission + "\" id=\"gid_" + g.id + "\">" + g.name + "<div class=\"close remove-group-button\">&times;</div></div>";
+          html += "<div class=\"controls " + permission + "\" id=\"gid_" + g.gid + "\">" + g.name + "<div class=\"close remove-group-button\">&times;</div></div>";
         }
       }
       html += "</div>";
