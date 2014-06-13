@@ -136,7 +136,7 @@ information. Nginx must be properly configured in order to route /api/
 requests to the Python API.
 
 To get the indexes up for MongoDB, use the init_mongo.js script. If the 
-database is called "pico", you would run: mongo pico init_mongo.js
+database is called "ctf", you would run: mongo ctf init_mongo.js
 
 Contact
 ------------
@@ -149,10 +149,10 @@ Copyright: Carnegie Mellon University
 
 License: MIT
 
-Maintainers: Collin Petty, Peter Chapman
+Maintainers: Collin Petty, Peter Chapman, Jonathan Burket
 
 Credits: David Brumley, Collin Petty, Peter Chapman, Tyler Nighswander, Garrett Barboza
 
-Email: collin@cmu.edu, peter@cmu.edu
+Email: collin@cmu.edu, peter@cmu.edu, jburket@cmu.edu
 
 
