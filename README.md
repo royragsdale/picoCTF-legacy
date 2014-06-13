@@ -105,7 +105,7 @@ collection and 2) add bluescreen.py to the folder api/graders . If you
 are unfamiliar with using the mongo shell, here's how you would add the 
 document under the simplest configuration:
 
-     $ mongo pico
+     $ mongo ctf
         > db.problems.insert({"autogen" : false,
         "basescore" : 20,
         "desc" : "<p>\nAfter opening the robot's front panel...</p>",
