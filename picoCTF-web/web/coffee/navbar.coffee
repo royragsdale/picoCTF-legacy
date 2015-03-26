@@ -39,7 +39,7 @@ userLoggedInNoCompetition =
   Team: "/team"
   Chat: "/chat"
   Scoreboard: "/scoreboard"
-  About:  
+  About:
     About: "/about"
     News: "/news"
   Account:
@@ -52,6 +52,9 @@ userNotLoggedIn =
   News: "/news"
   Scoreboard: "/scoreboard"
   Login: "/login"
+
+adminLoggedIn =
+  Management: "/management"
 
 loadNavbar = (renderNavbarLinks, renderNestedNavbarLinks) ->
 
@@ -77,6 +80,10 @@ loadNavbar = (renderNavbarLinks, renderNestedNavbarLinks) ->
             navbarLayout.links = userLoggedIn
          else
             navbarLayout.links = userLoggedInNoCompetition
+
+        if data.data["admin"]
+           $.extend navbarLayout.links, adminLoggedIn
+
     $("#navbar-links").html renderNavbarLinks(navbarLayout)
     $("#navbar-item-logout").on("click", logout)
 
