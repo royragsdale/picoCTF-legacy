@@ -140,7 +140,7 @@ def get_user(name=None, uid=None):
     return user
 
 def create_user(username, firstname, lastname, email, password_hash, tid, teacher=False,
-                background="undefined", country="undefined", receive_ctf_emails=False):
+                background="undefined", country="undefined", receive_ctf_emails=False, admin=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
 
@@ -179,6 +179,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
         'password_hash': password_hash,
         'tid': tid,
         'teacher': teacher,
+        'admin': admin,
         'disabled': False,
         'background': background,
         'country': country,
@@ -349,6 +350,19 @@ def is_teacher(uid=None):
 
     user = get_user(uid=uid)
     return user.get('teacher', False)
+
+def is_admin(uid=None):
+    """
+    Determines if a user is an admin.
+
+    Args:
+        uid: user's uid
+    Returns:
+        True if the user is an admin, False otherwise
+    """
+
+    user = get_user(uid=uid)
+    return user.get('admin', False)
 
 def set_password_reset_token(uid, token):
     """
