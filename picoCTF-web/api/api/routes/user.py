@@ -67,7 +67,8 @@ def login_hook():
     username = request.form.get('username')
     password = request.form.get('password')
     api.auth.login(username, password)
-    return WebSuccess(message="Successfully logged in as " + username, data={'teacher': api.user.is_teacher()})
+    return WebSuccess(message="Successfully logged in as " + username,
+                      data={'teacher': api.user.is_teacher(), 'admin': api.user.is_admin()})
 
 @blueprint.route('/logout', methods=['GET'])
 @api_wrapper
