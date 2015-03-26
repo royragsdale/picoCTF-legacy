@@ -1,0 +1,39 @@
+---
+layout: default
+title: Admin Management
+post_scripts:
+ - js/management.js
+startup_functions:
+ - redirectIfNotAdmin()
+---
+
+<script type="text/template" id="management-tabs-template">
+  <ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#problems">Problems</a></li>
+    <li><a data-toggle="tab" href="#users">Users</a></li>
+    <!-- <li><a data-toggle="tab" href="#settings">CTF Settings</a></li> -->
+  </ul>
+  <div class="tab-content">
+    <div id="problems" class="tab-pane fade in active">
+        <div id="problem-list"></div>
+    </div>
+    <div id="users" class="tab-pane fade">
+        <p>Users Test</p>
+    </div>
+  </div>
+</script>
+
+<script type="text/template" id="problem-tab-template">
+    <% var problem_width = 4; %>
+    <div class="problem-list panel-group">
+        <% _.each(problems, function(problem, i) { %>
+        <div class="col-md-<%- problem_width %>">
+            <%= renderProblem({problem: problem}) %>
+        </div>
+        <% }); %>
+    </div>
+</script>
+
+<div class="container">
+    <div id="management-tabs"></div>
+</div>
