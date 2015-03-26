@@ -86,16 +86,6 @@ def is_logged_in():
         return False
     return logged_in
 
-def is_admin():
-    """
-    Check if the user is an admin. If the user as the 'admin' flag set in their session, they are an admin.
-
-    Returns:
-        True if the user is an admin, false otherwise.
-    """
-
-    return session.get('admin', False)
-
 def get_uid():
     """
     Gets the user id from the session if it is logged in.

@@ -7,7 +7,7 @@ from api.annotations import log_action
 
 blueprint = Blueprint("admin_api", __name__)
 
-@blueprint.route('/getallproblems', methods=['GET'])
+@blueprint.route('/problems', methods=['GET'])
 @api_wrapper
 @require_admin
 def get_all_problems_hook():
@@ -16,7 +16,7 @@ def get_all_problems_hook():
         return WebError("There was an error querying problems from the database.")
     return WebSuccess(data=problems)
 
-@blueprint.route('/getallusers', methods=['GET'])
+@blueprint.route('/users', methods=['GET'])
 @api_wrapper
 @require_admin
 def get_all_users_hook():
