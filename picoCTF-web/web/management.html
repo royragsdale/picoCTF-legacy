@@ -10,6 +10,31 @@ startup_functions:
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
 
+<script type="text/template" id="problem-options-template">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                Problem Search Options
+            </h4>
+        </div>
+        <div class="panel-body">
+            <% var categories = _.keys(_.groupBy(problems, function(problem) { return problem.category; })); %>
+            <% _.each(categories, function(category) { %>
+            <div class="row">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <input type="checkbox" data-category="<%= category  %>"
+                               class="problem-category-state" data-on-text="Show"
+                               data-off-text="Hide" aria-label="..." checked >
+                    </span>
+                    <p class="pad"> <%= category %> </p>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+</script>
+
 <script type="text/template" id="update-queue-template">
 </script>
 
@@ -54,7 +79,7 @@ startup_functions:
     %>
     <div class="problem-list panel-group">
         <% _.each(applicable_problems, function(problem, i) { %>
-        <% console.log(problem); %>
+        <% //console.log(problem); %>
         <div class="pad col-md-<%- problem_width %> col-lg-<%- Math.floor(3*problem_width/4) %>">
             <%= renderProblem({problem: problem}) %>
         </div>
@@ -72,8 +97,7 @@ startup_functions:
             <h4 class="panel-title">
                 <%- problem.name %>
                 <div class="pull-right">
-                    <input class="problem-state" type="checkbox" id="disabled-problems"
-                           data-size="mini" <%= switch_state %> >
+                    <input class="problem-state" type="checkbox" data-size="mini" <%= switch_state %> >
                 </div>
             </h4>
         </div>
