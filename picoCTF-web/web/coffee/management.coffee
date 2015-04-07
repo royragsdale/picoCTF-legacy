@@ -1,8 +1,6 @@
 renderManagementTabs = _.template($("#management-tabs-template").remove().text())
 renderProblemTab = _.template($("#problem-tab-template").remove().text())
-
-renderProblem = (a) ->
-  "placeholder"
+renderProblem = _.template($("#problem-template").remove().text())
 
 loadManagementBase = ->
   $("#management-tabs").html renderManagementTabs()
@@ -21,4 +19,7 @@ $ ->
   $.when (
     loadManagementBase()
     loadProblemManagementTab()
+    ( ->
+      $(".problem-options").bootstrapSwitch()
+    )()
   )

@@ -7,6 +7,9 @@ startup_functions:
  - redirectIfNotAdmin()
 ---
 
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
+
 <script type="text/template" id="management-tabs-template">
   <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#problems">Problems</a></li>
@@ -14,23 +17,67 @@ startup_functions:
     <!-- <li><a data-toggle="tab" href="#settings">CTF Settings</a></li> -->
   </ul>
   <div class="tab-content">
-    <div id="problems" class="tab-pane fade in active">
-        <div id="problem-list"></div>
-    </div>
-    <div id="users" class="tab-pane fade">
-        <p>Users Test</p>
-    </div>
+      <div id="problems" class="tab-pane fade in active">
+          <div class="container">
+              <div class="row pad">
+                  <!--
+                  <div class="info-display col-md-4 pull-left">
+                      <div class="input-group">
+                          <input class="problem-options" type="checkbox" id="disabled-problems" data-label-text="Disabled" checked>
+                      </div>
+                  </div>
+                  -->
+                  <div class="input-group input-group-sm col-md-4 pull-right">
+                      <span class="input-group-addon" id="sizing-addon3">
+                          <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                      </span>
+                      <input type="text" class="form-control" placeholder="Problem..." aria-describedby="sizing-addon3">
+                  </div>
+              </div>
+              <div id="problem-list"></div>
+          </div>
+      </div>
+      <div id="users" class="tab-pane fade">
+          <p>Users Test</p>
+      </div>
   </div>
 </script>
 
 <script type="text/template" id="problem-tab-template">
-    <% var problem_width = 4; %>
+    <%
+    var problem_width = 4;
+    var show_disabled = $("#disabled-problems").val() === "on";
+    %>
     <div class="problem-list panel-group">
         <% _.each(problems, function(problem, i) { %>
+        <% console.log(problem); %>
         <div class="col-md-<%- problem_width %>">
             <%= renderProblem({problem: problem}) %>
         </div>
         <% }); %>
+    </div>
+</script>
+
+<script type="text/template" id="problem-template">
+    <%
+    var panel_type = !problem.disabled ? "panel-default" : "panel-danger";
+    var switch_state = !problem.disabled ? "checked" : "";
+    %>
+    <div class="panel <%= panel_type %>">
+        <div class="problem-header panel-heading">
+            <h4 class="panel-title">
+                <%- problem.name %>
+                <div class="pull-right">
+                    <input class="problem-options" type="checkbox" id="disabled-problems"
+                           data-size="mini" <%= switch_state %> >
+                </div>
+            </h4>
+        </div>
+        <div class="panel-collapse collapse in" id="<%= problem.pid %>">
+            <div class="panel-body">
+                Panel content
+            </div>
+        </div>
     </div>
 </script>
 
