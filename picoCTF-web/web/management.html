@@ -60,7 +60,7 @@ startup_functions:
 
 <script type="text/template" id="problem-template">
     <%
-    var panel_type = !problem.disabled ? "panel-default" : "panel-danger";
+    var panel_type = !problem.disabled ? "panel-default" : "panel-warning";
     var switch_state = !problem.disabled ? "checked" : "";
     %>
     <div class="panel <%= panel_type %>">
@@ -68,7 +68,7 @@ startup_functions:
             <h4 class="panel-title">
                 <%- problem.name %>
                 <div class="pull-right">
-                    <input class="problem-options" type="checkbox" id="disabled-problems"
+                    <input class="problem-state" type="checkbox" id="disabled-problems"
                            data-size="mini" <%= switch_state %> >
                 </div>
             </h4>
@@ -82,5 +82,5 @@ startup_functions:
 </script>
 
 <div class="container">
-    <div id="management-tabs"></div>
+    <div class="col-md-12" style="wdith: 100%" id="management-tabs"></div>
 </div>

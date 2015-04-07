@@ -11,7 +11,7 @@ blueprint = Blueprint("admin_api", __name__)
 @api_wrapper
 @require_admin
 def get_all_problems_hook():
-    problems = api.problem.get_all_problems()
+    problems = api.problem.get_all_problems(show_disabled=True)
     if problems is None:
         return WebError("There was an error querying problems from the database.")
     return WebSuccess(data=problems)

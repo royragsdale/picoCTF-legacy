@@ -20,6 +20,6 @@ $ ->
     loadManagementBase()
     loadProblemManagementTab()
     ( ->
-      $(".problem-options").bootstrapSwitch()
+      $(".problem-state").bootstrapSwitch()
     )()
   )
