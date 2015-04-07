@@ -7,6 +7,10 @@
     padding-top: 30px;
 }
 
+.pad {
+    padding: 5px;
+}
+
 @media (max-width: 600px) {
     #top-team-score-progression-graph {
         display:none;

@@ -10,6 +10,9 @@ startup_functions:
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
 
+<script type="text/template" id="update-queue-template">
+</script>
+
 <script type="text/template" id="management-tabs-template">
   <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#problems">Problems</a></li>
@@ -18,7 +21,7 @@ startup_functions:
   </ul>
   <div class="tab-content">
       <div id="problems" class="tab-pane fade in active">
-          <div class="container">
+          <div class="full-container">
               <div class="row pad">
                   <!--
                   <div class="info-display col-md-4 pull-left">
@@ -27,7 +30,7 @@ startup_functions:
                       </div>
                   </div>
                   -->
-                  <div class="input-group input-group-sm col-md-4 pull-right">
+                  <div class="input-group input-group-sm col-md-3 pull-right">
                       <span class="input-group-addon" id="sizing-addon3">
                           <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                       </span>
@@ -51,7 +54,7 @@ startup_functions:
     <div class="problem-list panel-group">
         <% _.each(problems, function(problem, i) { %>
         <% console.log(problem); %>
-        <div class="col-md-<%- problem_width %>">
+        <div class="pad col-md-<%- problem_width %> col-lg-<%- Math.floor(3*problem_width/4) %>">
             <%= renderProblem({problem: problem}) %>
         </div>
         <% }); %>

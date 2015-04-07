@@ -15,8 +15,13 @@ loadProblemManagementTab = ->
           problems: resp.data
         })
 
+setupQueueFrame = ->
+  $("#main-content").prepend('<div class="col-md-2" id="update-queue"></div>')
+  $("#main-content>.container").addClass("col-md-10")
+
 $ ->
   $.when (
+    setupQueueFrame()
     loadManagementBase()
     loadProblemManagementTab()
     ( ->
