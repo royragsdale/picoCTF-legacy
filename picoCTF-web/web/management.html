@@ -34,7 +34,7 @@ startup_functions:
                       <span class="input-group-addon" id="sizing-addon3">
                           <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                       </span>
-                      <input type="text" class="form-control" placeholder="Problem..." aria-describedby="sizing-addon3">
+                      <input id="problem-search" type="text" class="form-control" placeholder="Problem..." aria-describedby="sizing-addon3">
                   </div>
               </div>
               <div id="problem-list"></div>
@@ -50,9 +50,10 @@ startup_functions:
     <%
     var problem_width = 4;
     var show_disabled = $("#disabled-problems").val() === "on";
+    var applicable_problems = _.filter(problems, problemFilter);
     %>
     <div class="problem-list panel-group">
-        <% _.each(problems, function(problem, i) { %>
+        <% _.each(applicable_problems, function(problem, i) { %>
         <% console.log(problem); %>
         <div class="pad col-md-<%- problem_width %> col-lg-<%- Math.floor(3*problem_width/4) %>">
             <%= renderProblem({problem: problem}) %>

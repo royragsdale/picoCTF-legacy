@@ -5,6 +5,10 @@ renderProblem = _.template($("#problem-template").remove().text())
 loadManagementBase = ->
   $("#management-tabs").html renderManagementTabs()
 
+problemFilter = (problem) ->
+  nameNeedle = new RegExp $("#problem-search").val(), "i"
+  return _.all [nameNeedle == "" or problem.name.search(nameNeedle) != -1]
+
 loadProblemManagementTab = ->
   apiCall "GET", "/api/admin/problems", {}
   .done (resp) ->
@@ -12,6 +16,7 @@ loadProblemManagementTab = ->
       when 1
         $("#problem-list").html renderProblemTab({
           renderProblem: renderProblem,
+          problemFilter: problemFilter,
           problems: resp.data
         })
 
@@ -25,6 +30,7 @@ $ ->
     loadManagementBase()
     loadProblemManagementTab()
     ( ->
+      $("#problem-search").on "input", () -> loadProblemManagementTab()
       $(".problem-state").bootstrapSwitch()
     )()
   )
