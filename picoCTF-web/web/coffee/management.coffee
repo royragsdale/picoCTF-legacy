@@ -1,7 +1,7 @@
 renderManagementTabs = _.template($("#management-tabs-template").remove().text())
 renderProblemTab = _.template($("#problem-tab-template").remove().text())
 renderProblem = _.template($("#problem-template").remove().text())
-renderProblemOptions = _.template($("#problem-options-template").remove().text())
+renderCategoryOptions = _.template($("#problem-category-options-template").remove().text())
 
 @data = {}
 
@@ -31,22 +31,24 @@ getProblemData = ->
       when 1
         window.data.problems = resp.data
 
-loadProblemManagementTab = ->
+refreshProblemList = ->
   $.when(( ->
-    if $("#problem-options").html() == ""
-      $("#problem-options").html renderProblemOptions({problems: window.data.problems})
-
     $("#problem-list").html renderProblemTab({
       renderProblem: renderProblem,
       problemFilter: (problem) ->
         _.all(f(problem) for f in [problemFilter, categoryFilter])
       problems: window.data.problems
-    }))()
-  ).done () ->
+  }))())
+  .done () ->
     $(".problem-state").bootstrapSwitch()
 
 setupQueueFrame = ->
-  $("#main-content").prepend('<div class="col-md-2 fill-container" id="problem-aux-pane"><div id="problem-options"></div></div>')
+  $("#main-content").prepend """
+    <div class="col-md-2 fill-container" id="problem-aux-pane">
+      <div id="problem-sort-options"></div>
+      <div id="problem-category-options"></div>
+    </div>
+  """
   $("#main-content>.container").addClass("col-md-10")
 
 $ ->
@@ -55,8 +57,14 @@ $ ->
     loadManagementBase()
     getProblemData()
   ).done () ->
-    loadProblemManagementTab()
+    $("#problem-category-options").html renderCategoryOptions ({problems: window.data.problems})
     $(".problem-category-state").bootstrapSwitch()
+
+    refreshProblemList()
+    $("#problem-list").on "filterUpdate", () -> refreshProblemList()
+
     $(".problem-category-state").on "switchChange.bootstrapSwitch", () ->
-      loadProblemManagementTab()
-    $("#problem-search").on "input", () -> loadProblemManagementTab()
+      $("#problem-list").trigger "filterUpdate"
+
+    $("#problem-search").on "input", () ->
+      $("#problem-list").trigger "filterUpdate"
