@@ -1,3 +1,4 @@
+from flask import Flask, request, session, send_from_directory, render_template
 from flask import Blueprint
 import api
 
@@ -24,3 +25,23 @@ def get_all_users_hook():
     if users is None:
         return WebError("There was an error query users from the database.")
     return WebSuccess(data=users)
+
+@blueprint.route("/problems/availability", methods=["POST"])
+@api_wrapper
+@require_admin
+def change_problem_availability_hook():
+    pid = request.form.get("pid", None)
+    desired_state = request.form.get("state", None)
+
+    state = None
+
+    # This feels really bad. Why doesn't Flask serialize it to the correct type?
+    if desired_state == "true":
+        state = True
+    elif desired_state == "false":
+        state = False
+    else:
+        return WebError("Problems are either enabled or disabled.")
+
+    api.admin.set_problem_availability(pid, state)
+    return WebSuccess(data="Problem state changed successfully.")
