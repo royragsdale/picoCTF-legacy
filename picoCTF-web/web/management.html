@@ -10,11 +10,11 @@ startup_functions:
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
 
-<script type="text/template" id="problem-options-template">
-    <div class="panel panel-info">
+<script type="text/template" id="problem-category-options-template">
+    <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                Problem Search Options
+                Category Options
             </h4>
         </div>
         <div class="panel-body">
@@ -25,7 +25,7 @@ startup_functions:
                     <span class="input-group-addon">
                         <input type="checkbox" data-category="<%= category  %>"
                                class="problem-category-state" data-on-text="Show"
-                               data-off-text="Hide" aria-label="..." checked >
+                               data-off-text="Hide" data-size="small" aria-label="..." checked >
                     </span>
                     <p class="pad"> <%= category %> </p>
                 </div>
@@ -35,7 +35,27 @@ startup_functions:
     </div>
 </script>
 
-<script type="text/template" id="update-queue-template">
+<script type="text/template" id="problem-update-queue-template">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                Pending Updates
+            </h4>
+        </div>
+        <div class="panel-body">
+            <% _.each(changes, function(change) { %>
+            <div class="row pad">
+                <p><%= change.display %></p>
+                    <div class="pull-right">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </div>
+            </div>
+            <% }); %>
+        </div>
+        <div class="panel-footer">
+            <button id="problem-update-button" type="button" class="btn btn-default">Process Updates</button>
+        </div>
+    </div>
 </script>
 
 <script type="text/template" id="management-tabs-template">
@@ -76,11 +96,13 @@ startup_functions:
     var problem_width = 4;
     var show_disabled = $("#disabled-problems").val() === "on";
     var applicable_problems = _.filter(problems, problemFilter);
+    if(data.problems === undefined) { data.problems = {}; }
     %>
     <div class="problem-list panel-group">
         <% _.each(applicable_problems, function(problem, i) { %>
         <% //console.log(problem); %>
         <div class="pad col-md-<%- problem_width %> col-lg-<%- Math.floor(3*problem_width/4) %>">
+            <% window.data.problems[problem.pid] = problem %>
             <%= renderProblem({problem: problem}) %>
         </div>
         <% }); %>
@@ -89,15 +111,16 @@ startup_functions:
 
 <script type="text/template" id="problem-template">
     <%
-    var panel_type = !problem.disabled ? "panel-default" : "panel-warning";
+    var panel_type = !problem.disabled ? "panel-info" : "panel-default";
     var switch_state = !problem.disabled ? "checked" : "";
     %>
     <div class="panel <%= panel_type %>">
         <div class="problem-header panel-heading">
             <h4 class="panel-title">
                 <%- problem.name %>
+                <!-- Should be a better way to do this. -->
                 <div class="pull-right">
-                    <input class="problem-state" type="checkbox" data-size="mini" <%= switch_state %> >
+                    <input id="<%- problem.pid %>" class="problem-state" type="checkbox" data-size="mini" <%= switch_state %> >
                 </div>
             </h4>
         </div>
