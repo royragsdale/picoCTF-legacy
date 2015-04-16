@@ -13,3 +13,16 @@ def give_admin_role(name=None, uid=None):
 
     user = api.user.get_user(name=name, uid=uid)
     db.users.update({"uid": user["uid"]}, {"$set": {"admin": True}})
+
+def set_problem_availability(pid, disabled):
+    """
+    Updates a problem's availability.
+
+    Args:
+        pid: the problem's pid
+        disabled: whether or not the problem should be disabled.
+    Returns:
+        The updated problem object.
+    """
+
+    return update_problem(pid, {"disabled": disabled})

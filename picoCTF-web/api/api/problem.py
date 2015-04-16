@@ -172,18 +172,7 @@ def remove_problem(pid):
 
     return problem
 
-def set_problem_disabled(pid, disabled):
-    """
-    Updates a problem's availability.
 
-    Args:
-        pid: the problem's pid
-        disabled: whether or not the problem should be disabled.
-    Returns:
-        The updated problem object.
-    """
-
-    return update_problem(pid, {"disabled": disabled})
 
 def update_problem(pid, updated_problem):
     """
@@ -209,8 +198,6 @@ def update_problem(pid, updated_problem):
     problem.pop("pid", None)
     validate(problem_schema, problem)
     problem["pid"] = pid
-
-
 
     db.problems.update({"pid": pid}, problem)
     api.cache.fast_cache.clear()
