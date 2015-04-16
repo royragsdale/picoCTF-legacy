@@ -60,11 +60,14 @@ setupQueueFrame = ->
       @changes.push data
 
     $(this).html renderUpdateQueue {changes: @changes}
+    $("#process-problem-queue-button").on "click", (e) ->
+      $("#problem-update-queue").trigger "processChanges"
 
   $("#problem-update-queue").on "processChanges", () ->
     console.log "Processing"
     _.each @changes, (change) ->
       change.process()
+    refreshProblemList()
 
   $("#main-content>.container").addClass("col-md-10")
 
