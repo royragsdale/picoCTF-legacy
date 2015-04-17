@@ -56,7 +56,7 @@ setupQueueFrame = ->
     if @changes == undefined
       @changes = []
 
-    if data.shouldAdd @changes
+    if data != undefined and data.shouldAdd @changes
       @changes.push data
 
     $(this).html renderUpdateQueue {changes: @changes}
@@ -67,7 +67,14 @@ setupQueueFrame = ->
     console.log "Processing"
     _.each @changes, (change) ->
       change.process()
-    refreshProblemList()
+    @changes = []
+
+    $.when getProblemData()
+      .done (() ->
+        console.log "Updating"
+        $(this).trigger "makeChange"
+        $("#problem-list").trigger "filterUpdate"
+      ).bind this
 
   $("#main-content>.container").addClass("col-md-10")
 
