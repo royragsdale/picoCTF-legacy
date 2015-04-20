@@ -9,6 +9,7 @@ renderUpdateQueue = _.template($("#problem-update-queue-template").remove().text
 loadManagementBase = ->
   $("#management-tabs").html renderManagementTabs()
 
+
 categoryFilter = (problem) ->
   categories = $(".problem-category-state")
 
@@ -42,6 +43,10 @@ refreshProblemList = ->
   }))())
   .done () ->
     $(".problem-state").bootstrapSwitch()
+    problemStateChanges()
+
+areChangesEqual = (a, b) ->
+  a.target == b.target and a.type == b.type
 
 setupQueueFrame = ->
   $("#main-content").prepend """
@@ -53,11 +58,22 @@ setupQueueFrame = ->
   """
 
   $("#problem-update-queue").on "makeChange", (e, data) ->
+    console.log "Making change"
     if @changes == undefined
       @changes = []
 
-    if data != undefined and data.shouldAdd @changes
-      @changes.push data
+    if data != undefined
+
+      # Removes any objects returned by shouldRemove
+      changesToRemove = data.shouldRemove @changes
+
+      if changesToRemove.length > 0
+        console.log "Current", data
+        console.log "Removing", changesToRemove
+        @changes = _.without.apply _, $.merge [@changes], changesToRemove
+      else if data.shouldAdd @changes
+        console.log "Adding", data
+        @changes.push data
 
     $(this).html renderUpdateQueue {changes: @changes}
     $("#process-problem-queue-button").on "click", (e) ->
@@ -72,14 +88,15 @@ setupQueueFrame = ->
     $.when getProblemData()
       .done (() ->
         console.log "Updating"
-        $(this).trigger "makeChange"
         $("#problem-list").trigger "filterUpdate"
       ).bind this
 
   $("#main-content>.container").addClass("col-md-10")
 
 problemStateChanges = ->
-  $(".problem-state").on "switchChange.bootstrapSwitch", (e, state) ->
+  $(".problem-state").on "switchChange.bootstrapSwitch.switchChange", (e, state) ->
+    console.log "Switch"
+    console.log e
     pid = $(e.target).attr "id"
     problem = window.data.problems[pid]
     change = {
@@ -88,10 +105,12 @@ problemStateChanges = ->
       data: {original: !state, change: state}
       display: (if state then "Enabling" else "Disabling") + " " + problem.name  + " for the competition."
       shouldAdd: (changes) -> _.all (_.map changes, (change) ->
-        !(change.target == problem.name and change.type == "availability"))
+        !(areChangesEqual change, {target: problem.name, type: "availability"}))
       process: () ->
         apiCall "POST", "/api/admin/problems/availability", {pid: problem.pid, state: state}
     }
+
+    change.shouldRemove = (changes) -> _.filter changes, _.partial areChangesEqual, change
 
     $("#problem-update-queue").trigger "makeChange", [change]
 
@@ -110,8 +129,6 @@ $ ->
 
     $(".problem-category-state").on "switchChange.bootstrapSwitch", () ->
       $("#problem-list").trigger "filterUpdate"
-
-    problemStateChanges()
 
     $("#problem-search").on "input", () ->
       $("#problem-list").trigger "filterUpdate"
