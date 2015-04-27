@@ -2,7 +2,7 @@
 
 # Transpile the CoffeeScript files
 echo "Transpiling Coffeescript"
-coffee -c -o /home/vagrant/web/js/ /home/vagrant/web/coffee/
+cjsx -bcm -o /home/vagrant/web/js/ /home/vagrant/web/coffee/
 
 # Shutdown the server
 echo "Shutting down nginx"

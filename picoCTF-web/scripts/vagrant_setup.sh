@@ -22,6 +22,7 @@ apt-get -y install openjdk-7-jdk
 npm install -g coffee-script
 npm install -g react-tools
 npm install -g jsxhint
+npm install -g coffee-react
 
 pip3 install -r /home/vagrant/api/requirements.txt
 
