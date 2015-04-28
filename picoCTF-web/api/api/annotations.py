@@ -1,6 +1,6 @@
 """ API annotations and assorted wrappers. """
 
-import json, traceback
+import json, traceback, bson
 import api
 
 from api.common import WebSuccess, WebError, WebException, InternalException, SevereInternalException
@@ -68,7 +68,7 @@ def api_wrapper(f):
         except Exception as error:
             wrapper_log.error(traceback.format_exc())
 
-        return json.dumps(web_result)
+        return bson.json_util.dumps(web_result)
 
     return wrapper
 
