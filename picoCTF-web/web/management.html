@@ -2,7 +2,9 @@
 layout: default
 title: Admin Management
 post_scripts:
- - js/management.js
+-  js/management-exceptions.js
+-  js/management-users.js
+-  js/management.js
 startup_functions:
  - redirectIfNotAdmin()
 ---
@@ -36,6 +38,7 @@ startup_functions:
 </script>
 
 <script type="text/template" id="problem-update-queue-template">
+  <% if(changes.length > 0) { %>
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
@@ -56,12 +59,14 @@ startup_functions:
             <button id="process-problem-queue-button" type="button" class="btn btn-default">Process Updates</button>
         </div>
     </div>
+  <% } %>
 </script>
 
 <script type="text/template" id="management-tabs-template">
   <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#problems">Problems</a></li>
     <li><a data-toggle="tab" href="#users">Users</a></li>
+    <li><a data-toggle="tab" href="#exceptions">Exceptions</a></li>
     <!-- <li><a data-toggle="tab" href="#settings">CTF Settings</a></li> -->
   </ul>
   <div class="tab-content">
@@ -87,6 +92,10 @@ startup_functions:
       </div>
       <div id="users" class="tab-pane fade">
           <p>Users Test</p>
+          <div id="test"></div>
+      </div>
+      <div id="exceptions" class="tab-pane fade">
+          <div id="exceptions-mountpoint"></div>
       </div>
   </div>
 </script>

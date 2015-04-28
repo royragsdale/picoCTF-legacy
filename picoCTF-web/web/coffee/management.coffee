@@ -91,6 +91,8 @@ setupQueueFrame = ->
         $("#problem-list").trigger "filterUpdate"
       ).bind this
 
+    $(this).html renderUpdateQueue {changes: @changes}
+
   $("#main-content>.container").addClass("col-md-10")
 
 problemStateChanges = ->
@@ -111,8 +113,15 @@ problemStateChanges = ->
     }
 
     change.shouldRemove = (changes) -> _.filter changes, _.partial areChangesEqual, change
+    change.refresh = () -> $(this).bootstrapSwitch "state", change.data.change, false
 
     $("#problem-update-queue").trigger "makeChange", [change]
+
+    (( ->
+      console.log "refreshing"
+      _.each @changes, (change) ->
+        change.refresh()
+      ).bind document.getElementById "problem-update-queue")()
 
 $ ->
   $.when (
@@ -132,3 +141,6 @@ $ ->
 
     $("#problem-search").on "input", () ->
       $("#problem-list").trigger "filterUpdate"
+
+
+    React.render <ExceptionTab/>, document.getElementById("exceptions-mountpoint")
