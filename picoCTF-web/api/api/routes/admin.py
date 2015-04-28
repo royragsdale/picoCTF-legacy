@@ -26,6 +26,19 @@ def get_all_users_hook():
         return WebError("There was an error query users from the database.")
     return WebSuccess(data=users)
 
+@blueprint.route('/exceptions', methods=['GET'])
+@api_wrapper
+@require_admin
+def get_exceptions_hook():
+    try:
+        limit = abs(int(request.args.get("limit")))
+        exceptions = api.admin.get_api_exceptions(result_limit=limit)
+        return WebSuccess(data=exceptions)
+
+    except (ValueError, TypeError):
+        return WebError("limit is not a valid integer.")
+
+
 @blueprint.route("/problems/availability", methods=["POST"])
 @api_wrapper
 @require_admin
