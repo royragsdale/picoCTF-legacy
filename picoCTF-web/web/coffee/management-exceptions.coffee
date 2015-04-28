@@ -5,6 +5,7 @@ Panel = ReactBootstrap.Panel
 Button = ReactBootstrap.Button
 Glyphicon = ReactBootstrap.Glyphicon
 Col = ReactBootstrap.Col
+Badge = ReactBootstrap.Badge
 
 ExceptionTab = React.createClass
   getInitialState: ->
@@ -47,15 +48,16 @@ ExceptionTab = React.createClass
     </small>
 
     deleteButton =
-    <Button className="pad" bsSize="xsmall" onClick={@onDelete.bind this, exception}>
-      <Glyphicon glyph="remove"/>
-    </Button>
+    <Glyphicon onClick={@onDelete.bind this, exception} glyph="remove"/>
+
+    occurencesBadge =
+    <Badge>{exception.count}</Badge>
 
     exceptionHeader =
     <div>
       {exception.request.api_endpoint_method} <b>{exception.request.api_endpoint}</b>
       <div className="pull-right">
-          {time} {deleteButton}
+          {occurencesBadge} {time} {deleteButton}
       </div>
     </div>
 
@@ -65,15 +67,19 @@ ExceptionTab = React.createClass
       <pre>{exception.trace}</pre>
     </div>
 
-    style = if i == 0 then "warning" else "info"
-
-    <Panel bsStyle={style} eventKey={i} key={i} header={exceptionHeader}>
+    <Panel bsStyle="default" eventKey={i} key={i} header={exceptionHeader}>
       {exceptionBody}
       {@createInfoDisplay exception}
     </Panel>
 
   render: ->
-    exceptionList = @state.exceptions.map @createExceptionItem
+    groupedExceptions = _.groupBy @state.exceptions, (exception) -> exception.trace
+    uniqueExceptions = _.map groupedExceptions, (exceptions, commonTrace) ->
+        exception = _.first(exceptions)
+        exception.count = exceptions.length
+        return exception
+
+    exceptionList = uniqueExceptions.map @createExceptionItem
     exceptionDisplay = <Accordion defaultActiveKey={0}> {exceptionList} </Accordion>
 
     <div>
