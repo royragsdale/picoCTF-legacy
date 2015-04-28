@@ -69,6 +69,7 @@ ExceptionTab = React.createClass
 
   render: ->
     groupedExceptions = _.groupBy @state.exceptions, (exception) -> exception.trace
+
     uniqueExceptions = _.map groupedExceptions, (exceptions, commonTrace) ->
         exception = _.first(exceptions)
         exception.count = exceptions.length
