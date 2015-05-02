@@ -22,25 +22,34 @@ ExceptionTab = React.createClass
     newExceptions = _.reject @state.exceptions, (item) -> item == exception
     @setState {exceptions: newExceptions}
 
-  createInfoDisplay: (exception) ->
-    request = exception.request
-    user = exception.user
-
-    <div>
-      <h3>Exception:</h3>
-      <pre>{exception.trace}</pre>
-      <Col xs={6}>
+  createRequestInfo: (request) ->
+    if request
+      <div>
         <h4>Browser information</h4>
         <p>Version: {request.browser} {request.browser_version}</p>
         <p>Platform: {request.platform}</p>
         <p>Address: {request.ip}</p>
-      </Col>
-      <Col xs={6}>
+      </div>
+    else
+      <p>No request information available.</p>
+
+  createUserInfo: (user) ->
+    if user
+      <div>
         <h4>User information</h4>
         <p>Username: {user.username}</p>
         <p>Email: {user.email}</p>
         <p>Team: {user.team_name}</p>
-      </Col>
+      </div>
+    else
+      <p>No user information available.</p>
+
+  createInfoDisplay: (exception) ->
+    <div>
+      <h3>Exception:</h3>
+      <pre>{exception.trace}</pre>
+      <Col xs={6}> {@createRequestInfo(exception.request)} </Col>
+      <Col xs={6}> {@createUserInfo(exception.user)} </Col>
     </div>
 
   createExceptionItem: (exception, i) ->
