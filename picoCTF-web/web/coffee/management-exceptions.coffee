@@ -68,17 +68,22 @@ ExceptionTab = React.createClass
     </Panel>
 
   render: ->
-    groupedExceptions = _.groupBy @state.exceptions, (exception) -> exception.trace
+    if @state.exceptions.length > 0
+      groupedExceptions = _.groupBy @state.exceptions, (exception) -> exception.trace
 
-    uniqueExceptions = _.map groupedExceptions, (exceptions, commonTrace) ->
+      uniqueExceptions = _.map groupedExceptions, (exceptions, commonTrace) ->
         exception = _.first(exceptions)
         exception.count = exceptions.length
         return exception
 
-    exceptionList = uniqueExceptions.map @createExceptionItem
-    exceptionDisplay = <Accordion defaultActiveKey={0}> {exceptionList} </Accordion>
+      exceptionList = uniqueExceptions.map @createExceptionItem
+      exceptionDisplay = <Accordion defaultActiveKey={0}> {exceptionList} </Accordion>
 
-    <div>
-      <h3>Displaying the {@state.exceptions.length} most recent exceptions.</h3>
-      {exceptionDisplay}
-    </div>
+      <div>
+        <h3>Displaying the {@state.exceptions.length} most recent exceptions.</h3>
+        {exceptionDisplay}
+      </div>
+    else
+      <div>
+        <h3>No exceptions to display.</h3>
+      </div>
