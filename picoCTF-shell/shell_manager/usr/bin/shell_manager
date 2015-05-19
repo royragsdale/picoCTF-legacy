@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+
+"""
+Shell Manager -- Tools for deploying and packaging problems.
+"""
+
+from argparse import ArgumentParser
+
+from os.path import join, isdir
+from os import makedirs, listdir, getcwd
+
+from functools import reduce
+from shutil import copytree, copy2, ignore_patterns
+
+import gzip
+import spur
+import json
+import tarfile
+
+def problem_to_control(problem, control_path):
+    #Need proper sanitization
+    control = {
+        "Package": problem["name"].replace(" ", "-"),
+        "Version": problem.get("verison", "1.0-0"),
+        "Section": "ctf",
+        "Priority": "optional",
+        "Architecture": "all",
+        "Maintainer": "Default Default <default@default.default>",
+        "Description": "needs sanitized"
+    }
+
+    contents = ""
+    for option, value in control.items():
+        contents += "{}: {}\n".format(option, value)
+
+    control_file = open(join(control_path, "control"), "w")
+    control_file.write(contents)
+    control_file.close()
+
+def full_copy(source, destination, ignore=[]):
+    for f in listdir(source):
+        if f in ignore:
+            continue
+        source_item = join(source, f)
+        destination_item = join(destination, f)
+
+        if isdir(source_item):
+            if not isdir(destination_item):
+                copytree(source_item, destination_item)
+        else:
+            copy2(source_item, destination_item)
+
+def problem_package_builder(args):
+    #complex
+    problem = json.loads(open(join(args.problem_path, "problem.json"), "r").read())
+
+    paths = {}
+    paths["staging"] = join(args.problem_path, "staging")
+
+    paths["control"] = join(paths["staging"], "DEBIAN")
+    paths["data"] = join(paths["staging"], "problems", problem["name"])
+
+    #Make all of the directories, order does not matter with makedirs
+    [makedirs(staging_path) for _, staging_path in paths.items() if not isdir(staging_path)]
+
+    full_copy(args.problem_path, paths["data"], ignore=["staging"])
+
+    problem_to_control(problem, paths["control"])
+
+    deb_directory = args.out if args.out is not None else getcwd()
+    deb_path = join(deb_directory, problem["name"] + ".deb")
+
+    shell = spur.LocalShell()
+    result = shell.run(["fakeroot", "dpkg-deb", "--build", paths["staging"], deb_path])
+
+    if result.return_code != 0:
+        print("Error building problem deb.")
+        print(result.output)
+    else:
+        print("Problem packaged successfully.")
+
+    if args.add is not None:
+        update_problem_repo(args.add, [join(paths["staging"], deb_path)])
+
+def update_problem_repo(repo_path, deb_paths):
+    if not isdir(repo_path):
+        makedirs(repo_path)
+
+    [copy2(deb_path, repo_path) for deb_path in deb_paths]
+
+    shell = spur.LocalShell()
+    result = shell.run(["dpkg-scanpackages", repo_path, "/dev/null"])
+
+    packages_path = join(repo_path, "Packages.gz")
+    with gzip.open(packages_path, "wb") as packages:
+        packages.write(result.output)
+
+    print("Updated problem repository.")
+
+def main():
+    parser = ArgumentParser(description="Shell Manager")
+    subparsers = parser.add_subparsers(help="package problem for distribution")
+
+    problem_packager_parser = subparsers.add_parser("package", help="problem package management")
+
+    build_subparser = problem_packager_parser.add_subparsers(help="build deb package from problem source")
+
+    problem_package_build_parser = build_subparser.add_parser("build")
+    problem_package_build_parser.add_argument("-a", "--add", help="Add problem to local repository.")
+    problem_package_build_parser.add_argument("-o", "--out", help="folder to store problem package.")
+    problem_package_build_parser.add_argument("problem_path", type=str, help="path to problem.")
+    problem_package_build_parser.set_defaults(func=problem_package_builder)
+
+    args = parser.parse_args()
+
+    #Call the default function
+    if "func" in args:
+        args.func(args)
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()
