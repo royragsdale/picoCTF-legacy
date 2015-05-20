@@ -10,7 +10,7 @@ from os.path import join, isdir
 from os import makedirs, listdir, getcwd
 
 from functools import reduce
-from shutil import copytree, copy2, ignore_patterns
+from shutil import copytree, copy2, ignore_patterns, move
 
 import re
 import gzip
@@ -73,7 +73,7 @@ def problem_package_builder(args):
 
     problem_to_control(problem, paths["control"])
 
-    deb_directory = args.out if args.out is not None else getcwd()
+    deb_directory = args.out if args.out is not None else paths["staging"]
     deb_path = join(deb_directory, problem["name"] + ".deb")
 
     shell = spur.LocalShell()
@@ -93,7 +93,7 @@ def problem_package_builder(args):
 
     if len(args.problem_paths) >= 1:
         #Copy the deb
-        copy2(deb_package_path, args.repository)
+        move(deb_package_path, args.repository)
         problem_package_builder(args)
     else:
         update_problem_repo(args.repository, [deb_package_path])
