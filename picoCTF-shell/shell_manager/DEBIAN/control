@@ -1,8 +1,0 @@
-Package: shellmanager
-Version: 1.0-0
-Section: ctf
-Priority: important
-Architecture: all
-Depends: dpkg, dpkg-dev, fakeroot, python3, python3-pip
-Maintainer: Christopher Ganas <cganas@forallsecure.com>
-Description: Problem packaging and deployment script.
