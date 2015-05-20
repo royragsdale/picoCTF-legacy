@@ -14,5 +14,5 @@ How to use your problem repository
 
 Add this line to your sources file (`/etc/apt/sources.list`)
 ```
-deb file:/usr/local/problem-packages ./
+deb file:///usr/local/ctf-packages ./
 ```
