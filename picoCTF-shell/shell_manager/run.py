@@ -30,6 +30,7 @@ def main():
     migration_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
     migration_parser.add_argument("-l", "--legacy-format", default="cyberstakes2014", choices=["cyberstakes2014"],
                                   help="what format the problems are currently in.")
+    migration_parser.add_argument("-s", "--set-default", nargs="*", type=str, default=[], help="field:value used to override new defaults.")
     migration_parser.add_argument("problem_paths", nargs="+", type=str, help="paths to problems.")
     migration_parser.set_defaults(func=migrate_problems)
     args = parser.parse_args()
