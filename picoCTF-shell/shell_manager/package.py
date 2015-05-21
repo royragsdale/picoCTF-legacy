@@ -41,13 +41,29 @@ def problem_to_control(problem, control_path):
     control_file.write(contents)
     control_file.close()
 
+def get_problem(problem_path):
+    """
+    Retrieve a problem spec from a given problem directory.
+
+    Args:
+        problem_path: path to the root of the problem directory.
+
+    Returns:
+        A problem object.
+    """
+
+    json_path = join(problem_path, "problem.json")
+    problem = json.loads(open(json_path, "r").read())
+
+    return problem
+
 def problem_builder(args):
     """
     Main entrypoint for package building operations.
     """
 
     problem_path = args.problem_paths.pop()
-    problem = json.loads(open(join(problem_path, "problem.json"), "r").read())
+    problem = get_problem(problem_path)
 
     paths = {}
     paths["staging"] = join(problem_path, "staging")
