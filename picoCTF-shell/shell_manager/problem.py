@@ -121,15 +121,28 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
     }
 
     def get_dependencies(problem_path):
+        """
+        Retrieve problem dependencies from challenge.py
+
+        Args:
+            problem_path: path to the root of the problem's directory.
+        """
+
         challenge_path = join(problem_path, "challenge.py")
         with open(challenge_path, "r") as challenge_file:
             challenge = challenge_file.read()
-            requirements_index = challenge.find("local_requirements")
-            requirements_bound = challenge.find("]", requirements_index)
+            dependencies = []
+            for requirements in ["local_requirements", ""]:
+                requirements_index = challenge.find(requirements)
+                requirements_bound = challenge.find("]", requirements_index)
 
-            dependencies_text = challenge[requirements_index:requirements_bound]
-            dependencies = findall(r"'([a-z0-9-\+\.]+)'\s*(?:,)?", dependencies_text)
-            new_defaults["pkg_dependencies"] = lambda problem: dependencies
+                dependencies_text = challenge[requirements_index:requirements_bound]
+                dependencies.extend(findall(r"'([a-z0-9-\+\.]+)'\s*(?:,)?", dependencies_text))
+
+            #Remove any duplicates
+            dependencies = list(set(dependencies))
+
+            new_defaults["pkg_depedencies"] = lambda problem: dependencies
 
     get_dependencies(problem_path)
     translate_problem_fields(field_table, problem)
