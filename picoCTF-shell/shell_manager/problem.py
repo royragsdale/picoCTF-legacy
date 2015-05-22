@@ -7,6 +7,7 @@ import json
 from sys import stdin
 from copy import deepcopy
 from os.path import join
+from re import findall
 
 #More in-depth validation should occur with some sort of linting step.
 PROBLEM_FIELDS = [
@@ -24,17 +25,28 @@ PROBLEM_FIELDS = [
     ["pkg_dependencies", {"required": False, "validation": str}],
 ]
 
-PROBLEM_DEFAULTS = [
-    ["version", lambda problem: "1.0-0"],
-    ["pkg_description", lambda problem: problem["description"]],
-]
+PROBLEM_DEFAULTS = {
+    "version": lambda problem: "1.0-0",
+    "pkg_description": lambda problem: problem["description"],
+    "pkg_dependencies": lambda problem: []
+}
 
-def translate_problem(translation_table, problem):
+def translate_problem_fields(translation_table, problem):
+    """
+    Migrate old problem fields to newer names through the translation table.
+
+    Args:
+        translation_table: dict with keys which specify old fields and values which correspond to the new ones.
+        problem: the problem object.
+
+    Example:
+        Given a translation table of {"name": "display_name"}, the problem would change the "name" key to "display_name".
+    """
+
     for old_field, new_field in translation_table.items():
         if old_field in problem:
             value = problem.pop(old_field)
             problem[new_field] = value
-
 
 def set_problem_defaults(problem, additional_defaults={}):
     """
@@ -48,8 +60,6 @@ def set_problem_defaults(problem, additional_defaults={}):
 
     total_defaults = deepcopy(PROBLEM_DEFAULTS)
     total_defaults.update(**additional_defaults)
-
-    print(total_defaults, "test")
 
     for field, setter in total_defaults.items():
         if field not in problem:
@@ -72,12 +82,29 @@ def get_problem(problem_path):
 
     return problem
 
-def migrate_cs2014_problem(problem, overrides={}):
+def set_problem(problem_path, problem):
+    """
+    Overwrite the problem.json of a given problem.
+
+    Args:
+        problem_path: path to the root of the problem's directory.
+        problem: the problem object.
+    """
+
+    serialized_problem = json.dumps(problem, indent=True)
+    json_path = join(problem_path, "problem.json")
+
+    with open(json_path, "w") as problem_file:
+        problem_file.write(serialized_problem)
+
+def migrate_cs2014_problem(problem_path, problem, overrides={}):
     """
     Convert a Cyberstakes 2014 problem to the updated format.
 
     Args:
-        problem: the problem object
+        problem_path: path to the root of the problem's directory.
+        problem: the problem object to modify.
+
     Returns:
         A new problem object that is consistent with the current spec.
     """
@@ -93,13 +120,24 @@ def migrate_cs2014_problem(problem, overrides={}):
         "organization": lambda problem: overrides.get("organization", "")
     }
 
-    print(new_defaults)
+    def get_dependencies(problem_path):
+        challenge_path = join(problem_path, "challenge.py")
+        with open(challenge_path, "r") as challenge_file:
+            challenge = challenge_file.read()
+            requirements_index = challenge.find("local_requirements")
+            requirements_bound = challenge.find("]", requirements_index)
 
-    translate_problem(field_table, problem)
+            dependencies_text = challenge[requirements_index:requirements_bound]
+            dependencies = findall(r"'([a-z0-9-\+\.]+)'\s*(?:,)?", dependencies_text)
+            new_defaults["pkg_dependencies"] = lambda problem: dependencies
+
+    get_dependencies(problem_path)
+    translate_problem_fields(field_table, problem)
     set_problem_defaults(problem, additional_defaults=new_defaults)
 
     return problem
 
+# Corresponds to possible migration formats.
 MIGRATION_TABLE = {
     "cyberstakes2014": migrate_cs2014_problem
 }
@@ -117,6 +155,14 @@ def migrate_problems(args):
         problem = get_problem(problem_path)
         problem_copy = deepcopy(problem)
 
+        print("Migrating '{}'...".format(problem_path))
+
         migrater = MIGRATION_TABLE[args.legacy_format]
-        updated_problem = migrater(problem_copy, overrides=additional_defaults)
-        print(updated_problem)
+        updated_problem = migrater(problem_path, problem_copy,
+                                   overrides=additional_defaults)
+
+        if args.dry:
+            print(updated_problem)
+        else:
+            print("Updated '{}' to the new problem format.".format(updated_problem["name"]))
+            set_problem(problem_path, updated_problem)
