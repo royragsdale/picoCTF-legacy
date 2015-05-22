@@ -25,9 +25,10 @@ def full_copy(source, destination, ignore=[]):
             copy2(source_item, destination_item)
 
 def move(source, destination, clobber=True):
-    file_name = source
     if sep in source:
         file_name = source.split(sep)[-1]
+    else:
+        file_name = source
 
     new_path = join(destination, file_name)
     if clobber and isfile(new_path):
