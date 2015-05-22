@@ -38,6 +38,7 @@ def problem_to_control(problem, control_path):
         "Version": problem.get("version", "1.0-0"),
         "Architecture": problem.get("architecture", "all"),
         "Maintainer": problem["author"],
+        "Depends": ",".join(problem.get("pkg_dependencies", [])),
         "Description": problem.get("pkg_description", problem["description"])
     })
 
