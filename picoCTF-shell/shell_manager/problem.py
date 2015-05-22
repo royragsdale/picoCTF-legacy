@@ -142,7 +142,7 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
             #Remove any duplicates
             dependencies = list(set(dependencies))
 
-            new_defaults["pkg_depedencies"] = lambda problem: dependencies
+            new_defaults["pkg_dependencies"] = lambda problem: dependencies
 
     get_dependencies(problem_path)
     translate_problem_fields(field_table, problem)
