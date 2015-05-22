@@ -31,16 +31,18 @@ def problem_to_control(problem, control_path):
     #a-z, digits 0-9, plus + and minus - signs, and periods
     package_name = problem.get("pkg_name", problem["name"])
     sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", package_name.lower())
-
     control = deepcopy(DEB_DEFAULTS)
     control.update(**{
         "Package": sanitized_name,
         "Version": problem.get("version", "1.0-0"),
         "Architecture": problem.get("architecture", "all"),
         "Maintainer": problem["author"],
-        "Depends": ",".join(problem.get("pkg_dependencies", [])),
         "Description": problem.get("pkg_description", problem["description"])
     })
+
+    if "pkg_dependencies" in problem:
+        print(problem.get("pkg_dependencies"))
+        control["Depends"] = ", ".join(problem.get("pkg_dependencies", []))
 
     contents = ""
     for option, value in control.items():
@@ -87,11 +89,9 @@ def problem_builder(args):
     if not isdir(args.repository):
         makedirs(args.repository)
 
-    deb_package_path = join(paths["staging"], deb_path)
-
     if len(args.problem_paths) >= 1:
         #Copy the deb and process the rest of the problems
-        move(deb_package_path, args.repository)
+        move(deb_path, args.repository)
         return problem_builder(args)
 
-    problem_repo.update(args.repository, [deb_package_path])
+    problem_repo.update(args.repository, [deb_path])
