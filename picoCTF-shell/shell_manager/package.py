@@ -8,8 +8,16 @@ import spur
 from os import makedirs, listdir
 from os.path import join, isdir
 
+from copy import deepcopy
+
 from shell_manager import problem_repo
 from shell_manager.util import full_copy, move
+from shell_manager.problem import get_problem
+
+DEB_DEFAULTS = {
+    "Section": "ctf",
+    "Priority": "optional",
+}
 
 def problem_to_control(problem, control_path):
     """
@@ -21,17 +29,17 @@ def problem_to_control(problem, control_path):
     """
 
     #a-z, digits 0-9, plus + and minus - signs, and periods
-    sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", problem["name"].lower())
+    package_name = problem.get("pkg_name", problem["name"])
+    sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", package_name.lower())
 
-    control = {
+    control = deepcopy(DEB_DEFAULTS)
+    control.update(**{
         "Package": sanitized_name,
         "Version": problem.get("version", "1.0-0"),
-        "Section": "ctf",
-        "Priority": "optional",
-        "Architecture": "all",
-        "Maintainer": problem.get("author", "None"),
-        "Description": problem.get("description", "No provided package description.")
-    }
+        "Architecture": problem.get("architecture", "all"),
+        "Maintainer": problem["author"],
+        "Description": problem.get("pkg_description", problem["description"])
+    })
 
     contents = ""
     for option, value in control.items():
@@ -40,22 +48,6 @@ def problem_to_control(problem, control_path):
     control_file = open(join(control_path, "control"), "w")
     control_file.write(contents)
     control_file.close()
-
-def get_problem(problem_path):
-    """
-    Retrieve a problem spec from a given problem directory.
-
-    Args:
-        problem_path: path to the root of the problem directory.
-
-    Returns:
-        A problem object.
-    """
-
-    json_path = join(problem_path, "problem.json")
-    problem = json.loads(open(json_path, "r").read())
-
-    return problem
 
 def problem_builder(args):
     """
