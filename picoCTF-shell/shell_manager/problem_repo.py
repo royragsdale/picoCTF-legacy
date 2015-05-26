@@ -7,6 +7,27 @@ import spur, gzip
 from shutil import copy2
 from os.path import join
 
+def update_repo(args):
+    """
+    Main entrypoint for repo update operations.
+    """
+
+    if args.repo_type == "local":
+        local_update(args.repository, args.package_paths)
+    else:
+        remote_update(args.repository, args.package_paths)
+
+def remote_update(repo_ui, deb_paths=[]):
+    """
+    Pushes packages to a remote deb repository.
+
+    Args:
+        repo_uri: location of the repository.
+        deb_paths: list of problem deb paths to copy.
+    """
+
+    pass
+
 def local_update(repo_path, deb_paths=[]):
     """
     Updates a local deb repository by copying debs and running scanpackages.
