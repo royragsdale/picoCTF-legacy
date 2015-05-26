@@ -5,12 +5,11 @@ Packaging operations for the shell manager.
 import json, re, gzip
 import spur
 
-from os import makedirs, listdir
+from os import makedirs, listdir, getcwd
 from os.path import join, isdir
 
 from copy import deepcopy
 
-from shell_manager import problem_repo
 from shell_manager.util import full_copy, move
 from shell_manager.problem import get_problem
 
@@ -18,6 +17,20 @@ DEB_DEFAULTS = {
     "Section": "ctf",
     "Priority": "optional",
 }
+
+def sanitize_package_text(name):
+    """
+    Sanitize a given name such that it conforms to deb policy.
+
+    Args:
+        name: the name to sanitize.
+
+    Returns:
+        The sanitized form of name.
+    """
+
+    sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", name.lower())
+    return sanitized_name
 
 def problem_to_control(problem, control_path):
     """
@@ -30,7 +43,7 @@ def problem_to_control(problem, control_path):
 
     #a-z, digits 0-9, plus + and minus - signs, and periods
     package_name = problem.get("pkg_name", problem["name"])
-    sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", package_name.lower())
+    sanitized_name = sanitize_package_text(package_name)
     control = deepcopy(DEB_DEFAULTS)
     control.update(**{
         "Package": sanitized_name,
@@ -41,7 +54,6 @@ def problem_to_control(problem, control_path):
     })
 
     if "pkg_dependencies" in problem:
-        print(problem.get("pkg_dependencies"))
         control["Depends"] = ", ".join(problem.get("pkg_dependencies", []))
 
     contents = ""
@@ -73,8 +85,28 @@ def problem_builder(args):
 
     problem_to_control(problem, paths["control"])
 
-    deb_directory = args.out if args.out is not None else paths["staging"]
-    deb_path = join(deb_directory, problem["name"] + ".deb")
+    deb_directory = args.out if args.out is not None else getcwd()
+
+    def format_deb_file_name(problem):
+        """
+        Prepare the file name of the deb package according to deb policy.
+
+        Args:
+            problem: the problem object
+
+        Returns:
+           An acceptable file name for the problem.
+        """
+
+        raw_package_name = "{}-{}-{}.deb".format(
+            problem.get("organization", "ctf"),
+            problem.get("pkg_name", problem["name"]),
+            problem.get("version", "1.0-0")
+        )
+
+        return sanitize_package_text(raw_package_name)
+
+    deb_path = join(deb_directory, format_deb_file_name(problem))
 
     shell = spur.LocalShell()
     result = shell.run(["fakeroot", "dpkg-deb", "--build", paths["staging"], deb_path])
@@ -85,13 +117,8 @@ def problem_builder(args):
     else:
         print("Problem '{}' packaged successfully.".format(problem["name"]))
 
-    #Ensure repo exists
-    if not isdir(args.repository):
-        makedirs(args.repository)
-
     if len(args.problem_paths) >= 1:
-        #Copy the deb and process the rest of the problems
-        move(deb_path, args.repository)
         return problem_builder(args)
 
-    problem_repo.update(args.repository, [deb_path])
+def bundle_problems(args):
+    pass
