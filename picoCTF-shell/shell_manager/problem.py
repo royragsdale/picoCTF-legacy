@@ -28,7 +28,8 @@ PROBLEM_FIELDS = [
 PROBLEM_DEFAULTS = {
     "version": lambda problem: "1.0-0",
     "pkg_description": lambda problem: problem["description"],
-    "pkg_dependencies": lambda problem: []
+    "pkg_dependencies": lambda problem: [],
+    "organization": "ctf"
 }
 
 def translate_problem_fields(translation_table, problem):
