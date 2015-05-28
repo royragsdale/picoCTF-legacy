@@ -20,13 +20,11 @@ class TestProblems(object):
     # create 5 base problems
     base_problems = [
         {
-            "name" : "base-" + str(i),
-            "score" : 10,
+            "name": "base-" + str(i),
+            "score": 10,
+            "author": "haxxor",
             "category": "",
-            "grader" : "test.py",
-            "description" : "",
-            "autogen": False,
-            "threshold" : 0
+            "description": "Base problem " + str(i),
         }
         for i in range(5)
     ]
@@ -35,16 +33,14 @@ class TestProblems(object):
     disabled_problems = [
         {
             "name" : "locked-" + str(i),
+            "author": "haxxor",
             "score" : 10,
             "category": "",
-            "grader" : "test.py",
-            "autogen": False,
             "description" : "",
-            "threshold" : 0,
-            "disabled": True
         }
         for i in range(5)
     ]
+
 
     def generate_problems(base_problems):
         """A workaround for python3's list comprehension scoping"""
@@ -54,12 +50,9 @@ class TestProblems(object):
             {
                 "name" : "level1-" + str(i),
                 "score" : 60,
+                "author": "haxxor",
                 "category": "",
-                "grader" : "test.py",
-                "description" : "",
-                "autogen": False,
-                "threshold" : 3,
-                "weightmap" : {p['name']: 1 for p in base_problems}
+                "description" : "Level1 problem " + str(i),
             }
             for i in range(5)
         ]
@@ -70,21 +63,6 @@ class TestProblems(object):
 
     enabled_problems = base_problems + level1_problems
     all_problems = enabled_problems + disabled_problems
-
-
-    autogen_problems = [
-        {
-                "name" : "autogen-" + str(i),
-                "score" : 2**i,
-                "category": "autogen",
-                "grader" : "autogentest/grader.py",
-                "generator" : "autogentest/generator.py",
-                "description" : "",
-                "threshold": 0,
-                "autogen": True,
-        }
-        for i in range(10)
-    ]
 
     # test keys
     correct = "test"
@@ -102,16 +80,30 @@ class TestProblems(object):
         self.tid = api.user.get_team(uid=self.uid)['tid']
 
         # insert all problems
-        self.pids = []
-        for problem in self.all_problems:
+        self.base_pids = []
+        for problem in self.base_problems:
             pid = api.problem.insert_problem(problem)
-            self.pids.append(pid)
+            self.base_pids.append(pid)
 
+        self.enabled_pids = self.base_pids[:]
+        for problem in self.level1_problems:
+            pid = api.problem.insert_problem(problem)
+            self.enabled_pids.append(pid)
+            for pid2 in self.base_pids:
+                api.problem.add_problem_dependency(pid, pid2)
 
-        self.base_pids =  [p['pid'] for p in self.base_problems]
-        self.enabled_pids = [p['pid'] for p in self.enabled_problems]
-        self.disabled_pids = [p['pid'] for p in self.disabled_problems]
+        self.disabled_pids = []
+        for problem in self.disabled_problems:
+            pid = api.problem.insert_problem(problem)
+            self.disabled_pids.append(pid)
+            api.problem.update_problem(pid, {"disabled":True})
+
         self.all_pids = self.enabled_pids + self.disabled_pids
+
+        # set the key as though they were generated properly
+        # TODO: actually run generation
+        for problem in api.problem.get_all_problems():
+            api.problem.update_problem(problem["pid"], {"key":self.correct})
 
     def teardown_class(self):
         teardown_db()
@@ -207,56 +199,27 @@ class TestProblems(object):
             assert pid in unlocked_pids, "Base problem didn't unlock"
 
         # unlock more problems
-        for problem in self.base_problems[:3]:
+        for problem in self.base_problems:
             api.problem.submit_key(self.tid, problem['pid'], self.correct, uid=self.uid)
 
-        unlocked = api.problem.get_unlocked_problems(self.tid)
-        unlocked_pids = [p['pid'] for p in unlocked]
+        unlocked_pids = api.problem.get_unlocked_pids(self.tid)
 
-        for problem in unlocked:
-            assert problem['pid'] not in self.disabled_pids, "Disabled problem is unlocked"
+        for pid in unlocked_pids:
+            assert pid not in self.disabled_pids, "Disabled problem is unlocked"
 
         for pid in self.enabled_pids:
             assert pid in unlocked_pids, "Level1 problem didn't unlock"
 
     @ensure_empty_collections("submissions")
-    @clear_collections("submissions", "problems") #clear problems for test_autogen
+    @clear_collections("submissions", "problems")
     @clear_cache()
     def test_scoring(self):
         correct_total = 0
-        for problem in self.base_problems + self.level1_problems:
+        for pid in self.enabled_pids:
+            problem = api.problem.get_problem(pid=pid)
             score = api.problem.submit_key(self.tid, problem['pid'], self.correct, uid=self.uid)['points']
             correct_total += problem['score']
             assert score == problem['score'], "submit_key return wrong score"
             s = api.stats.get_score(tid=self.tid)
             assert api.stats.get_score(tid=self.tid) == correct_total, "Team score is calculating incorrectly!"
             assert api.stats.get_score(uid=self.uid) == correct_total, "User score is calculating incorrectly!"
-
-
-    @ensure_empty_collections("submissions", "problems")
-    @clear_cache()
-    def test_autogen(self):
-        """
-        Tests the insertion, generation, and grading of autogenerated problems.
-
-        Covers:
-            problem.insert_problem
-            autogen.build_problem_instances
-            problem.grade_problem
-            autogen.grade_problem_instance
-
-            autogen.*
-        """
-
-        autogen_pids = [api.problem.insert_problem(p) for p in self.autogen_problems]
-
-        score = 0
-        for pid in autogen_pids:
-            api.autogen.build_problem_instances(pid, 10)
-
-            instance = api.autogen.get_problem_instance(pid, self.tid)
-            key = re.search(r'\d+', instance["description"]).group()
-
-            assert api.problem.submit_key(self.tid, pid, key, uid=self.uid)["correct"], "Autogen flag not accepted!"
-            score += instance["score"]
-            assert api.stats.get_score(tid=self.tid) == score
