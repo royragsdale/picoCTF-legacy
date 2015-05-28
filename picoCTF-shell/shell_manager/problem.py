@@ -118,7 +118,7 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
 
     new_defaults = {
         "author": lambda problem: overrides.get("author", "Nihil"),
-        "organization": lambda problem: overrides.get("organization", "")
+        "organization": lambda problem: overrides.get("organization", "ctf")
     }
 
     def get_dependencies(problem_path):
