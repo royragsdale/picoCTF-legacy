@@ -15,7 +15,7 @@ PROBLEM_FIELDS = [
     ["score", {"required": True, "validation": lambda score: type(score) == int and score >= 0}],
     ["name", {"required": True, "validation": str}],
     ["description", {"required": True, "validation": str}],
-    ["categories", {"required": True, "validation": list}],
+    ["category", {"required": True, "validation": str}],
     ["tags", {"required": False, "validation": list}],
     ["hints", {"required": False, "validation": list}],
     ["organization", {"required": False, "validation": str}],
@@ -114,6 +114,7 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
         "basescore": "score",
         "displayname": "name",
         "desc": "description",
+        "categories": "category"
     }
 
     new_defaults = {
@@ -147,6 +148,10 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
 
     get_dependencies(problem_path)
     translate_problem_fields(field_table, problem)
+
+    #Get the first, primary category.
+    problem["category"] = problem["category"][0]
+
     set_problem_defaults(problem, additional_defaults=new_defaults)
 
     return problem
