@@ -3,7 +3,7 @@ import abc
 import hashlib
 import string
 
-class Challenge(object):
+class Challenge(object, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def setup(self):
         pass
