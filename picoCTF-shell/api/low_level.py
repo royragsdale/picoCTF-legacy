@@ -1,5 +1,7 @@
 from random import randint
-from os import system
+from os import system, path, setsid, killpg
+from signal import SIGTERM
+from subprocess import Popen, PIPE
 
 def give_port():
     """
@@ -7,6 +9,21 @@ def give_port():
     """
     #TODO: handle registering ports
     return randint(1000, 65000)
+
+def exec_cmd(cmd):
+    """
+    Executes the given shell command
+
+    Args:
+        cmd: the shell command to run
+    Returns:
+        A tuple containing stdout_output, stderr_output
+    """
+
+    process = Popen(cmd, shell=True, stderr=PIPE, stdout=PIPE, preexec_fn=setsid)
+    stdout, stderr = process.stdout.read(), process.stderr.read()
+    killpg(process.pid, SIGTERM)
+    return stdout, stderr
 
 def create_user(username, home_directory_root="/home/"):
     """
@@ -17,8 +34,8 @@ def create_user(username, home_directory_root="/home/"):
         home_directory_root: the parent directory to create the
                              home directory in. Defaults to /home/
     """
-    #TODO: implement
-    pass
 
-def exec_cmd(cmd):
-    system(cmd)
+    home_directory = path.join(home_directory_root, username)
+
+    cmd = "useradd -m -d {} {}".format(home_directory, username)
+    exec_cmd(cmd)

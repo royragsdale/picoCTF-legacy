@@ -1,6 +1,7 @@
-from random import Random
+from random import Random, randint
 from abc import ABCMeta
 from api.mid_level import Remote, Compiled
+from api.low_level import exec_cmd
 
 def challenge_meta(problem_name, seed, user):
     """
@@ -66,19 +67,46 @@ WantedBy=multi-user.target"""
     problem_service_info = problem.service()
     return template.format(problem.name, problem_service_info['Type'], problem_service_info['ExecStart'])
 
-def generate(Problem, seed):
+def get_random_user_for_problem(problem_name):
+    """
+    Generates a random username based on the problem name. The username returned is guaranteed to
+    not exist.
+
+    Args:
+        problem_name: The name of the problem
+    Returns:
+        The username generated
+    """
+
+    converted_name = problem_name.replace(" ","_").lower()
+
+    username = "{}{}".format(converted_name, randint(0, 100000))
+    cmd = "id {}\n".format(username)
+    result = str(exec_cmd(cmd)[1], "utf-8")
+    if "no such user" not in result:
+        return get_random_user_for_problem(problem_name)
+    return username
+
+
+def generate_instance(Problem, problem_object):
     """
     Runs the setup functions of Problem in the correct order
 
     Args:
         Problem: The Problem class to be generated
-        seed: The string to seed the Random object with
+        problem_object: The contents of the problem.json
 
     Returns:
-        The flag of the generated instance
+        A tuple containing the service string and the flag of the generated instance
     """
 
-    Problem = get_updated_problem_class(Problem, "My problem", seed, "user1")
+    # TODO: make username, seed deterministic
+    username = get_random_user_for_problem(problem_object['name'])
+    seed = username
+
+    Problem = get_updated_problem_class(Problem, problem_object['name'], seed, username)
+
+    #TODO: add templating
 
     # run methods in proper order
     p = Problem()
@@ -89,10 +117,13 @@ def generate(Problem, seed):
         p.setup_remote()
     p.setup()
 
-    print(create_service(p))
 
     #TODO: add staging directory, user creation, and copying files
 
+    service = create_service(p)
+
     # reseed and generate flag
     p.random.seed(seed)
-    return p.generate_flag()
+    flag = p.generate_flag()
+
+    return service, flag

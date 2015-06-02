@@ -43,6 +43,7 @@ class Remote(Challenge):
 
 
     def service(self):
+        #TODO: use full path of binary for EXEC:
         return {"Type":"simple",
                 "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} EXEC:./{}".format(
                     self.port, self.user, self.executable_name)
