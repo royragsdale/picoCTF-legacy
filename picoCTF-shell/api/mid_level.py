@@ -27,15 +27,19 @@ class Challenge(object, metaclass=ABCMeta):
         return "".join([self.random.choice(hexdigits) for i in range(64)])
 
 class Remote(Challenge):
+    """
+    Base class for remote challenges
+    Subclasses must specify executable_name field
+    """
 
     def setup(self):
         pass
 
     @property
     def port(self):
-        if not hasattr(self, 'port'):
-            self.port = give_port()
-        return port
+        if not hasattr(self, '_port'):
+            self._port = give_port()
+        return self._port
 
 
     def service(self):
@@ -49,6 +53,9 @@ class Remote(Challenge):
         pass
 
 class Compiled(Challenge):
+    """
+    Base class for Compiled challenges
+    """
 
     def setup(self):
         pass
@@ -56,3 +63,18 @@ class Compiled(Challenge):
     def setup_compiled(self):
         exec_cmd("make")
         #TODO: setup permissions
+
+class Static(Challenge):
+    """
+    Abstract base class for static challenges
+
+    Abstract properties:
+        flag
+
+    Abstract methods:
+        -
+    """
+
+    @abstractproperty
+    def flag():
+        pass
