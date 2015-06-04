@@ -1,3 +1,7 @@
+"""
+Low level deployment operations.
+"""
+
 from random import randint
 from os import system, path, setsid, killpg
 from signal import SIGTERM

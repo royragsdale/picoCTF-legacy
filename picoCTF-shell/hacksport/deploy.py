@@ -1,7 +1,11 @@
+"""
+Problem deployment.
+"""
+
 from random import Random, randint
 from abc import ABCMeta
-from api.mid_level import Remote, Compiled
-from api.low_level import exec_cmd
+from hacksport.problem import Remote, Compiled
+from hacksport.operations import exec_cmd
 
 def challenge_meta(problem_name, seed, user):
     """
