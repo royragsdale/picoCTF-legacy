@@ -37,9 +37,13 @@ def create_user(username, home_directory_root="/home/"):
         username: the username to create
         home_directory_root: the parent directory to create the
                              home directory in. Defaults to /home/
+
+    Returns:
+        The new user's home directory
     """
 
     home_directory = path.join(home_directory_root, username)
 
     cmd = "useradd -m -d {} {}".format(home_directory, username)
     exec_cmd(cmd)
+    return home_directory

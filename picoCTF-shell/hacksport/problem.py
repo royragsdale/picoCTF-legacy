@@ -4,6 +4,7 @@ Challenge deployment and problem types.
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from hashlib import md5
+from hacksport.operations import give_port
 
 class Challenge(metaclass=ABCMeta):
     """
@@ -20,7 +21,7 @@ class Challenge(metaclass=ABCMeta):
         """
 
         token = str(random.randint(1, 1e12))
-        hash_token = md5(token.encode("utf-8"))
+        hash_token = md5(token.encode("utf-8")).hexdigest()
 
         return hash_token
 
@@ -59,7 +60,7 @@ class Challenge(metaclass=ABCMeta):
         No-op service file values.
         """
 
-class Compiled(Challenge, metaclass=ABCMeta):
+class Compiled(Challenge):
     """
     Sensible behavior for compiled challenges.
     """
@@ -70,29 +71,41 @@ class Compiled(Challenge, metaclass=ABCMeta):
 
     makefile = None
 
-    @abstractproperty
     def compiler_sources(self):
-        pass
-
-    @abstractproperty
-    def program_name(self):
         pass
 
     def setup(self):
         pass
 
     def compiler_setup(self):
+        """
+        Setup function for compiled challenges
+        """
         pass
 
-class Remote(Challenge, metaclass=ABCMeta):
+class Remote(Challenge):
     """
     Base behavior for remote challenges.
     """
 
-    @abstractproperty
+    @property
     def port(self):
+        """
+        Provides port on-demand with caching
+        """
+        if not hasattr(self, '_port'):
+            self._port = give_port()
+        return self._port
+
+    def remote_setup(self):
+        """
+        Setup function for remote challenges
+        """
         pass
 
-    @abstractproperty
-    def program_name(self):
-        pass
+    def service(self):
+        #TODO: use full path of binary for EXEC:
+        return {"Type":"simple",
+                "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} EXEC:./{}".format(
+                    self.port, self.user, self.program_name)
+               }
