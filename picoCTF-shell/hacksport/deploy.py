@@ -7,16 +7,13 @@ from abc import ABCMeta
 from hacksport.problem import Remote, Compiled
 from hacksport.operations import exec_cmd
 
-def challenge_meta(problem_name, seed, user):
+def challenge_meta(attributes):
     """
-    Returns a metaclass that will introduce a self.random object seeded
-    to the given seed, self.user set to the linux username for this instance,
-    etc.
+    Returns a metaclass that will introduce the given attributes into the class
+    namespace.
 
     Args:
-        problem_name: The problem name
-        seed: The seed for the Random object
-        user: The linux username for this challenge instance
+        attributes: The dictionary of attributes
 
     Returns:
         The metaclass described above
@@ -24,11 +21,9 @@ def challenge_meta(problem_name, seed, user):
 
     class ChallengeMeta(ABCMeta):
         def __new__(cls, name, bases, attr):
-            attributes = dict(attr)
-            attributes['name'] = problem_name
-            attributes['random'] = Random(seed)
-            attributes['user'] = user
-            return super().__new__(cls, name, bases, attributes)
+            attrs = dict(attr)
+            attrs.update(attributes)
+            return super().__new__(cls, name, bases, attrs)
     return ChallengeMeta
 
 def get_updated_problem_class(Class, problem_name, seed, user):
@@ -45,8 +40,9 @@ def get_updated_problem_class(Class, problem_name, seed, user):
     Returns:
         The updated class described above
     """
-
-    return challenge_meta(problem_name, seed, user)(Class.__name__, Class.__bases__, Class.__dict__)
+    random = Random(seed)
+    attributes = {"name": problem_name, "random": random, "user": user}
+    return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
 def create_service(problem):
     """
