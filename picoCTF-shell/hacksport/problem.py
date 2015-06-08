@@ -15,6 +15,9 @@ class File(object):
         self.path = path
         self.permissions = permissions
 
+    def __repr__(self):
+        return "{}({},{})".format(self.__class__.__name__, repr(self.path), oct(self.permissions))
+
 class ExecutableFile(File):
     """
     Wrapper for executable files that will make them setgid and owned
