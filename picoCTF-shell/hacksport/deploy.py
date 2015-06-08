@@ -10,7 +10,7 @@ from pwd import getpwnam
 from bson import json_util
 from jinja2 import Environment, FileSystemLoader
 from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
-from hacksport.operations import exec_cmd, create_user
+from hacksport.operations import create_user
 
 import os
 import re
