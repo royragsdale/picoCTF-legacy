@@ -3,9 +3,10 @@ Low level deployment operations.
 """
 
 from random import randint
-from os import system, path, setsid, killpg
+from os import path
+from spur import LocalShell
+from time import time
 from signal import SIGTERM
-from subprocess import Popen, PIPE
 
 def give_port():
     """
@@ -14,20 +15,38 @@ def give_port():
     #TODO: handle registering ports
     return randint(1000, 65000)
 
-def exec_cmd(cmd):
+class TimeoutError(Exception):
+    """
+    Exception dealing with executed commands that timeout.
+    """
+    pass
+
+def execute(cmd, timeout=10, **kwargs):
     """
     Executes the given shell command
 
     Args:
-        cmd: the shell command to run
+        cmd: List of command arguments
+        timeout: maximum alloted time for the command
+        **kwargs: passes to LocalShell.spawn
     Returns:
-        A tuple containing stdout_output, stderr_output
+        An execution result.
+    Raises:
+        NoSuchCommandError, RunProcessError, FileNotFoundError
     """
 
-    process = Popen(cmd, shell=True, stderr=PIPE, stdout=PIPE, preexec_fn=setsid)
-    stdout, stderr = process.stdout.read(), process.stderr.read()
-    killpg(process.pid, SIGTERM)
-    return stdout, stderr
+    shell = LocalShell()
+
+    process = shell.spawn(cmd, store_pid=True, **kwargs)
+    start_time = time()
+
+    while process.is_running():
+        delta_time = time() - start_time
+        if delta_time > timeout:
+            process.send_signal(SIGTERM)
+            raise TimeoutError(cmd, timeout)
+
+    return process.wait_for_result()
 
 def create_user(username, home_directory_root="/home/"):
     """
@@ -44,6 +63,6 @@ def create_user(username, home_directory_root="/home/"):
 
     home_directory = path.join(home_directory_root, username)
 
-    cmd = "useradd -m -d {} {}".format(home_directory, username)
-    exec_cmd(cmd)
+    execute(["useradd", "-m", "-d", home_directory, username])
+
     return home_directory

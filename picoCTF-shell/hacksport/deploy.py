@@ -9,7 +9,7 @@ from imp import load_source
 from bson import json_util
 from jinja2 import Environment, FileSystemLoader
 from hacksport.problem import Remote, Compiled
-from hacksport.operations import exec_cmd, create_user
+from hacksport.operations import execute, create_user
 
 import os
 import re
