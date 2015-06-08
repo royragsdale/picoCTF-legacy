@@ -54,20 +54,6 @@ class Challenge(metaclass=ABCMeta):
 
         return hash_token
 
-    def generate_description(problem, environment):
-        """
-        Generate challenge's description.
-
-        Args:
-            problem: the challenge's problem object.
-            environment: variables about the shell server that can be templated.
-
-        Returns:
-            The description for the problem instance.
-        """
-
-        pass
-
     def initialize(self):
         """
         Initial setup function that runs before any other.

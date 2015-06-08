@@ -6,3 +6,4 @@ class Problem(Remote, Compiled):
 
     def __init__(self):
         self.secret = "asdf"
+        self.lucky = self.random.randint(0, 1000)

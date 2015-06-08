@@ -8,7 +8,7 @@ from hashlib import md5
 from imp import load_source
 from pwd import getpwnam
 from json import loads
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user
 
@@ -152,6 +152,18 @@ def generate_staging_directory(root="/tmp/staging/"):
     os.makedirs(path)
     return path
 
+def template_string(template, **kwargs):
+    """
+    Templates the given string with the keyword arguments
+
+    Args:
+        template: The template string
+        **kwards: Variables to use in templating
+    """
+
+    temp = Template(template)
+    return temp.render(**kwargs)
+
 def template_file(in_file_path, out_file_path, **kwargs):
     """
     Templates the given file with the keyword arguments.
@@ -262,10 +274,13 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
     service = create_service_file(p, instance_number, staging_directory)
 
-    # reseed and generate flag
-    flag = p.generate_flag(Random(seed))
+    # template the description
+    p.description = template_string(p.description, **p.__dict__)
 
-    return flag, staging_directory, all_files
+    # reseed and generate flag
+    p.flag = p.generate_flag(Random(seed))
+
+    return p, staging_directory, all_files
 
 def deploy_problem(problem_directory, instances=1):
     """
@@ -288,5 +303,5 @@ def deploy_problem(problem_directory, instances=1):
 
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
-        flag, staging_directory, files = generate_instance(problem_object, problem_directory, instance_number)
-        print("\tflag={}\n\tstaging_directory={}\n\tfiles={}".format(flag, staging_directory, files))
+        problem, staging_directory, files = generate_instance(problem_object, problem_directory, instance_number)
+        print("\tdesc={}\n\tflag={}\n\tstaging_directory={}\n\tfiles={}".format(problem.description, problem.flag, staging_directory, files))
