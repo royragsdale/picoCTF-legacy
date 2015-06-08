@@ -7,7 +7,7 @@ from abc import ABCMeta
 from hashlib import md5
 from imp import load_source
 from pwd import getpwnam
-from bson import json_util
+from json import loads
 from jinja2 import Environment, FileSystemLoader
 from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user
@@ -284,7 +284,7 @@ def deploy_problem(problem_directory, instances=1):
     with open(object_path, "r") as f:
         json_string = f.read()
 
-    problem_object = json_util.loads(json_string)
+    problem_object = loads(json_string)
 
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
