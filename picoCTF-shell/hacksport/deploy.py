@@ -6,9 +6,10 @@ from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
 from imp import load_source
+from pwd import getpwnam
 from bson import json_util
 from jinja2 import Environment, FileSystemLoader
-from hacksport.problem import Remote, Compiled
+from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
 from hacksport.operations import exec_cmd, create_user
 
 import os
@@ -189,6 +190,27 @@ def template_staging_directory(staging_directory, problem):
                 # tried templating binary file
                 pass
 
+def deploy_files(staging_directory, instance_directory, file_list, username):
+    """
+    Copies the list of files from the staging directory to the instance directory.
+    Will properly set permissions and setgid files based on their type.
+    """
+
+    # get uid and gid for root and problem user
+    user = getpwnam(username)
+    root = getpwnam("root")
+
+    for f in file_list:
+        output_path = os.path.join(instance_directory, os.path.basename(f.path))
+        shutil.copy2(os.path.join(staging_directory, f.path), output_path)
+
+        os.chmod(output_path, f.permissions)
+
+        if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
+            os.chown(out_file_path, root.pw_uid, user.pw_gid)
+        else:
+            os.chown(out_file_path, root.pw_uid, root.pw_gid)
+
 def generate_instance(problem_object, problem_directory, instance_number, test_instance=False):
     """
     Runs the setup functions of Problem in the correct order
@@ -197,7 +219,7 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
         problem_object: The contents of the problem.json
 
     Returns:
-        The flag of the generated instance
+        A tuple containing (flag, staging_directory, files)
     """
 
     username, home_directory = create_instance_user(problem_object['name'], instance_number)
@@ -229,20 +251,21 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
     os.chdir(cwd)
 
-    # TODO:
-    # grab compiled files, remote files, files
-    # prompt for what is being copied where if test_instance
-    # copy files to home directory
+    all_files = p.files
+
+    if isinstance(p, Compiled):
+        all_files.extend(p.compiled_files)
+    if isinstance(p, Remote):
+        all_files.extend(p.remote_files)
+
+    assert all([isinstance(f, File) for f in all_files])
 
     service = create_service_file(p, instance_number, staging_directory)
 
     # reseed and generate flag
     flag = p.generate_flag(Random(seed))
 
-    # clean up the copied files, but leave the service file
-    shutil.rmtree(copypath)
-
-    return flag, service
+    return flag, staging_directory, all_files
 
 def deploy_problem(problem_directory, instances=1):
     """
@@ -257,6 +280,7 @@ def deploy_problem(problem_directory, instances=1):
     """
 
     object_path = os.path.join(problem_directory, "problem.json")
+
     with open(object_path, "r") as f:
         json_string = f.read()
 
@@ -264,5 +288,5 @@ def deploy_problem(problem_directory, instances=1):
 
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
-        flag, service = generate_instance(problem_object, problem_directory, instance_number)
-        print("\tflag={}\n\tservice={}".format(flag, service))
+        flag, staging_directory, files = generate_instance(problem_object, problem_directory, instance_number)
+        print("\tflag={}\n\tstaging_directory={}\n\tfiles={}".format(flag, staging_directory, files))

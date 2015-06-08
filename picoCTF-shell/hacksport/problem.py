@@ -6,11 +6,40 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from hashlib import md5
 from hacksport.operations import give_port, exec_cmd
 
+class File(object):
+    """
+    Wraps files with default permissions
+    """
+
+    def __init__(self, path, permissions=0o664):
+        self.path = path
+        self.permissions = permissions
+
+class ExecutableFile(File):
+    """
+    Wrapper for executable files that will make them setgid and owned
+    by the problem's group.
+    """
+
+    def __init__(self, path):
+        super().__init__(path, permissions=0o2755)
+
+class ProtectedFile(File):
+    """
+    Wrapper for protected files, i.e. files that can only be read after
+    escalating privileges. These will be owned by the problem's group.
+    """
+
+    def __init__(self, path):
+        super().__init__(path, permissions=0o0440)
+
 class Challenge(metaclass=ABCMeta):
     """
     The most hands off, low level approach to creating challenges.
     Requires manual setup and generation.
     """
+
+    files = []
 
     def generate_flag(self, random):
         """
@@ -71,6 +100,8 @@ class Compiled(Challenge):
 
     makefile = None
 
+    compiled_files = []
+
     def compiler_sources(self):
         pass
 
@@ -88,6 +119,8 @@ class Remote(Challenge):
     """
     Base behavior for remote challenges.
     """
+
+    remote_files = []
 
     @property
     def port(self):
