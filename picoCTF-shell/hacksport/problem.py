@@ -4,7 +4,7 @@ Challenge deployment and problem types.
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from hashlib import md5
-from hacksport.operations import give_port
+from hacksport.operations import give_port, exec_cmd
 
 class Challenge(metaclass=ABCMeta):
     """
@@ -81,7 +81,8 @@ class Compiled(Challenge):
         """
         Setup function for compiled challenges
         """
-        pass
+        if self.makefile is not None:
+            exec_cmd("make -f {}".format(self.makefile))
 
 class Remote(Challenge):
     """

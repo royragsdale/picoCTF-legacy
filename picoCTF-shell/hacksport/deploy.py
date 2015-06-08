@@ -7,6 +7,7 @@ from abc import ABCMeta
 from hashlib import md5
 from imp import load_source
 from bson import json_util
+from jinja2 import Environment, FileSystemLoader
 from hacksport.problem import Remote, Compiled
 from hacksport.operations import exec_cmd, create_user
 
@@ -150,6 +151,44 @@ def generate_staging_directory(root="/tmp/staging/"):
     os.makedirs(path)
     return path
 
+def template_file(in_file_path, out_file_path, **kwargs):
+    """
+    Templates the given file with the keyword arguments.
+
+    Args:
+        in_file_path: The path to the template
+        out_file_path: The path to output the templated file
+        **kwargs: Variables to use in templating
+    """
+
+    env = Environment(loader=FileSystemLoader(os.path.dirname(in_file_path)))
+    template = env.get_template(os.path.basename(in_file_path))
+    output = template.render(**kwargs)
+
+    with open(out_file_path, "w") as f:
+        f.write(output)
+
+def template_staging_directory(staging_directory, problem):
+    """
+    Templates every file in the staging directory recursively other than
+    problem.json.
+
+    Args:
+        staging_directory: The path of the staging directory
+        problem: The problem object
+    """
+
+    for root, dirnames, filenames in os.walk(staging_directory):
+        for filename in filenames:
+            if filename == "problem.json":
+                continue
+            fullpath = os.path.join(root, filename)
+            try:
+                template_file(fullpath, fullpath, **problem.__dict__)
+            except UnicodeDecodeError as e:
+                # tried templating binary file
+                pass
+
 def generate_instance(problem_object, problem_directory, instance_number, test_instance=False):
     """
     Runs the setup functions of Problem in the correct order
@@ -172,17 +211,23 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
     Problem = update_problem_class(challenge.Problem, problem_object, seed, username)
 
+    # store cwd to restore later
+    cwd = os.getcwd()
+    os.chdir(copypath)
+
     # run methods in proper order
     p = Problem()
     p.initialize()
 
-    # TODO: add templating
+    template_staging_directory(staging_directory, p)
 
     if isinstance(p, Compiled):
         p.compiler_setup()
     if isinstance(p, Remote):
         p.remote_setup()
     p.setup()
+
+    os.chdir(cwd)
 
     # TODO:
     # grab compiled files, remote files, files
@@ -194,8 +239,8 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     # reseed and generate flag
     flag = p.generate_flag(Random(seed))
 
-    # clean up staging directory
-    shutil.rmtree(staging_directory)
+    # clean up the copied files, but leave the service file
+    shutil.rmtree(copypath)
 
     return flag, service
 
