@@ -169,9 +169,8 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     shutil.copytree(problem_directory, copypath)
 
     challenge = load_source("challenge", os.path.join(copypath, "challenge.py"))
-    Problem = challenge.Problem
 
-    Problem = update_problem_class(Problem, problem_object, seed, username)
+    Problem = update_problem_class(challenge.Problem, problem_object, seed, username)
 
     # run methods in proper order
     p = Problem()
@@ -194,6 +193,9 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
     # reseed and generate flag
     flag = p.generate_flag(Random(seed))
+
+    # clean up staging directory
+    shutil.rmtree(staging_directory)
 
     return flag, service
 
