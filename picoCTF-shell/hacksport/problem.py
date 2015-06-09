@@ -124,6 +124,13 @@ class Remote(Challenge):
     Base behavior for remote challenges.
     """
 
+    def setup(self):
+        """
+        No-op implementation of setup
+        """
+
+        pass
+
     @property
     def port(self):
         """
