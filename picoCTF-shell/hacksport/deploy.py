@@ -19,6 +19,20 @@ import shutil
 # TODO: move somewhere else
 SECRET = "hacksports2015"
 
+def get_attributes(obj):
+    """
+    Returns all attributes of an object, excluding those that start with
+    an underscore
+
+    Args:
+        obj: the object
+
+    Returns:
+        A dictionary of attributes
+    """
+
+    return {key:getattr(obj, key) if not key.startswith("_") else None for key in dir(obj)}
+
 def sanitize_name(name):
     """
     Sanitize a given name such that it conforms to unix policy.
@@ -197,7 +211,7 @@ def template_staging_directory(staging_directory, problem):
                 continue
             fullpath = os.path.join(root, filename)
             try:
-                template_file(fullpath, fullpath, **problem.__dict__)
+                template_file(fullpath, fullpath, **get_attributes(problem))
             except UnicodeDecodeError as e:
                 # tried templating binary file
                 pass
@@ -275,7 +289,7 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     service = create_service_file(p, instance_number, staging_directory)
 
     # template the description
-    p.description = template_string(p.description, **p.__dict__)
+    p.description = template_string(p.description, **get_attributes(p))
 
     # reseed and generate flag
     p.flag = p.generate_flag(Random(seed))
