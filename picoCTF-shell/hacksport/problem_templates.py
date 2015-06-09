@@ -5,15 +5,16 @@ High Level Problem API.
 from hacksport.problem import Compiled, Remote, File, ProtectedFile
 import os
 
-def LocalCompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None,
+def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None,
                         is_32_bit=True, executable_stack=True, no_stack_protector=True, compiler_flags=[],
-                        flag_file=None, static_flag=None, share_source=False):
+                        flag_file=None, static_flag=None, share_source=False, remote=False):
     """
-    Creates a challenge for a local compiled binary. User must specify either a makefile
+    Creates a challenge for a compiled binary. User must specify either a makefile
     or compiler sources. If a makefile is specified, the binary name must also be
     provided. If a flag_file is not provided, it will default to flag.txt. If the
     given flag file does not exist, it will be created. If share_source is set to
-    true, all files specified in sources will be copied.
+    true, all files specified in sources will be copied. If remote is set to true,
+    the challenge will be assigned a port and be wrapped in a fork-accept loop.
 
     Keyword Args:
         makefile: The name of the makefile. Defualts to None.
@@ -29,6 +30,7 @@ def LocalCompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name
         compiler_flags: The list of any additional compiler flags to be passed. Defaults to [].
         flag_file: The name of the flag file. If it does not exist, it will be created. Defaults to flag.txt
         static_flag: A string containing the static flag. If specified, the flag generation will always return this. Defaults to None.
+        remote: Specifies if the challenge should be remote or not. Defaults to False.
     """
 
     if is_32_bit and "-m32" not in compiler_flags:
@@ -47,7 +49,11 @@ def LocalCompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name
     if flag_file is None:
         flag_file = "flag.txt"
 
-    class Problem(Compiled):
+    base_classes = [Compiled]
+    if remote:
+        base_classes.append(Remote)
+
+    class Problem(*base_classes):
         if share_source:
             files = [File(source) for source in sources]
 

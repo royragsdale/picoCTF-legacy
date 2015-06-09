@@ -1,3 +1,3 @@
-from hacksport.problem_templates import LocalCompiledBinary
+from hacksport.problem_templates import CompiledBinary
 
-Problem = LocalCompiledBinary(makefile="Makefile", binary_name="mybinary")
+Problem = CompiledBinary(makefile="Makefile", binary_name="mybinary")

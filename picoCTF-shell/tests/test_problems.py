@@ -18,7 +18,7 @@ class TestProblems:
     def test_remote_no_compile(self):
         deploy_problem(os.path.join(PATH, "problems/remote_no_compile"))
 
-    def test_high_level_local(self):
+    def test_high_level_compiled_binary(self):
         deploy_problem(os.path.join(PATH, "problems/local_compiled1"))
         deploy_problem(os.path.join(PATH, "problems/local_compiled2"))
-        deploy_problem(os.path.join(PATH, "problems/local_compiled3"))
+        deploy_problem(os.path.join(PATH, "problems/remote_compiled1"))

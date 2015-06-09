@@ -1,3 +1,3 @@
-from hacksport.problem_templates import LocalCompiledBinary
+from hacksport.problem_templates import CompiledBinary
 
-Problem = LocalCompiledBinary(sources=["mybinary.c"], share_source=True)
+Problem = CompiledBinary(sources=["mybinary.c"], share_source=True)
