@@ -126,6 +126,10 @@ class Remote(Challenge):
 
     remote_files = []
 
+    def setup(self):
+        """ No-op implementation for Challenge. """
+        pass
+
     @property
     def port(self):
         """
@@ -139,7 +143,7 @@ class Remote(Challenge):
         """
         Setup function for remote challenges
         """
-        pass
+        self.remote_files = [ExecutableFile(self.program_name)]
 
     def service(self):
         return {"Type":"simple",
