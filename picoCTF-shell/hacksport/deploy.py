@@ -6,7 +6,7 @@ from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
 from imp import load_source
-from pwd import getpwnam
+from pwd import getpwnam, getpwall
 from json import loads
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
@@ -118,8 +118,14 @@ def create_instance_user(problem_name, instance_number):
 
     converted_name = sanitize_name(problem_name)
     username = "{}_{}".format(converted_name, instance_number)
-    home_directory = create_user(username)
-    return username, home_directory
+
+    try:
+        #Check if the user already exists.
+        user = getpwnam(username)
+        return username, user.pw_dir
+    except KeyError:
+        home_directory = create_user(username)
+        return username, home_directory
 
 def generate_seed(*args):
     """
