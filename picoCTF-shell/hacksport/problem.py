@@ -122,8 +122,6 @@ class Remote(Challenge):
     Base behavior for remote challenges.
     """
 
-    remote_files = []
-
     @property
     def port(self):
         """
@@ -137,7 +135,11 @@ class Remote(Challenge):
         """
         Setup function for remote challenges
         """
-        pass
+
+        if self.program_name is None:
+            raise Exception("Must specify program_name for remote challenge.")
+
+        self.remote_files = [ExecutableFile(self.program_name)]
 
     def service(self):
         #TODO: use full path of binary for EXEC:
