@@ -22,6 +22,6 @@ class TestProblems:
         deploy_problem(join(PATH, "problems/compiled_sources_url"))
 
     def test_high_level_compiled_binary(self):
-        deploy_problem(os.path.join(PATH, "problems/local_compiled1"))
-        deploy_problem(os.path.join(PATH, "problems/local_compiled2"))
-        deploy_problem(os.path.join(PATH, "problems/remote_compiled1"))
+        deploy_problem(join(PATH, "problems/local_compiled1"))
+        deploy_problem(join(PATH, "problems/local_compiled2"))
+        deploy_problem(join(PATH, "problems/remote_compiled1"))
