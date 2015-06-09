@@ -58,7 +58,15 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
 
     random = Random(seed)
     attributes = problem_object
-    attributes.update({"random": random, "user": user, "directory": instance_directory})
+
+    #url_for is a stub. Real implementation is placed before templating.
+    #Calling it anywhere else is an error.
+    def url_for_stub(_):
+        raise Exception("url_for should only be called during templating operations.")
+
+    attributes.update({"random": random, "user": user,
+                       "directory": instance_directory, "url_for": url_for_stub})
+
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
 def create_service_file(problem, instance_number, path):
@@ -250,6 +258,14 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     # reseed and generate flag
     problem.flag = problem.generate_flag(Random(seed))
 
+    web_accessible_files = []
+    def url_for(source):
+        web_accessible_files += [source]
+        return "http://" + source
+
+    #Add real implementation
+    problem.url_for = url_for
+
     template_staging_directory(staging_directory, problem)
 
     if isinstance(problem, Compiled):
@@ -274,6 +290,7 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     # template the description
     problem.description = template_string(problem.description, **get_attributes(problem))
 
+    print(web_accessible_files)
     return problem, staging_directory, home_directory, all_files
 
 def deploy_problem(problem_directory, instances=1):
