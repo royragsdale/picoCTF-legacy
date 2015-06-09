@@ -62,13 +62,7 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
     random = Random(seed)
     attributes = problem_object
 
-    #url_for is a stub. Real implementation is placed before templating.
-    #Calling it anywhere else is an error.
-    def url_for_stub(_):
-        raise Exception("url_for should only be called during templating operations.")
-
-    attributes.update({"random": random, "user": user,
-                       "directory": instance_directory, "url_for": url_for_stub})
+    attributes.update({"random": random, "user": user, "directory": instance_directory})
 
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
@@ -280,7 +274,6 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
         return link_template.format(uri, source_name)
 
-    #Add real implementation
     problem.url_for = functools.partial(url_for, web_accessible_files)
 
     template_staging_directory(staging_directory, problem)
