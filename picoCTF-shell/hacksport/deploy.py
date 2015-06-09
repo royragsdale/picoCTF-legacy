@@ -211,12 +211,12 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
         output_path = os.path.join(instance_directory, os.path.basename(f.path))
         shutil.copy2(os.path.join(staging_directory, f.path), output_path)
 
-        os.chmod(output_path, f.permissions)
-
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
             os.chown(output_path, root.pw_uid, user.pw_gid)
         else:
             os.chown(output_path, root.pw_uid, root.pw_gid)
+
+        os.chmod(output_path, f.permissions)
 
 def generate_instance(problem_object, problem_directory, instance_number, test_instance=False):
     """
@@ -244,37 +244,37 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     os.chdir(copypath)
 
     # run methods in proper order
-    p = Problem()
-    p.initialize()
+    problem = Problem()
+    problem.initialize()
 
     # reseed and generate flag
-    p.flag = p.generate_flag(Random(seed))
+    problem.flag = problem.generate_flag(Random(seed))
 
-    template_staging_directory(staging_directory, p)
+    template_staging_directory(staging_directory, problem)
 
-    if isinstance(p, Compiled):
-        p.compiler_setup()
-    if isinstance(p, Remote):
-        p.remote_setup()
-    p.setup()
+    if isinstance(problem, Compiled):
+        problem.compiler_setup()
+    if isinstance(problem, Remote):
+        problem.remote_setup()
+    problem.setup()
 
     os.chdir(cwd)
 
-    all_files = p.files
+    all_files = problem.files
 
-    if isinstance(p, Compiled):
-        all_files.extend(p.compiled_files)
-    if isinstance(p, Remote):
-        all_files.extend(p.remote_files)
+    if isinstance(problem, Compiled):
+        all_files.extend(problem.compiled_files)
+    if isinstance(problem, Remote):
+        all_files.extend(problem.remote_files)
 
     assert all([isinstance(f, File) for f in all_files])
 
-    service = create_service_file(p, instance_number, staging_directory)
+    service = create_service_file(problem, instance_number, staging_directory)
 
     # template the description
-    p.description = template_string(p.description, **get_attributes(p))
+    problem.description = template_string(problem.description, **get_attributes(problem))
 
-    return p, staging_directory, home_directory, all_files
+    return problem, staging_directory, home_directory, all_files
 
 def deploy_problem(problem_directory, instances=1):
     """
