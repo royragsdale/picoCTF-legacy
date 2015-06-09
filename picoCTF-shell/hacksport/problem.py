@@ -78,6 +78,11 @@ class Challenge(metaclass=ABCMeta):
         No-op service file values.
         """
 
+        return {
+            "Type": "oneshot",
+            "ExecStart": ""
+        }
+
 class Compiled(Challenge):
     """
     Sensible behavior for compiled challenges.
@@ -85,16 +90,14 @@ class Compiled(Challenge):
 
     compiler = "gcc"
     compiler_flags = []
-    compiler_options = ""
+    compiler_sources = []
 
     makefile = None
 
-    compiled_files = []
-
-    def compiler_sources(self):
-        pass
+    program_name = None
 
     def setup(self):
+        """ No-op implementation for Challenge. """
         pass
 
     def compiler_setup(self):
@@ -102,8 +105,17 @@ class Compiled(Challenge):
         Setup function for compiled challenges
         """
 
+        if self.program_name is None:
+            raise Exception("Must specify program_name for compiled challenge.")
+
         if self.makefile is not None:
             execute(["make", "-f", self.makefile])
+        elif len(self.compiler_sources) > 0:
+            compile_cmd = [self.compiler] + self.compiler_flags + self.compiler_sources
+            compile_cmd += ["-o", self.program_name]
+            execute(compile_cmd)
+
+        self.compiled_files = [ExecutableFile(self.program_name)]
 
 class Remote(Challenge):
     """
