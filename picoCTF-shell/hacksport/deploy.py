@@ -16,6 +16,8 @@ from hacksport.utils import sanitize_name, get_attributes
 import os
 import shutil
 
+PROBLEM_FILES_DIR = "problem_files"
+
 # TODO: move somewhere else
 SECRET = "hacksports2015"
 
@@ -38,7 +40,7 @@ def challenge_meta(attributes):
             return super().__new__(cls, name, bases, attrs)
     return ChallengeMeta
 
-def update_problem_class(Class, problem_object, seed, user):
+def update_problem_class(Class, problem_object, seed, user, instance_directory):
     """
     Changes the metaclass of the given class to introduce necessary fields before
     object instantiation.
@@ -48,6 +50,7 @@ def update_problem_class(Class, problem_object, seed, user):
         problem_name: The problem name
         seed: The seed for the Random object
         user: The linux username for this challenge instance
+        instance_directory: The deployment directory for this instance
 
     Returns:
         The updated class described above
@@ -55,7 +58,7 @@ def update_problem_class(Class, problem_object, seed, user):
 
     random = Random(seed)
     attributes = problem_object
-    attributes.update({"random": random, "user": user})
+    attributes.update({"random": random, "user": user, "directory": instance_directory})
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
 def create_service_file(problem, instance_number, path):
@@ -211,9 +214,9 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
         os.chmod(output_path, f.permissions)
 
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
-            os.chown(out_file_path, root.pw_uid, user.pw_gid)
+            os.chown(output_path, root.pw_uid, user.pw_gid)
         else:
-            os.chown(out_file_path, root.pw_uid, root.pw_gid)
+            os.chown(output_path, root.pw_uid, root.pw_gid)
 
 def generate_instance(problem_object, problem_directory, instance_number, test_instance=False):
     """
@@ -229,13 +232,12 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     username, home_directory = create_instance_user(problem_object['name'], instance_number)
     seed = generate_seed(problem_object['name'], SECRET, str(instance_number))
     staging_directory = generate_staging_directory()
-    basename = os.path.basename(problem_directory)
-    copypath = os.path.join(staging_directory, basename)
+    copypath = os.path.join(staging_directory, PROBLEM_FILES_DIR)
     shutil.copytree(problem_directory, copypath)
 
     challenge = load_source("challenge", os.path.join(copypath, "challenge.py"))
 
-    Problem = update_problem_class(challenge.Problem, problem_object, seed, username)
+    Problem = update_problem_class(challenge.Problem, problem_object, seed, username, home_directory)
 
     # store cwd to restore later
     cwd = os.getcwd()
@@ -244,6 +246,9 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     # run methods in proper order
     p = Problem()
     p.initialize()
+
+    # reseed and generate flag
+    p.flag = p.generate_flag(Random(seed))
 
     template_staging_directory(staging_directory, p)
 
@@ -269,10 +274,7 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
     # template the description
     p.description = template_string(p.description, **get_attributes(p))
 
-    # reseed and generate flag
-    p.flag = p.generate_flag(Random(seed))
-
-    return p, staging_directory, all_files
+    return p, staging_directory, home_directory, all_files
 
 def deploy_problem(problem_directory, instances=1):
     """
@@ -293,7 +295,17 @@ def deploy_problem(problem_directory, instances=1):
 
     problem_object = loads(json_string)
 
+    instance_list = []
+
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
-        problem, staging_directory, files = generate_instance(problem_object, problem_directory, instance_number)
+        problem, staging_directory, home_directory, files = generate_instance(problem_object, problem_directory, instance_number)
         print("\tdesc={}\n\tflag={}\n\tstaging_directory={}\n\tfiles={}".format(problem.description, problem.flag, staging_directory, files))
+
+        instance_list.append((problem, staging_directory, home_directory, files))
+
+    # all instances generated without issue
+    # let's deploy them now
+    for problem, staging_directory, home_directory, files in instance_list:
+        problem_path = os.path.join(staging_directory, PROBLEM_FILES_DIR)
+        deploy_files(problem_path, home_directory, files, problem.user)
