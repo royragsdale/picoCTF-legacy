@@ -182,19 +182,20 @@ def template_file(in_file_path, out_file_path, **kwargs):
     with open(out_file_path, "w") as f:
         f.write(output)
 
-def template_staging_directory(staging_directory, problem):
+def template_staging_directory(staging_directory, problem, dont_template = ["problem.json", "challenge.py"]):
     """
     Templates every file in the staging directory recursively other than
-    problem.json.
+    problem.json and challenge.py.
 
     Args:
         staging_directory: The path of the staging directory
         problem: The problem object
+        dont_template: The list of files not to template. Defaults to ["problem.json", "challenge.py"]
     """
 
     for root, dirnames, filenames in os.walk(staging_directory):
         for filename in filenames:
-            if filename == "problem.json":
+            if filename in dont_template:
                 continue
             fullpath = os.path.join(root, filename)
             try:
@@ -258,10 +259,12 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     # run methods in proper order
     problem = Problem()
-    problem.initialize()
 
     # reseed and generate flag
     problem.flag = problem.generate_flag(Random(seed))
+
+    problem.initialize()
+
 
     web_accessible_files = []
 
