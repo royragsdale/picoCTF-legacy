@@ -10,7 +10,7 @@ from pwd import getpwnam, getpwall
 from json import loads
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
-from hacksport.operations import create_user
+from hacksport.operations import create_user, execute
 from hacksport.utils import sanitize_name, get_attributes
 
 import os
@@ -21,6 +21,7 @@ PROBLEM_FILES_DIR = "problem_files"
 
 # TODO: move somewhere else
 SECRET = "hacksports2015"
+HOME_DIRECTORY_ROOT = "/home/problems/"
 WEB_ROOT = "/var/www"
 HOSTNAME = "supershellserver.com"
 
@@ -118,7 +119,7 @@ def create_instance_user(problem_name, instance_number):
         user = getpwnam(username)
         return username, user.pw_dir
     except KeyError:
-        home_directory = create_user(username)
+        home_directory = create_user(username, HOME_DIRECTORY_ROOT)
         return username, home_directory
 
 def generate_seed(*args):
@@ -213,22 +214,29 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
     root = getpwnam("root")
 
     for f in file_list:
-        output_path = os.path.join(instance_directory, os.path.basename(f.path))
+        # copy the file over, making the directories as needed
+        output_path = os.path.join(instance_directory, f.path)
+        if not os.path.isdir(os.path.dirname(output_path)):
+            os.makedirs(os.path.dirname(output_path))
         shutil.copy2(os.path.join(staging_directory, f.path), output_path)
 
+        # set the ownership based on the type of file
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
             os.chown(output_path, root.pw_uid, user.pw_gid)
         else:
             os.chown(output_path, root.pw_uid, root.pw_gid)
 
+        # set the permissions appropriately
         os.chmod(output_path, f.permissions)
 
-def generate_instance(problem_object, problem_directory, instance_number, test_instance=False):
+def generate_instance(problem_object, problem_directory, instance_number):
     """
     Runs the setup functions of Problem in the correct order
 
     Args:
         problem_object: The contents of the problem.json
+        problem_directory: The directory to the problem
+        instance_number: The instance number to be generated
 
     Returns:
         A tuple containing (problem, staging_directory, home_directory, files)
@@ -302,13 +310,14 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
     return problem, staging_directory, home_directory, all_files
 
-def deploy_problem(problem_directory, instances=1):
+def deploy_problem(problem_directory, instances=1, test=False):
     """
     Deploys the problem specified in problem_directory.
 
     Args:
         problem_directory: The directory storing the problem
         instances: The number of instances to deploy. Defaults to 1.
+        test: Whether the instances are test instances or not. Defaults to False.
 
     Returns:
         TODO
@@ -326,12 +335,34 @@ def deploy_problem(problem_directory, instances=1):
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
         problem, staging_directory, home_directory, files = generate_instance(problem_object, problem_directory, instance_number)
-        print("\tdesc={}\n\tflag={}\n\tstaging_directory={}\n\tfiles={}".format(problem.description, problem.flag, staging_directory, files))
 
         instance_list.append((problem, staging_directory, home_directory, files))
 
-    # all instances generated without issue
-    # let's deploy them now
-    for problem, staging_directory, home_directory, files in instance_list:
+    # all instances generated without issue. let's do something with them
+    for instance_number, (problem, staging_directory, home_directory, files) in enumerate(instance_list):
+        print("Deploying instance {}".format(instance_number))
         problem_path = os.path.join(staging_directory, PROBLEM_FILES_DIR)
-        deploy_files(problem_path, home_directory, files, problem.user)
+        if test is True:
+            # display what we would do, and clean up the user and home directory
+            deployment_directory = os.path.join(staging_directory, "deployed")
+            deploy_files(problem_path, deployment_directory, files, problem.user)
+            print("\tDescription: {}".format(problem.description))
+            print("\tFlag: {}".format(problem.flag))
+            print("\tDeployment Directory: {}".format(deployment_directory))
+
+            execute(["userdel", problem.user])
+            shutil.rmtree(home_directory)
+        else:
+            # let's deploy them now
+            problem_path = os.path.join(staging_directory, PROBLEM_FILES_DIR)
+            deploy_files(problem_path, home_directory, files, problem.user)
+
+            #TODO: handle moving service files
+            shutil.rmtree(staging_directory)
+            print ("\tSuccessfully deployed to {}. The flag is {}.".format(home_directory, problem.flag))
+
+def deploy_problems(args):
+    """ Main entrypoint for problem deployment """
+
+    for path in args.problem_paths:
+        deploy_problem(path, instances=args.num_instances, test=args.dry)

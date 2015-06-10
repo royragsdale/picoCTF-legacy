@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 from shell_manager.package import problem_builder, bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
+from hacksport.deploy import deploy_problems
 
 def main():
     parser = ArgumentParser(description="Shell Manager")
@@ -40,6 +41,12 @@ def main():
     bundle_parser.add_argument("package_names", nargs="+", type=str, help="problem packages to bundle.")
     bundle_parser.add_argument("-o", "--out", type=str, help="path to deb to write to.", required=True)
     bundle_parser.set_defaults(func=bundle_problems)
+
+    deploy_parser = subparsers.add_parser("deploy", help="problem deployment")
+    deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate.")
+    deploy_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
+    deploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
+    deploy_parser.set_defaults(func=deploy_problems)
 
     args = parser.parse_args()
 
