@@ -2,7 +2,7 @@
 Various utility functions for the deployment API.
 """
 
-import re
+import re, string
 
 def get_attributes(obj):
     """
@@ -29,5 +29,12 @@ def sanitize_name(name):
         The sanitized form of name.
     """
 
+    if len(name) == 0:
+        raise Exception("Can not sanitize an empty field.")
+
     sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", name.lower())
+
+    if sanitized_name[0] in string.digits:
+        sanitized_name = "p" + sanitized_name
+
     return sanitized_name
