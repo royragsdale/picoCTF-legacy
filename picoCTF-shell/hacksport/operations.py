@@ -3,7 +3,7 @@ Low level deployment operations.
 """
 
 from random import randint
-from os import path
+from os import path, makedirs
 from spur import LocalShell
 from time import time
 from signal import SIGTERM
@@ -21,7 +21,7 @@ class TimeoutError(Exception):
     """
     pass
 
-def execute(cmd, timeout=10, **kwargs):
+def execute(cmd, timeout=1, **kwargs):
     """
     Executes the given shell command
 
@@ -62,6 +62,9 @@ def create_user(username, home_directory_root="/home/"):
     """
 
     home_directory = path.join(home_directory_root, username)
+
+    if not path.isdir(home_directory):
+        makedirs(home_directory)
 
     execute(["useradd", "-m", "-d", home_directory, username])
 
