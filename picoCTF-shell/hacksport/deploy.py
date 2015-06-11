@@ -268,7 +268,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     web_accessible_files = []
 
-    def url_for(web_accessible_files, source_name):
+    def url_for(web_accessible_files, source_name, display=None):
         source_path = os.path.join(copypath, source_name)
 
         problem_hash = problem_object["name"] + SECRET + str(instance_number)
@@ -283,7 +283,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
         uri_prefix = "//"
         uri = os.path.join(uri_prefix, HOSTNAME, destination_path)
 
-        return link_template.format(uri, source_name)
+        return link_template.format(uri, source_name if display is None else display)
 
     problem.url_for = functools.partial(url_for, web_accessible_files)
 
