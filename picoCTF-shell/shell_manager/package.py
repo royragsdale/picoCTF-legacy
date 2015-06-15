@@ -5,7 +5,7 @@ Packaging operations for the shell manager.
 import json, re, gzip
 import spur
 
-from os import makedirs, listdir, getcwd
+from os import makedirs, listdir, getcwd, chmod
 from os.path import join, isdir
 
 from copy import deepcopy
@@ -32,13 +32,13 @@ def sanitize_package_text(name):
     sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", name.lower())
     return sanitized_name
 
-def problem_to_control(problem, control_path):
+def problem_to_control(problem, debian_path):
     """
     Convert problem.json to a deb control file.
 
     Args:
         problem: deserialized problem.json (dict)
-        control_path: path to the DEBIAN directory
+        debian_path: path to the DEBIAN directory
     """
 
     #a-z, digits 0-9, plus + and minus - signs, and periods
@@ -60,9 +60,20 @@ def problem_to_control(problem, control_path):
     for option, value in control.items():
         contents += "{}: {}\n".format(option, value)
 
-    control_file = open(join(control_path, "control"), "w")
+    control_file = open(join(debian_path, "control"), "w")
     control_file.write(contents)
     control_file.close()
+
+def postinst_dependencies(problem, problem_path, debian_path):
+    """
+    Handles the generation of the postinst script for additional dependencies.
+
+    Args:
+    """
+
+    postinst = join(paths["debian"], "postinst")
+    with open(postinst, "w") as f:
+        chmod(postinst, 0o775)
 
 def problem_builder(args):
     """
@@ -75,7 +86,7 @@ def problem_builder(args):
     paths = {}
     paths["staging"] = join(problem_path, "staging")
 
-    paths["control"] = join(paths["staging"], "DEBIAN")
+    paths["debian"] = join(paths["staging"], "DEBIAN")
     paths["data"] = join(paths["staging"], "problems", problem["name"])
 
     #Make all of the directories, order does not matter with makedirs
@@ -83,7 +94,7 @@ def problem_builder(args):
 
     full_copy(problem_path, paths["data"], ignore=["staging"])
 
-    problem_to_control(problem, paths["control"])
+    problem_to_control(problem, paths["debian"])
 
     deb_directory = args.out if args.out is not None else getcwd()
 
