@@ -38,6 +38,27 @@ class ProtectedFile(File):
     def __init__(self, path):
         super().__init__(path, permissions=0o0440)
 
+def files_from_directory(directory, recurse=True, permissions=0o664):
+    """
+    Returns a list of File objects for every file in a directory. Can recurse optionally.
+
+    Args:
+        directory: The directory to add files from
+        recurse: Whether or not to recursively add files. Defaults to true
+        permissions: The default permissions for the files. Defaults to 0o664.
+    """
+
+    result = []
+
+    for root, dirnames, filenames in os.walk(directory):
+        for filename in filenames:
+            result.append(File(os.path.join(root, filename), permissions))
+        if not recurse:
+            break
+
+    return result
+
+
 class Challenge(metaclass=ABCMeta):
     """
     The most hands off, low level approach to creating challenges.
@@ -199,5 +220,8 @@ class PHPApp(Service):
         """
         Setup for php apps
         """
+        if self.php_root is None:
+            self.php_root = ""
 
-        self.start_cmd = "php -S 0.0.0.0:{} {}".format(self.port, self.directory)
+        web_root = os.path.join(self.directory, self.php_root)
+        self.start_cmd = "php -S 0.0.0.0:{} -t {}".format(self.port, web_root)

@@ -257,13 +257,13 @@ def generate_instance(problem_object, problem_directory, instance_number):
     copypath = os.path.join(staging_directory, PROBLEM_FILES_DIR)
     shutil.copytree(problem_directory, copypath)
 
-    challenge = load_source("challenge", os.path.join(copypath, "challenge.py"))
-
-    Problem = update_problem_class(challenge.Problem, problem_object, seed, username, home_directory)
-
     # store cwd to restore later
     cwd = os.getcwd()
     os.chdir(copypath)
+
+    challenge = load_source("challenge", os.path.join(copypath, "challenge.py"))
+
+    Problem = update_problem_class(challenge.Problem, problem_object, seed, username, home_directory)
 
     # run methods in proper order
     problem = Problem()
