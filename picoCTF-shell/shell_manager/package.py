@@ -115,7 +115,8 @@ def postinst_dependencies(problem, problem_path, debian_path, install_path):
             raise Exception("Problem has both a pip_requirements field and requirements.txt.")
 
         with open(staging_requirements_path, "w") as f:
-            f.writelines(listed_requirements)
+            f.writelines("\n".join(listed_requirements))
+
     elif isfile(requirements_path):
         copy(requirements_path, staging_requirements_path)
 
