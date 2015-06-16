@@ -151,7 +151,8 @@ class Remote(Challenge):
         self.remote_files = [ExecutableFile(self.program_name)]
 
     def service(self):
+        binarypath = os.path.join(self.directory, self.program_name)
         return {"Type":"simple",
-                "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} EXEC:{}".format(
-                    self.port, self.user, os.path.join(self.directory, self.program_name))
+                "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} SYSTEM:\"cd {}; {}\"".format(
+                    self.port, self.user, self.directory, binarypath)
                }
