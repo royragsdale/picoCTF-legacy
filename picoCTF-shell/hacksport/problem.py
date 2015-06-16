@@ -189,3 +189,10 @@ class PHPApp(Service):
     """
     Class for PHP web apps
     """
+
+    def php_setup(self):
+        """
+        Setup for php apps
+        """
+
+        self.start_cmd = "php -S 0.0.0.0:{} {}".format(self.port, self.directory)
