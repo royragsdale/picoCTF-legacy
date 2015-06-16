@@ -9,7 +9,7 @@ from imp import load_source
 from pwd import getpwnam, getpwall
 from json import loads
 from jinja2 import Environment, Template, FileSystemLoader
-from hacksport.problem import Remote, Compiled, File, ProtectedFile, ExecutableFile
+from hacksport.problem import Remote, Compiled, Service, File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user, execute
 from hacksport.utils import sanitize_name, get_attributes
 
@@ -293,6 +293,8 @@ def generate_instance(problem_object, problem_directory, instance_number):
         problem.compiler_setup()
     if isinstance(problem, Remote):
         problem.remote_setup()
+    if isinstance(problem, Service):
+        problem.service_setup()
     problem.setup()
 
     os.chdir(cwd)

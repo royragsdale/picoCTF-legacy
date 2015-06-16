@@ -119,9 +119,9 @@ class Compiled(Challenge):
 
         self.compiled_files = [ExecutableFile(self.program_name)]
 
-class Remote(Challenge):
+class Service(Challenge):
     """
-    Base behavior for remote challenges.
+    Base class for challenges that are remote services.
     """
 
     def setup(self):
@@ -131,6 +131,10 @@ class Remote(Challenge):
 
         pass
 
+    def service_setup(self):
+        if self.start_cmd is None:
+            raise Exception("Must specify start_cmd for services.")
+
     @property
     def port(self):
         """
@@ -139,6 +143,18 @@ class Remote(Challenge):
         if not hasattr(self, '_port'):
             self._port = give_port()
         return self._port
+
+
+    def service(self):
+        return {"Type":"simple",
+                "ExecStart":"cd {}; {}".format(
+                    self.directory, self.start_cmd)
+               }
+
+class Remote(Service):
+    """
+    Base behavior for remote challenges that use stdin/stdout.
+    """
 
     def remote_setup(self):
         """
@@ -150,9 +166,6 @@ class Remote(Challenge):
 
         self.remote_files = [ExecutableFile(self.program_name)]
 
-    def service(self):
-        binarypath = os.path.join(self.directory, self.program_name)
-        return {"Type":"simple",
-                "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} SYSTEM:\"cd {}; {}\"".format(
-                    self.port, self.user, self.directory, binarypath)
-               }
+        program_path = os.path.join(self.directory, self.program_name)
+        self.start_cmd = "socat tcp-listen:{},fork,reuseaddr,su={} EXEC:{}".format(
+                self.port, self.user, program_path)
