@@ -21,7 +21,7 @@ class TimeoutError(Exception):
     """
     pass
 
-def execute(cmd, timeout=1, **kwargs):
+def execute(cmd, timeout=5, **kwargs):
     """
     Executes the given shell command
 
