@@ -9,7 +9,8 @@ from imp import load_source
 from pwd import getpwnam, getpwall
 from json import loads
 from jinja2 import Environment, Template, FileSystemLoader
-from hacksport.problem import Remote, Compiled, Service, File, ProtectedFile, ExecutableFile
+from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
+from hacksport.problem import File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user, execute
 from hacksport.utils import sanitize_name, get_attributes
 
@@ -182,7 +183,8 @@ def template_file(in_file_path, out_file_path, **kwargs):
     with open(out_file_path, "w") as f:
         f.write(output)
 
-def template_staging_directory(staging_directory, problem, dont_template = ["problem.json", "challenge.py"]):
+def template_staging_directory(staging_directory, problem, dont_template_files = ["problem.json", "challenge.py"],
+                                                           dont_template_directories = ["templates"]):
     """
     Templates every file in the staging directory recursively other than
     problem.json and challenge.py.
@@ -190,12 +192,18 @@ def template_staging_directory(staging_directory, problem, dont_template = ["pro
     Args:
         staging_directory: The path of the staging directory
         problem: The problem object
-        dont_template: The list of files not to template. Defaults to ["problem.json", "challenge.py"]
+        dont_template_files: The list of files not to template. Defaults to ["problem.json", "challenge.py"]
+        dont_template_directories: The list of files not to recurse into. Defaults to ["templates"]
     """
 
+    # prepend the staging directory to all
+    dont_template_directories = [os.path.join(staging_directory, directory) for directory in dont_template_directories]
+
     for root, dirnames, filenames in os.walk(staging_directory):
+        if root in dont_template_directories:
+            continue
         for filename in filenames:
-            if filename in dont_template:
+            if filename in dont_template_files:
                 continue
             fullpath = os.path.join(root, filename)
             try:
@@ -287,12 +295,16 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     problem.url_for = functools.partial(url_for, web_accessible_files)
 
-    template_staging_directory(staging_directory, problem)
+    template_staging_directory(copypath, problem)
 
     if isinstance(problem, Compiled):
         problem.compiler_setup()
     if isinstance(problem, Remote):
         problem.remote_setup()
+    if isinstance(problem, FlaskApp):
+        problem.flask_setup()
+    if isinstance(problem, PHPApp):
+        problem.php_setup()
     if isinstance(problem, Service):
         problem.service_setup()
     problem.setup()
@@ -303,8 +315,8 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     if isinstance(problem, Compiled):
         all_files.extend(problem.compiled_files)
-    if isinstance(problem, Remote):
-        all_files.extend(problem.remote_files)
+    if isinstance(problem, Service):
+        all_files.extend(problem.service_files)
 
     assert all([isinstance(f, File) for f in all_files])
 
