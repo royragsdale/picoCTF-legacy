@@ -13,7 +13,8 @@ def give_port():
     Returns a random port and registers it.
     """
     #TODO: handle registering ports
-    return randint(1000, 65000)
+#    return randint(1000, 65000)
+    return 1337
 
 class TimeoutError(Exception):
     """
