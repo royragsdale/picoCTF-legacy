@@ -169,3 +169,23 @@ class Remote(Service):
         program_path = os.path.join(self.directory, self.program_name)
         self.start_cmd = "socat tcp-listen:{},fork,reuseaddr,su={} EXEC:{}".format(
                 self.port, self.user, program_path)
+
+class FlaskApp(Service):
+    """
+    Class for python Flask web apps
+    """
+
+    def flask_setup(self):
+        """
+        Setup for flask apps
+        """
+
+        if self.app is None:
+            raise Exception("Must specify app for FlaskApps.")
+
+        self.start_cmd = "gunicorn -b 0.0.0.0:{} -w 4 {}".format(self.port, self.app)
+
+class PHPApp(Service):
+    """
+    Class for PHP web apps
+    """
