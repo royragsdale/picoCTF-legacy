@@ -216,12 +216,12 @@ class PHPApp(Service):
     Class for PHP web apps
     """
 
+    php_root = ""
+
     def php_setup(self):
         """
         Setup for php apps
         """
-        if self.php_root is None:
-            self.php_root = ""
 
         web_root = os.path.join(self.directory, self.php_root)
         self.start_cmd = "php -S 0.0.0.0:{} -t {}".format(self.port, web_root)
