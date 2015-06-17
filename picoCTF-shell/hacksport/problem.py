@@ -26,8 +26,8 @@ class ExecutableFile(File):
     by the problem's group.
     """
 
-    def __init__(self, path):
-        super().__init__(path, permissions=0o2755)
+    def __init__(self, path, permissions=0o2755):
+        super().__init__(path, permissions=permissions)
 
 class ProtectedFile(File):
     """
@@ -35,8 +35,8 @@ class ProtectedFile(File):
     escalating privileges. These will be owned by the problem's group.
     """
 
-    def __init__(self, path):
-        super().__init__(path, permissions=0o0440)
+    def __init__(self, path, permissions=0o0440):
+        super().__init__(path, permissions=permissions)
 
 def files_from_directory(directory, recurse=True, permissions=0o664):
     """
@@ -170,8 +170,8 @@ class Service(Challenge):
 
     def service(self):
         return {"Type":"simple",
-                "ExecStart":"cd {}; {}".format(
-                    self.directory, self.start_cmd)
+                "ExecStart":"cd {}; su {} bash -c \"{}\"".format(
+                    self.directory, self.user, self.start_cmd)
                }
 
 class Remote(Service):
