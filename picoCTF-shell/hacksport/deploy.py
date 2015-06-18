@@ -20,9 +20,7 @@ import functools
 
 PROBLEM_FILES_DIR = "problem_files"
 PROBLEM_ROOT = "/opt/hacksports/sources/"
-
 HOME_DIRECTORY_ROOT = "/home/problems/"
-WEB_ROOT = "/var/www"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -288,8 +286,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
         link_template = "<a href='{}'>{}</a>"
 
-        web_accessible_files += [{"source": source_path,
-                                  "destination": os.path.join(WEB_ROOT, destination_path)}]
+        web_accessible_files.append((source_path, os.path.join(deploy_config.WEB_ROOT, destination_path)))
         uri_prefix = "//"
         uri = os.path.join(uri_prefix, deploy_config.HOSTNAME, destination_path)
 
@@ -327,7 +324,12 @@ def generate_instance(problem_object, problem_directory, instance_number):
     # template the description
     problem.description = template_string(problem.description, **get_attributes(problem))
 
-    return problem, staging_directory, home_directory, all_files
+    return {"problem": problem,
+            "staging_directory": staging_directory,
+            "home_directory": home_directory,
+            "files": all_files,
+            "web_accessible_files": web_accessible_files
+            }
 
 def deploy_problem(problem_directory, instances=1, test=False):
     """
@@ -353,32 +355,38 @@ def deploy_problem(problem_directory, instances=1, test=False):
 
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
-        problem, staging_directory, home_directory, files = generate_instance(problem_object, problem_directory, instance_number)
-
-        instance_list.append((problem, staging_directory, home_directory, files))
+        instance = generate_instance(problem_object, problem_directory, instance_number)
+        instance_list.append(instance)
 
     # all instances generated without issue. let's do something with them
-    for instance_number, (problem, staging_directory, home_directory, files) in enumerate(instance_list):
+    for instance_number, instance in enumerate(instance_list):
         print("Deploying instance {}".format(instance_number))
-        problem_path = os.path.join(staging_directory, PROBLEM_FILES_DIR)
+        problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
+
         if test is True:
             # display what we would do, and clean up the user and home directory
-            deployment_directory = os.path.join(staging_directory, "deployed")
-            deploy_files(problem_path, deployment_directory, files, problem.user)
-            print("\tDescription: {}".format(problem.description))
-            print("\tFlag: {}".format(problem.flag))
+            deployment_directory = os.path.join(instance["staging_directory"], "deployed")
+            deploy_files(problem_path, deployment_directory, instance["files"], instance["problem"].user)
+            print("\tDescription: {}".format(instance["problem"].description))
+            print("\tFlag: {}".format(instance["problem"].flag))
             print("\tDeployment Directory: {}".format(deployment_directory))
 
-            execute(["userdel", problem.user])
-            shutil.rmtree(home_directory)
+            execute(["userdel", instance["problem"].user])
+            shutil.rmtree(instance["home_directory"])
         else:
             # let's deploy them now
-            problem_path = os.path.join(staging_directory, PROBLEM_FILES_DIR)
-            deploy_files(problem_path, home_directory, files, problem.user)
+            problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
+            deploy_files(problem_path, instance["home_directory"], instance["files"], instance["problem"].user)
+
+            # copy files to the web root
+            for source, destination in instance["web_accessible_files"]:
+                if not os.path.isdir(os.path.dirname(destination)):
+                    os.makedirs(os.path.dirname(destination))
+                shutil.copy2(source, destination)
 
             #TODO: handle moving service files
-            shutil.rmtree(staging_directory)
-            print ("\tSuccessfully deployed to {}. The flag is {}.".format(home_directory, problem.flag))
+            shutil.rmtree(instance["staging_directory"])
+            print ("\tSuccessfully deployed to {}. The flag is {}.".format(instance["home_directory"], instance["problem"].flag))
 
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
