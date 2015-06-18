@@ -19,6 +19,7 @@ import shutil
 import functools
 
 PROBLEM_FILES_DIR = "problem_files"
+PROBLEM_ROOT = "/opt/hacksports/sources/"
 
 # TODO: move somewhere else
 SECRET = "hacksports2015"
@@ -382,4 +383,9 @@ def deploy_problems(args):
     """ Main entrypoint for problem deployment """
 
     for path in args.problem_paths:
-        deploy_problem(path, instances=args.num_instances, test=args.dry)
+        if os.path.isdir(path):
+            deploy_problem(path, instances=args.num_instances, test=args.dry)
+        elif os.path.isdir(os.path.join(PROBLEM_ROOT, path)):
+            deploy_problem(os.path.join(PROBLEM_ROOT, path), instances=args.num_instances, test=args.dry)
+        else:
+            raise Exception("Problem path {} cannot be found".format(path))
