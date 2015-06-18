@@ -57,7 +57,7 @@ def main():
 
     args = parser.parse_args()
 
-    config = load_source("config", join(sep, "opt", "hacksports" "config.py"))
+    config = load_source("config", join(sep, "opt", "hacksports", "config.py"))
 
     #Call the default function
     if "func" in args:
