@@ -15,24 +15,12 @@ from copy import deepcopy
 from shell_manager.util import full_copy, move
 from shell_manager.problem import get_problem
 
+from hacksport.utils import sanitize_name
+
 DEB_DEFAULTS = {
     "Section": "ctf",
     "Priority": "optional",
 }
-
-def sanitize_package_text(name):
-    """
-    Sanitize a given name such that it conforms to deb policy.
-
-    Args:
-        name: the name to sanitize.
-
-    Returns:
-        The sanitized form of name.
-    """
-
-    sanitized_name = re.sub(r"[^a-z0-9\+-\.]", "-", name.lower())
-    return sanitized_name
 
 def problem_to_control(problem, debian_path):
     """
@@ -45,7 +33,7 @@ def problem_to_control(problem, debian_path):
 
     #a-z, digits 0-9, plus + and minus - signs, and periods
     package_name = problem.get("pkg_name", problem["name"])
-    sanitized_name = sanitize_package_text(package_name)
+    sanitized_name = sanitize_name(package_name)
     control = deepcopy(DEB_DEFAULTS)
     control.update(**{
         "Package": sanitized_name,
@@ -78,7 +66,7 @@ def get_problem_root(problem, absolute=False):
         The tentative installation location.
     """
 
-    problem_root = join("opt", "hacksports", "sources", sanitize_package_text(problem["name"]))
+    problem_root = join("opt", "hacksports", "sources", sanitize_name(problem["name"]))
 
     if absolute:
         return join(os.sep, problem_root)
@@ -181,7 +169,7 @@ def problem_builder(args, config):
             problem.get("version", "1.0-0")
         )
 
-        return sanitize_package_text(raw_package_name)
+        return sanitize_name(raw_package_name)
 
     deb_path = join(deb_directory, format_deb_file_name(problem))
 
