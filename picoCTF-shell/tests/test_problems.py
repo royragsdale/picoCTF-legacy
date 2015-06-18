@@ -1,8 +1,16 @@
+import hacksport.deploy
 from hacksport.deploy import deploy_problem
 
 from os.path import join, realpath, dirname
 
 PATH = dirname(realpath(__file__))
+
+class Config:
+    DEPLOY_SECRET = "Af9h3mc"
+    HOSTNAME = "super.shell.server"
+    WEB_ROOT = "/usr/share/ngninx/html"
+
+hacksport.deploy.deploy_config = Config()
 
 class TestProblems:
     """
