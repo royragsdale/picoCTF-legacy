@@ -170,8 +170,8 @@ class Service(Challenge):
 
     def service(self):
         return {"Type":"simple",
-                "ExecStart":"cd {}; su {} bash -c \"{}\"".format(
-                    self.directory, self.user, self.start_cmd)
+                "ExecStart":"/bin/bash -c \"cd {}; {}\"".format(
+                    self.directory, self.start_cmd)
                }
 
 class Remote(Service):
@@ -190,8 +190,8 @@ class Remote(Service):
         self.service_files.append(ExecutableFile(self.program_name))
 
         program_path = os.path.join(self.directory, self.program_name)
-        self.start_cmd = "socat tcp-listen:{},fork,reuseaddr,su={} EXEC:{}".format(
-                self.port, self.user, program_path)
+        self.start_cmd = "socat tcp-listen:{},fork,reuseaddr EXEC:{}".format(
+                self.port, program_path)
 
 class FlaskApp(Service):
     """

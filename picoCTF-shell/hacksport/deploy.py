@@ -8,6 +8,7 @@ from hashlib import md5
 from imp import load_source
 from pwd import getpwnam, getpwall
 from json import loads
+from time import sleep
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile
@@ -85,10 +86,7 @@ Description={} instance
 
 [Service]
 Type={}
-ExecStart={}
-
-[Install]
-WantedBy=multi-user.target"""
+ExecStart={}"""
 
     problem_service_info = problem.service()
     converted_name = sanitize_name(problem.name)
@@ -394,8 +392,15 @@ def deploy_problem(problem_directory, instances=1, test=False):
             service_path = os.path.join(service_dir_path, os.path.basename(instance["service_file"]))
             shutil.copy2(instance["service_file"], service_path)
 
+            uid = getpwnam(instance["problem"].user).pw_uid
+
             # enable automatic starting of user services
             execute("loginctl enable-linger {}".format(instance["problem"].user))
+            execute("systemctl start user@{}.service".format(uid))
+            execute("systemctl restart user@{}.service".format(uid))
+            execute("echo 'export XDG_RUNTIME_DIR=/run/user/{}' >> {}".format(uid, os.path.join(instance["home_directory"], ".profile")))
+            execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user restart {}'".format(
+                instance["problem"].user, os.path.basename(instance["service_file"])))
 
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])

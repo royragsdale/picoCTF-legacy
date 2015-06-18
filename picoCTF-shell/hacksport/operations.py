@@ -13,8 +13,7 @@ def give_port():
     Returns a random port and registers it.
     """
     #TODO: handle registering ports
-#    return randint(1000, 65000)
-    return 1337
+    return randint(1000, 65000)
 
 class TimeoutError(Exception):
     """
@@ -72,6 +71,6 @@ def create_user(username, home_directory_root="/home/"):
     if not path.isdir(home_directory):
         makedirs(home_directory)
 
-    execute(["useradd", "-m", "-d", home_directory, username])
+    execute(["useradd", "-s", "/bin/bash", "-m", "-d", home_directory, username])
 
     return home_directory
