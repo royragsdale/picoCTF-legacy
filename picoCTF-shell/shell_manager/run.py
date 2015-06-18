@@ -11,6 +11,9 @@ from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
 from hacksport.deploy import deploy_problems
 
+from os.path import join
+from imp import load_source
+
 def main():
     parser = ArgumentParser(description="Shell Manager")
     subparsers = parser.add_subparsers(help="package problem for distribution")
@@ -50,9 +53,11 @@ def main():
 
     args = parser.parse_args()
 
+    config = load_source("config", join("/opt/hacksports/", "config.py"))
+
     #Call the default function
     if "func" in args:
-        args.func(args)
+        args.func(args, config)
     else:
         parser.print_help()
 

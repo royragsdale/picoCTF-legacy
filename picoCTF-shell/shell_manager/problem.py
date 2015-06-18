@@ -166,7 +166,7 @@ MIGRATION_TABLE = {
     "cyberstakes2014": migrate_cs2014_problem
 }
 
-def migrate_problems(args):
+def migrate_problems(args, config):
     """ Main entrypoint for problem migration. """
 
     additional_defaults = {}

@@ -137,7 +137,7 @@ def postinst_dependencies(problem, problem_path, debian_path, install_path):
         contents = "\n".join(postinst_template)
         f.write(contents)
 
-def problem_builder(args):
+def problem_builder(args, config):
     """
     Main entrypoint for package building operations.
     """
@@ -200,5 +200,5 @@ def problem_builder(args):
     if len(args.problem_paths) >= 1:
         return problem_builder(args)
 
-def bundle_problems(args):
+def bundle_problems(args, config):
     pass
