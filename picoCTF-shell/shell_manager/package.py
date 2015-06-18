@@ -19,7 +19,7 @@ from hacksport.utils import sanitize_name
 
 DEB_DEFAULTS = {
     "Section": "ctf",
-    "Priority": "optional",
+    "Priority": "standard",
 }
 
 def problem_to_control(problem, debian_path):
