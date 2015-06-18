@@ -187,6 +187,3 @@ def problem_builder(args, config):
 
     if len(args.problem_paths) >= 1:
         return problem_builder(args)
-
-def bundle_problems(args, config):
-    pass

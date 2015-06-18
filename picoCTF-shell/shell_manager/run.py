@@ -6,7 +6,8 @@ Shell Manager -- Tools for deploying and packaging problems.
 
 from argparse import ArgumentParser
 
-from shell_manager.package import problem_builder, bundle_problems
+from shell_manager.package import problem_builder
+from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
 from hacksport.deploy import deploy_problems
@@ -43,8 +44,9 @@ def main():
     migration_parser.set_defaults(func=migrate_problems)
 
     bundle_parser = subparsers.add_parser("bundle", help="create a bundle of problems")
+    bundle_parser.add_argument("bundle_name", type=str, help="the name of the bundle.")
     bundle_parser.add_argument("package_names", nargs="+", type=str, help="problem packages to bundle.")
-    bundle_parser.add_argument("-o", "--out", type=str, help="path to deb to write to.", required=True)
+    bundle_parser.add_argument("-o", "--out", type=str, help="folder to store the deb bundle.", required=True)
     bundle_parser.set_defaults(func=bundle_problems)
 
     deploy_parser = subparsers.add_parser("deploy", help="problem deployment")
