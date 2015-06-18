@@ -319,7 +319,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     assert all([isinstance(f, File) for f in all_files])
 
-    service = create_service_file(problem, instance_number, staging_directory)
+    service_file = create_service_file(problem, instance_number, staging_directory)
 
     # template the description
     problem.description = template_string(problem.description, **get_attributes(problem))
@@ -328,7 +328,8 @@ def generate_instance(problem_object, problem_directory, instance_number):
             "staging_directory": staging_directory,
             "home_directory": home_directory,
             "files": all_files,
-            "web_accessible_files": web_accessible_files
+            "web_accessible_files": web_accessible_files,
+            "service_file": service_file
             }
 
 def deploy_problem(problem_directory, instances=1, test=False):
@@ -384,8 +385,21 @@ def deploy_problem(problem_directory, instances=1, test=False):
                     os.makedirs(os.path.dirname(destination))
                 shutil.copy2(source, destination)
 
-            #TODO: handle moving service files
+            # make user service directory
+            service_dir_path = os.path.join(instance["home_directory"], ".config", "systemd", "user")
+            if not os.path.isdir(service_dir_path):
+                os.makedirs(service_dir_path)
+
+            # copy service file
+            service_path = os.path.join(service_dir_path, os.path.basename(instance["service_file"]))
+            shutil.copy2(instance["service_file"], service_path)
+
+            # enable automatic starting of user services
+            execute("loginctl enable-linger {}".format(instance["problem"].user))
+
+            # delete staging directory
             shutil.rmtree(instance["staging_directory"])
+
             print ("\tSuccessfully deployed to {}. The flag is {}.".format(instance["home_directory"], instance["problem"].flag))
 
 def deploy_problems(args, config):
