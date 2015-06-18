@@ -12,6 +12,8 @@ from shell_manager.problem_repo import update_repo
 from hacksport.deploy import deploy_problems
 
 from os.path import join
+from os import sep
+
 from imp import load_source
 
 def main():
@@ -53,7 +55,7 @@ def main():
 
     args = parser.parse_args()
 
-    config = load_source("config", join("/opt/hacksports/", "config.py"))
+    config = load_source("config", join(sep, "opt", "hacksports" "config.py"))
 
     #Call the default function
     if "func" in args:
