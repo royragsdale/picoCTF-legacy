@@ -186,4 +186,4 @@ def problem_builder(args, config):
     rmtree(paths["staging"])
 
     if len(args.problem_paths) >= 1:
-        return problem_builder(args)
+        return problem_builder(args, config)
