@@ -7,7 +7,7 @@ import spur, gzip
 from shutil import copy2
 from os.path import join
 
-def update_repo(args):
+def update_repo(args, config):
     """
     Main entrypoint for repo update operations.
     """

@@ -21,11 +21,11 @@ import functools
 PROBLEM_FILES_DIR = "problem_files"
 PROBLEM_ROOT = "/opt/hacksports/sources/"
 
-# TODO: move somewhere else
-SECRET = "hacksports2015"
 HOME_DIRECTORY_ROOT = "/home/problems/"
 WEB_ROOT = "/var/www"
-HOSTNAME = "supershellserver.com"
+
+# will be set to the configuration module during deployment
+deploy_config = None
 
 def challenge_meta(attributes):
     """
@@ -65,7 +65,8 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
     random = Random(seed)
     attributes = problem_object
 
-    attributes.update({"random": random, "user": user, "directory": instance_directory})
+    attributes.update({"random": random, "user": user, "server": deploy_config.HOSTNAME,
+                       "directory": instance_directory})
 
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
@@ -253,7 +254,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
     """
 
     username, home_directory = create_instance_user(problem_object['name'], instance_number)
-    seed = generate_seed(problem_object['name'], SECRET, str(instance_number))
+    seed = generate_seed(problem_object['name'], deploy_config.DEPLOY_SECRET, str(instance_number))
     staging_directory = generate_staging_directory()
     copypath = os.path.join(staging_directory, PROBLEM_FILES_DIR)
     shutil.copytree(problem_directory, copypath)
@@ -280,7 +281,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
     def url_for(web_accessible_files, source_name, display=None):
         source_path = os.path.join(copypath, source_name)
 
-        problem_hash = problem_object["name"] + SECRET + str(instance_number)
+        problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
         problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
 
         destination_path = os.path.join(sanitize_name(problem_object["name"]), problem_hash, source_name)
@@ -290,7 +291,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
         web_accessible_files += [{"source": source_path,
                                   "destination": os.path.join(WEB_ROOT, destination_path)}]
         uri_prefix = "//"
-        uri = os.path.join(uri_prefix, HOSTNAME, destination_path)
+        uri = os.path.join(uri_prefix, deploy_config.HOSTNAME, destination_path)
 
         return link_template.format(uri, source_name if display is None else display)
 
@@ -379,8 +380,11 @@ def deploy_problem(problem_directory, instances=1, test=False):
             shutil.rmtree(staging_directory)
             print ("\tSuccessfully deployed to {}. The flag is {}.".format(home_directory, problem.flag))
 
-def deploy_problems(args):
+def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
+
+    global deploy_config
+    deploy_config = config
 
     for path in args.problem_paths:
         if os.path.isdir(path):
