@@ -119,6 +119,8 @@ class Compiled(Challenge):
 
     program_name = None
 
+    compiled_files = []
+
     def setup(self):
         """ No-op implementation for Challenge. """
         pass
@@ -187,7 +189,7 @@ class Remote(Service):
         if self.program_name is None:
             raise Exception("Must specify program_name for remote challenge.")
 
-        self.service_files.append(ExecutableFile(self.program_name))
+        self.service_files = [ExecutableFile(self.program_name)]
 
         program_path = os.path.join(self.directory, self.program_name)
         self.start_cmd = "socat tcp-listen:{},fork,reuseaddr EXEC:{}".format(
@@ -208,7 +210,7 @@ class FlaskApp(Service):
         self.app_file = "{}.py".format(self.app.split(":")[0])
         assert os.path.isfile(self.app_file), "module must exist"
 
-        self.service_files.append(File(self.app_file))
+        self.service_files = [File(self.app_file)]
         self.start_cmd = "gunicorn --bind 0.0.0.0:{} -w 1 {}".format(self.port, self.app)
 
 class PHPApp(Service):

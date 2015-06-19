@@ -3,10 +3,11 @@ High Level Problem API.
 """
 
 from hacksport.problem import Compiled, Remote, File, ProtectedFile
+from copy import copy
 import os
 
 def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None,
-                        is_32_bit=True, executable_stack=True, no_stack_protector=True, compiler_flags=[],
+                        is_32_bit=True, executable_stack=True, no_stack_protector=True, compiler_flags=copy([]),
                         flag_file=None, static_flag=None, share_source=False, remote=False):
     """
     Creates a challenge for a compiled binary. User must specify either a makefile
@@ -54,8 +55,10 @@ def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None
         base_classes.append(Remote)
 
     class Problem(*base_classes):
+        files = copy([])
+
         if share_source:
-            files = [File(source) for source in sources]
+            files = copy([File(source) for source in sources])
 
         if binary_name is not None:
             program_name = binary_name
