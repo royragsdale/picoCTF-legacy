@@ -19,7 +19,7 @@ from hacksport.utils import sanitize_name
 
 DEB_DEFAULTS = {
     "Section": "ctf",
-    "Priority": "optional",
+    "Priority": "standard",
 }
 
 def problem_to_control(problem, debian_path):
@@ -54,19 +54,19 @@ def problem_to_control(problem, debian_path):
     control_file.write(contents)
     control_file.close()
 
-def get_problem_root(problem, absolute=False):
+def get_problem_root(problem_name, absolute=False):
     """
     Installation location for a given problem.
 
     Args:
-        problem: the problem object.
+        problem_name: the problem name.
         absolute: should return an absolute path.
 
     Returns:
         The tentative installation location.
     """
 
-    problem_root = join("opt", "hacksports", "sources", sanitize_name(problem["name"]))
+    problem_root = join("opt", "hacksports", "sources", sanitize_name(problem_name))
 
     if absolute:
         return join(os.sep, problem_root)
@@ -90,9 +90,9 @@ def postinst_dependencies(problem, problem_path, debian_path, install_path):
 
     staging_requirements_path = join(install_path, "requirements.txt")
 
-    deployed_requirements_path = join(get_problem_root(problem, absolute=True),
+    deployed_requirements_path = join(get_problem_root(problem["name"], absolute=True),
                                       "__files", "requirements.txt")
-    deployed_setup_path = join(get_problem_root(problem, absolute=True),
+    deployed_setup_path = join(get_problem_root(problem["name"], absolute=True),
                                "__files", "install_dependencies")
 
     listed_requirements = problem.get("pip_requirements", [])
@@ -137,7 +137,7 @@ def problem_builder(args, config):
     paths["staging"] = join(problem_path, "__staging")
 
     paths["debian"] = join(paths["staging"], "DEBIAN")
-    paths["data"] = join(paths["staging"], get_problem_root(problem))
+    paths["data"] = join(paths["staging"], get_problem_root(problem["name"]))
     paths["install_data"] = join(paths["data"], "__files")
 
     #Make all of the directories, order does not matter with makedirs
@@ -186,7 +186,4 @@ def problem_builder(args, config):
     rmtree(paths["staging"])
 
     if len(args.problem_paths) >= 1:
-        return problem_builder(args)
-
-def bundle_problems(args, config):
-    pass
+        return problem_builder(args, config)
