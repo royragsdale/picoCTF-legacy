@@ -9,6 +9,7 @@ from imp import load_source
 from pwd import getpwnam, getpwall
 from json import loads
 from time import sleep
+from copy import copy
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile
@@ -339,7 +340,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     os.chdir(cwd)
 
-    all_files = problem.files
+    all_files = copy(problem.files)
 
     if isinstance(problem, Compiled):
         all_files.extend(problem.compiled_files)

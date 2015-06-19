@@ -103,7 +103,7 @@ class Challenge(metaclass=ABCMeta):
 
         return {
             "Type": "oneshot",
-            "ExecStart": ""
+            "ExecStart": "/bin/bash -c 'echo started'"
         }
 
 class Compiled(Challenge):
@@ -172,7 +172,7 @@ class Service(Challenge):
 
     def service(self):
         return {"Type":"simple",
-                "ExecStart":"/bin/bash -c \"cd {}; id; {}\"".format(
+                "ExecStart":"/bin/bash -c \"cd {}; {}\"".format(
                     self.directory, self.start_cmd)
                }
 
