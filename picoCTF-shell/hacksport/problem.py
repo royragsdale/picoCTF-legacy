@@ -170,7 +170,7 @@ class Service(Challenge):
 
     def service(self):
         return {"Type":"simple",
-                "ExecStart":"/bin/bash -c \"cd {}; {}\"".format(
+                "ExecStart":"/bin/bash -c \"cd {}; id; {}\"".format(
                     self.directory, self.start_cmd)
                }
 

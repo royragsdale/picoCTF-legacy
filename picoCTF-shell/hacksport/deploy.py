@@ -236,6 +236,37 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
         # set the permissions appropriately
         os.chmod(output_path, f.permissions)
 
+def install_user_service(home_directory, user, service_file):
+    """
+    Installs the service file into the systemd user directory for the provided user,
+    sets the service to start on boot, and starts the service now.
+
+    Args:
+        home_directory: The home directory for the user provided
+        user: The user that will run the service
+        service_file: The path to the systemd service file to install
+    """
+
+    # make user service directory
+    service_dir_path = os.path.join(home_directory, ".config", "systemd", "user")
+    if not os.path.isdir(service_dir_path):
+        os.makedirs(service_dir_path)
+
+    # copy service file
+    service_path = os.path.join(service_dir_path, os.path.basename(service_file))
+    shutil.copy2(service_file, service_path)
+
+    uid = getpwnam(user).pw_uid
+
+    # enable automatic starting of user services
+    # TODO: rework this. It is incredibly hacky and should not be necessary
+    execute("loginctl enable-linger {}".format(user))
+    execute("systemctl start user@{}.service".format(uid))
+    execute("systemctl restart user@{}.service".format(uid))
+    execute("echo 'export XDG_RUNTIME_DIR=/run/user/{}' >> {}".format(uid, os.path.join(home_directory, ".profile")))
+    execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user restart {}'".format(
+        user, os.path.basename(service_file)))
+
 def generate_instance(problem_object, problem_directory, instance_number):
     """
     Runs the setup functions of Problem in the correct order
@@ -383,29 +414,15 @@ def deploy_problem(problem_directory, instances=1, test=False):
                     os.makedirs(os.path.dirname(destination))
                 shutil.copy2(source, destination)
 
-            # make user service directory
-            service_dir_path = os.path.join(instance["home_directory"], ".config", "systemd", "user")
-            if not os.path.isdir(service_dir_path):
-                os.makedirs(service_dir_path)
-
-            # copy service file
-            service_path = os.path.join(service_dir_path, os.path.basename(instance["service_file"]))
-            shutil.copy2(instance["service_file"], service_path)
-
-            uid = getpwnam(instance["problem"].user).pw_uid
-
-            # enable automatic starting of user services
-            execute("loginctl enable-linger {}".format(instance["problem"].user))
-            execute("systemctl start user@{}.service".format(uid))
-            execute("systemctl restart user@{}.service".format(uid))
-            execute("echo 'export XDG_RUNTIME_DIR=/run/user/{}' >> {}".format(uid, os.path.join(instance["home_directory"], ".profile")))
-            execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user restart {}'".format(
-                instance["problem"].user, os.path.basename(instance["service_file"])))
+            install_user_service(instance["home_directory"], instance["problem"].user, instance["service_file"])
 
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
 
             print ("\tSuccessfully deployed to {}. The flag is {}.".format(instance["home_directory"], instance["problem"].flag))
+
+            if isinstance(instance["problem"], Service):
+                print ("The service is running on port {}".format(instance["problem"].port))
 
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
