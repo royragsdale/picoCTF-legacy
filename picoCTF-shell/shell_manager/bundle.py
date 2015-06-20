@@ -10,9 +10,8 @@ from os.path import join, isdir
 
 from shutil import rmtree, copyfile
 
-from shell_manager.problem import get_problem
-from shell_manager.package import get_problem_root, DEB_DEFAULTS
-from shell_manager.package import sanitize_name
+from shell_manager.problem import get_problem, get_problem_root
+from shell_manager.package import sanitize_name, DEB_DEFAULTS
 
 def bundle_to_control(bundle, debian_path):
     """
