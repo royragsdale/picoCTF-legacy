@@ -14,12 +14,14 @@ from hacksport.problem import File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user, execute
 from hacksport.utils import sanitize_name, get_attributes
 
+from shell_manager.bundle import get_bundle, get_bundle_root
+from shell_manager.problem import get_problem, get_problem_root
+
 import os
 import shutil
 import functools
 
 PROBLEM_FILES_DIR = "problem_files"
-PROBLEM_ROOT = "/opt/hacksports/sources/"
 HOME_DIRECTORY_ROOT = "/home/problems/"
 
 # will be set to the configuration module during deployment
@@ -395,9 +397,11 @@ def deploy_problems(args, config):
     deploy_config = config
 
     for path in args.problem_paths:
-        if os.path.isdir(path):
+        if os.path.isdir(path) and get_problem(path):
             deploy_problem(path, instances=args.num_instances, test=args.dry)
-        elif os.path.isdir(os.path.join(PROBLEM_ROOT, path)):
-            deploy_problem(os.path.join(PROBLEM_ROOT, path), instances=args.num_instances, test=args.dry)
         else:
-            raise Exception("Problem path {} cannot be found".format(path))
+            problem_sources_path = get_problem_root(path, absolute=True)
+            if os.path.isdir(problem_sources_path) and get_problem(problem_sources_path):
+                deploy_problem(problem_sources_path, instances=args.num_instances, test=args.dry)
+            else:
+                raise Exception("Problem path {} cannot be found".format(path))
