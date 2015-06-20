@@ -54,25 +54,6 @@ def problem_to_control(problem, debian_path):
     control_file.write(contents)
     control_file.close()
 
-def get_problem_root(problem_name, absolute=False):
-    """
-    Installation location for a given problem.
-
-    Args:
-        problem_name: the problem name.
-        absolute: should return an absolute path.
-
-    Returns:
-        The tentative installation location.
-    """
-
-    problem_root = join("opt", "hacksports", "sources", sanitize_name(problem_name))
-
-    if absolute:
-        return join(os.sep, problem_root)
-
-    return problem_root
-
 def postinst_dependencies(problem, problem_path, debian_path, install_path):
     """
     Handles the generation of the postinst script for additional dependencies.
