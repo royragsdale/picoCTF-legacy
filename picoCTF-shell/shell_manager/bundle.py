@@ -5,6 +5,7 @@ Bundling operation for the shell manager. A special case of packaging.
 import json, spur
 import copy as object_copy
 
+import os
 from os import getcwd, makedirs
 from os.path import join, isdir
 
