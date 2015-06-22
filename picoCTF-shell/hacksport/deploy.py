@@ -408,7 +408,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
     instance_list = []
 
     for instance_number in range(instances):
-        print("Generating instance {}".format(instance_number))
+        print("Generating instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
         instance_list.append(instance)
 
@@ -418,21 +418,23 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
     # all instances generated without issue. let's do something with them
     for instance_number, instance in enumerate(instance_list):
-        print("Deploying instance {}".format(instance_number))
+        print("Deploying instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
 
         problem = instance["problem"]
 
         if test is True:
             # display what we would do, and clean up the user and home directory
-            deployment_directory = os.path.join(instance["staging_directory"], "deployed")
-            deploy_files(problem_path, deployment_directory, instance["files"], problem.user)
+            destination_directory = os.path.join(instance["staging_directory"], "deployed") if deployment_directory is None \
+                                    else deployment_directory
+            deploy_files(problem_path, destination_directory, instance["files"], problem.user)
             print("\tDescription: {}".format(problem.description))
             print("\tFlag: {}".format(problem.flag))
-            print("\tDeployment Directory: {}".format(deployment_directory))
+            print("\tDeployment Directory: {}".format(destination_directory))
 
             try:
                 execute("killall -u {}".format(problem.user))
+                sleep(0.1)
             except RunProcessError as e:
                 pass
 
@@ -441,10 +443,10 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
             deployment_json_dir = instance["staging_directory"]
         else:
-            if deployment_directory is None: deployment_directory = instance["home_directory"]
             # let's deploy them now
+            destination_directory = instance["home_directory"] if deployment_directory is None else deployment_directory
             problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
-            deploy_files(problem_path, deployment_directory, instance["files"], problem.user)
+            deploy_files(problem_path, destination_directory, instance["files"], problem.user)
 
             # copy files to the web root
             for source, destination in instance["web_accessible_files"]:
@@ -483,8 +485,8 @@ def deploy_problems(args, config):
         print("DEFAULT_USER {} does not exist. Creating now.".format(deploy_config.DEFAULT_USER))
         create_user(deploy_config.DEFAULT_USER)
 
-    if args.deployment_directory is not None and len(args.problem_paths) > 1:
-        raise Exception("Cannot specify deployment directory if deploying multiple problems.")
+    if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
+        raise Exception("Cannot specify deployment directory if deploying multiple problems or instances.")
 
     if args.bundle_name is not None:
         bundle_path = os.path.join("/", "opt", "hacksports", "bundles", args.bundle_name)
