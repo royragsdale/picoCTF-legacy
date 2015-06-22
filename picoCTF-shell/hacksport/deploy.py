@@ -15,6 +15,7 @@ from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user, execute
 from hacksport.utils import sanitize_name, get_attributes
+from shell_manager.bundle import get_bundle
 
 import os
 import shutil
@@ -430,6 +431,15 @@ def deploy_problems(args, config):
 
     global deploy_config
     deploy_config = config
+
+    if args.bundle_name is not None:
+        bundle_path = os.path.join("/", "opt", "hacksports", "bundles", args.bundle_name)
+        if not os.path.isfile(bundle_path):
+            raise Exception("Bundle {} does not exist.".format(args.bundle_name))
+
+        problems = get_bundle(bundle_path)["problems"]
+        args.bundle_name = None
+        args.problem_paths.extend(problems)
 
     for path in args.problem_paths:
         if os.path.isdir(path):

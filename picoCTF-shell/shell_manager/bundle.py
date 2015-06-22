@@ -5,9 +5,9 @@ Bundling operation for the shell manager. A special case of packaging.
 import json, spur
 
 from os import getcwd, makedirs
-from os.path import join, isdir
+from os.path import join, isdir, basename
 
-from shutil import rmtree
+from shutil import rmtree, copy2
 
 from copy import deepcopy
 
@@ -75,6 +75,10 @@ def bundle_problems(args, config):
     paths["debian"] = join(paths["staging"], "DEBIAN")
 
     [makedirs(staging_path) for _, staging_path in paths.items() if not isdir(staging_path)]
+
+    bundles_directory = join(paths["staging"], "opt", "hacksports", "bundles")
+    makedirs(bundles_directory)
+    copy2(args.bundle_path, join(bundles_directory, basename(args.bundle_path)))
 
     bundle_to_control(bundle, paths["debian"])
 
