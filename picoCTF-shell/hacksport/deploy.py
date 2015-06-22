@@ -437,7 +437,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
 
             instance_info_path = os.path.join(deployment_json_dir, str(instance_number))
             with open(instance_info_path, "w") as f:
-                f.write(json.dumps(deployment_info))
+                f.write(json.dumps(deployment_info, indent=4, separators=(", ", ": ")))
 
             print("\tSuccessfully deployed in {}. The instance deployment information can be found at {}.".format(
                 instance["home_directory"], instance_info_path))
