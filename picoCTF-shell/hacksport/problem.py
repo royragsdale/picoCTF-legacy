@@ -13,9 +13,11 @@ class File(object):
     Wraps files with default permissions
     """
 
-    def __init__(self, path, permissions=0o664):
+    def __init__(self, path, permissions=0o664, user=None, group=None):
         self.path = path
         self.permissions = permissions
+        self.user = user
+        self.group = group
 
     def __repr__(self):
         return "{}({},{})".format(self.__class__.__name__, repr(self.path), oct(self.permissions))

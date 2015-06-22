@@ -233,7 +233,9 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
             os.chown(output_path, root.pw_uid, user.pw_gid)
         else:
-            os.chown(output_path, root.pw_uid, root.pw_gid)
+            uid = root.pw_uid if f.user is None else getpwnam(f.user).pw_uid
+            gid = root.pw_gid if f.group is None else getpwnam(f.group).pw_gid
+            os.chown(output_path, uid, gid)
 
         # set the permissions appropriately
         os.chmod(output_path, f.permissions)
