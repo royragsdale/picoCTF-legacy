@@ -90,7 +90,11 @@ Description={} instance
 
 [Service]
 Type={}
-ExecStart={}"""
+ExecStart={}
+
+[Install]
+WantedBy=default.target
+"""
 
     problem_service_info = problem.service()
     converted_name = sanitize_name(problem.name)
@@ -258,20 +262,30 @@ def install_user_service(home_directory, user, service_file):
     if not os.path.isdir(service_dir_path):
         os.makedirs(service_dir_path)
 
+    # make target directory for enabled services
+    default_target_path = os.path.join(service_dir_path, "default.target.wants")
+    if not os.path.isdir(default_target_path):
+        os.makedirs(default_target_path)
+
+    userpw = getpwnam(user)
+    os.chown(default_target_path, userpw.pw_uid, userpw.pw_gid)
+
     # copy service file
     service_path = os.path.join(service_dir_path, os.path.basename(service_file))
     shutil.copy2(service_file, service_path)
 
-    uid = getpwnam(user).pw_uid
-
     # enable automatic starting of user services
-    # TODO: rework this. It is incredibly hacky and should not be necessary
     execute("loginctl enable-linger {}".format(user))
-    execute("systemctl start user@{}.service".format(uid))
-    execute("systemctl restart user@{}.service".format(uid))
-    execute("echo 'export XDG_RUNTIME_DIR=/run/user/{}' >> {}".format(uid, os.path.join(home_directory, ".profile")))
-    execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user restart {}'".format(
-        user, os.path.basename(service_file)))
+    execute("systemctl restart user@{}.service".format(userpw.pw_uid))
+
+    # set environment variable so "su -l problem_user" will correctly populate it
+    # this is due to a known issue with su -l
+    with open(os.path.join(home_directory, ".profile"), "w") as f:
+        f.write("export XDG_RUNTIME_DIR=/run/user/{}\n".format(userpw.pw_uid))
+
+    # enable and restart the service
+    execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user enable {}; systemctl --user restart {}'".format(
+        user, os.path.basename(service_file), os.path.basename(service_file)))
 
 def generate_instance(problem_object, problem_directory, instance_number, deployment_directory=None):
     """
