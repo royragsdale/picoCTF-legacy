@@ -10,6 +10,7 @@ from pwd import getpwnam
 from grp import getgrnam
 from time import sleep
 from copy import copy, deepcopy
+from spur import RunProcessError
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile
@@ -24,6 +25,7 @@ import functools
 
 PROBLEM_FILES_DIR = "problem_files"
 PROBLEM_ROOT = "/opt/hacksports/sources/"
+STAGING_ROOT = "/opt/hacksports/staging/"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -130,7 +132,7 @@ def generate_seed(*args):
 
     return md5("".join(args).encode("utf-8")).hexdigest()
 
-def generate_staging_directory(root="/tmp/staging/"):
+def generate_staging_directory(root=STAGING_ROOT):
     """
     Creates a random, empty staging directory
 
@@ -234,7 +236,7 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
             os.chown(output_path, default.pw_uid, user.pw_gid)
         else:
             uid = default.pw_uid if f.user is None else getpwnam(f.user).pw_uid
-            gid = default.pw_gid if f.group is None else getgrnam(f.group).pw_gid
+            gid = default.pw_gid if f.group is None else getgrnam(f.group).gr_gid
             os.chown(output_path, uid, gid)
 
         # set the permissions appropriately
@@ -412,8 +414,15 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             print("\tFlag: {}".format(problem.flag))
             print("\tDeployment Directory: {}".format(deployment_directory))
 
+            try:
+                execute("killall -u {}".format(problem.user))
+            except RunProcessError as e:
+                pass
+
             execute(["userdel", problem.user])
             shutil.rmtree(instance["home_directory"])
+
+            deployment_json_dir = instance["staging_directory"]
         else:
             if deployment_directory is None: deployment_directory = instance["home_directory"]
             # let's deploy them now
@@ -431,19 +440,18 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
 
-            deployment_info = copy(problem_object)
-            deployment_info.update({"description": problem.description,
-                                    "flag": problem.flag,
-                                    "instance": instance_number,
-                                    "deployment_directory": deployment_directory,
-                                    "port": problem.port if isinstance(problem, Service) else None})
+        deployment_info = copy(problem_object)
+        deployment_info.update({"description": problem.description,
+                                "flag": problem.flag,
+                                "instance": instance_number,
+                                "deployment_directory": deployment_directory,
+                                "port": problem.port if isinstance(problem, Service) else None})
 
-            instance_info_path = os.path.join(deployment_json_dir, str(instance_number))
-            with open(instance_info_path, "w") as f:
-                f.write(json.dumps(deployment_info, indent=4, separators=(", ", ": ")))
+        instance_info_path = os.path.join(deployment_json_dir, str(instance_number))
+        with open(instance_info_path, "w") as f:
+            f.write(json.dumps(deployment_info, indent=4, separators=(", ", ": ")))
 
-            print("\tSuccessfully deployed in {}. The instance deployment information can be found at {}.".format(
-                deployment_directory, instance_info_path))
+        print("The instance deployment information can be found at {}.".format(instance_info_path))
 
 
 def deploy_problems(args, config):
