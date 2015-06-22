@@ -273,7 +273,7 @@ def install_user_service(home_directory, user, service_file):
     execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user restart {}'".format(
         user, os.path.basename(service_file)))
 
-def generate_instance(problem_object, problem_directory, instance_number):
+def generate_instance(problem_object, problem_directory, instance_number, deployment_directory=None):
     """
     Runs the setup functions of Problem in the correct order
 
@@ -281,6 +281,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
         problem_object: The contents of the problem.json
         problem_directory: The directory to the problem
         instance_number: The instance number to be generated
+        deployment_directory: The directory that will be deployed to. Defaults to the home directory of the user created.
 
     Returns:
         A tuple containing (problem, staging_directory, home_directory, files)
@@ -298,7 +299,9 @@ def generate_instance(problem_object, problem_directory, instance_number):
 
     challenge = load_source("challenge", os.path.join(copypath, "challenge.py"))
 
-    Problem = update_problem_class(challenge.Problem, problem_object, seed, username, home_directory)
+    if deployment_directory is None: deployment_directory = home_directory
+
+    Problem = update_problem_class(challenge.Problem, problem_object, seed, username, deployment_directory)
 
     # run methods in proper order
     problem = Problem()
@@ -392,7 +395,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
     for instance_number in range(instances):
         print("Generating instance {}".format(instance_number))
-        instance = generate_instance(problem_object, problem_directory, instance_number)
+        instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
         instance_list.append(instance)
 
     deployment_json_dir = os.path.join("/opt/hacksports/deployed/", sanitize_name(problem_object["name"]))
@@ -447,7 +450,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
                                 "deployment_directory": deployment_directory,
                                 "port": problem.port if isinstance(problem, Service) else None})
 
-        instance_info_path = os.path.join(deployment_json_dir, str(instance_number))
+        instance_info_path = os.path.join(deployment_json_dir, "{}.json".format(instance_number))
         with open(instance_info_path, "w") as f:
             f.write(json.dumps(deployment_info, indent=4, separators=(", ", ": ")))
 
