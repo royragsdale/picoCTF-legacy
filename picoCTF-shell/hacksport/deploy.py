@@ -6,7 +6,8 @@ from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
 from imp import load_source
-from pwd import getpwnam, getpwall
+from pwd import getpwnam
+from grp import getgrnam
 from time import sleep
 from copy import copy, deepcopy
 from jinja2 import Environment, Template, FileSystemLoader
@@ -23,7 +24,6 @@ import functools
 
 PROBLEM_FILES_DIR = "problem_files"
 PROBLEM_ROOT = "/opt/hacksports/sources/"
-HOME_DIRECTORY_ROOT = "/home/problems/"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -120,7 +120,7 @@ def create_instance_user(problem_name, instance_number):
         user = getpwnam(username)
         return username, user.pw_dir
     except KeyError:
-        home_directory = create_user(username, HOME_DIRECTORY_ROOT)
+        home_directory = create_user(username, deploy_config.HOME_DIRECTORY_ROOT)
         return username, home_directory
 
 def generate_seed(*args):
@@ -218,9 +218,9 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
     Will properly set permissions and setgid files based on their type.
     """
 
-    # get uid and gid for root and problem user
+    # get uid and gid for default and problem user
     user = getpwnam(username)
-    root = getpwnam("root")
+    default = getpwnam(deploy_config.DEFAULT_USER)
 
     for f in file_list:
         # copy the file over, making the directories as needed
@@ -231,10 +231,10 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
 
         # set the ownership based on the type of file
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
-            os.chown(output_path, root.pw_uid, user.pw_gid)
+            os.chown(output_path, default.pw_uid, user.pw_gid)
         else:
-            uid = root.pw_uid if f.user is None else getpwnam(f.user).pw_uid
-            gid = root.pw_gid if f.group is None else getpwnam(f.group).pw_gid
+            uid = default.pw_uid if f.user is None else getpwnam(f.user).pw_uid
+            gid = default.pw_gid if f.group is None else getgrnam(f.group).pw_gid
             os.chown(output_path, uid, gid)
 
         # set the permissions appropriately
@@ -432,6 +432,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
             deployment_info = copy(problem_object)
             deployment_info.update({"description": problem.description,
                                     "flag": problem.flag,
+                                    "instance": instance_number,
                                     "deployment_directory": instance["home_directory"],
                                     "port": problem.port if isinstance(problem, Service) else None})
 
@@ -448,6 +449,12 @@ def deploy_problems(args, config):
 
     global deploy_config
     deploy_config = config
+
+    try:
+        user = getpwnam(deploy_config.DEFAULT_USER)
+    except KeyError as e:
+        print("DEFAULT_USER {} does not exist. Creating now.".format(deploy_config.DEFAULT_USER))
+        create_user(deploy_config.DEFAULT_USER)
 
     if args.bundle_name is not None:
         bundle_path = os.path.join("/", "opt", "hacksports", "bundles", args.bundle_name)
