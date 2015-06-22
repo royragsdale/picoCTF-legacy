@@ -365,7 +365,7 @@ def generate_instance(problem_object, problem_directory, instance_number):
             "service_file": service_file
             }
 
-def deploy_problem(problem_directory, instances=1, test=False):
+def deploy_problem(problem_directory, instances=1, test=False, deployment_directory=None):
     """
     Deploys the problem specified in problem_directory.
 
@@ -373,6 +373,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
         problem_directory: The directory storing the problem
         instances: The number of instances to deploy. Defaults to 1.
         test: Whether the instances are test instances or not. Defaults to False.
+        deployment_directory: If not None, the challenge will be deployed here instead of their home directory
 
     Returns:
         TODO
@@ -414,9 +415,10 @@ def deploy_problem(problem_directory, instances=1, test=False):
             execute(["userdel", problem.user])
             shutil.rmtree(instance["home_directory"])
         else:
+            if deployment_directory is None: deployment_directory = instance["home_directory"]
             # let's deploy them now
             problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
-            deploy_files(problem_path, instance["home_directory"], instance["files"], problem.user)
+            deploy_files(problem_path, deployment_directory, instance["files"], problem.user)
 
             # copy files to the web root
             for source, destination in instance["web_accessible_files"]:
@@ -433,7 +435,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
             deployment_info.update({"description": problem.description,
                                     "flag": problem.flag,
                                     "instance": instance_number,
-                                    "deployment_directory": instance["home_directory"],
+                                    "deployment_directory": deployment_directory,
                                     "port": problem.port if isinstance(problem, Service) else None})
 
             instance_info_path = os.path.join(deployment_json_dir, str(instance_number))
@@ -441,7 +443,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
                 f.write(json.dumps(deployment_info, indent=4, separators=(", ", ": ")))
 
             print("\tSuccessfully deployed in {}. The instance deployment information can be found at {}.".format(
-                instance["home_directory"], instance_info_path))
+                deployment_directory, instance_info_path))
 
 
 def deploy_problems(args, config):
@@ -456,6 +458,9 @@ def deploy_problems(args, config):
         print("DEFAULT_USER {} does not exist. Creating now.".format(deploy_config.DEFAULT_USER))
         create_user(deploy_config.DEFAULT_USER)
 
+    if args.deployment_directory is not None and len(args.problem_paths) > 1:
+        raise Exception("Cannot specify deployment directory if deploying multiple problems.")
+
     if args.bundle_name is not None:
         bundle_path = os.path.join("/", "opt", "hacksports", "bundles", args.bundle_name)
         if not os.path.isfile(bundle_path):
@@ -466,8 +471,10 @@ def deploy_problems(args, config):
 
     for path in args.problem_paths:
         if os.path.isdir(path):
-            deploy_problem(path, instances=args.num_instances, test=args.dry)
+            deploy_problem(path, instances=args.num_instances, test=args.dry,
+                            deployment_directory=args.deployment_directory)
         elif os.path.isdir(os.path.join(PROBLEM_ROOT, path)):
-            deploy_problem(os.path.join(PROBLEM_ROOT, path), instances=args.num_instances, test=args.dry)
+            deploy_problem(os.path.join(PROBLEM_ROOT, path), instances=args.num_instances,
+                            test=args.dry, deployment_directory=args.deployment_directory)
         else:
             raise Exception("Problem path {} cannot be found".format(path))
