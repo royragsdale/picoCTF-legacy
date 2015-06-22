@@ -503,3 +503,10 @@ def deploy_problems(args, config):
                             test=args.dry, deployment_directory=args.deployment_directory)
         else:
             raise Exception("Problem path {} cannot be found".format(path))
+
+def clean(args, config):
+    """ Main entrypoint for clean """
+
+    shutil.rmtree(STAGING_ROOT)
+
+    #TODO: potentially perform more cleaning

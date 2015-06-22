@@ -10,7 +10,7 @@ from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
-from hacksport.deploy import deploy_problems
+from hacksport.deploy import deploy_problems, clean
 
 from os.path import join
 from os import sep
@@ -56,6 +56,9 @@ def main():
     deploy_parser.add_argument("-D", "--deployment-directory", type=str, default=None, help="the directory to deploy to")
     deploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
     deploy_parser.set_defaults(func=deploy_problems)
+
+    clean_parser = subparsers.add_parser("clean", help="Clean up the intermediate staging data stored during deployments")
+    clean_parser.set_defaults(func=clean)
 
     args = parser.parse_args()
 
