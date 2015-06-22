@@ -392,7 +392,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
         instance = generate_instance(problem_object, problem_directory, instance_number)
         instance_list.append(instance)
 
-    deployment_json_dir = os.path.join("/opt/hacksport/deployed/", sanitize_name(problem_object["name"]))
+    deployment_json_dir = os.path.join("/opt/hacksports/deployed/", sanitize_name(problem_object["name"]))
     if not os.path.isdir(deployment_json_dir):
         os.makedirs(deployment_json_dir)
 

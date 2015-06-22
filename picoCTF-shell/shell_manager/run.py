@@ -23,6 +23,7 @@ def main():
 
     problem_package_parser = subparsers.add_parser("package", help="problem package management")
     problem_package_parser.add_argument("-o", "--out", help="folder to store problem package.")
+    problem_package_parser.add_argument("-i", "--ignore", dest="ignore", default=[], action="append", help="list of files to ignore adding to the deb")
     problem_package_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
     problem_package_parser.set_defaults(func=problem_builder)
 
