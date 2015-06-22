@@ -77,7 +77,7 @@ def bundle_problems(args, config):
     [makedirs(staging_path) for _, staging_path in paths.items() if not isdir(staging_path)]
 
     bundles_directory = join(paths["staging"], "opt", "hacksports", "bundles")
-    makedirs(bundles_directory)
+    if not isdir(bundles_directory): makedirs(bundles_directory)
     copy2(args.bundle_path, join(bundles_directory, basename(args.bundle_path)))
 
     bundle_to_control(bundle, paths["debian"])

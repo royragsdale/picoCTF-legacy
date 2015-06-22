@@ -7,9 +7,8 @@ from abc import ABCMeta
 from hashlib import md5
 from imp import load_source
 from pwd import getpwnam, getpwall
-from json import loads
 from time import sleep
-from copy import copy
+from copy import copy, deepcopy
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile
@@ -18,6 +17,7 @@ from hacksport.utils import sanitize_name, get_attributes
 from shell_manager.bundle import get_bundle
 
 import os
+import json
 import shutil
 import functools
 
@@ -64,7 +64,7 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
     """
 
     random = Random(seed)
-    attributes = problem_object
+    attributes = deepcopy(problem_object)
 
     attributes.update({"random": random, "user": user, "server": deploy_config.HOSTNAME,
                        "directory": instance_directory})
@@ -383,7 +383,7 @@ def deploy_problem(problem_directory, instances=1, test=False):
     with open(object_path, "r") as f:
         json_string = f.read()
 
-    problem_object = loads(json_string)
+    problem_object = json.loads(json_string)
 
     instance_list = []
 
@@ -392,25 +392,31 @@ def deploy_problem(problem_directory, instances=1, test=False):
         instance = generate_instance(problem_object, problem_directory, instance_number)
         instance_list.append(instance)
 
+    deployment_json_dir = os.path.join("/opt/hacksport/deployed/", sanitize_name(problem_object["name"]))
+    if not os.path.isdir(deployment_json_dir):
+        os.makedirs(deployment_json_dir)
+
     # all instances generated without issue. let's do something with them
     for instance_number, instance in enumerate(instance_list):
         print("Deploying instance {}".format(instance_number))
         problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
 
+        problem = instance["problem"]
+
         if test is True:
             # display what we would do, and clean up the user and home directory
             deployment_directory = os.path.join(instance["staging_directory"], "deployed")
-            deploy_files(problem_path, deployment_directory, instance["files"], instance["problem"].user)
-            print("\tDescription: {}".format(instance["problem"].description))
-            print("\tFlag: {}".format(instance["problem"].flag))
+            deploy_files(problem_path, deployment_directory, instance["files"], problem.user)
+            print("\tDescription: {}".format(problem.description))
+            print("\tFlag: {}".format(problem.flag))
             print("\tDeployment Directory: {}".format(deployment_directory))
 
-            execute(["userdel", instance["problem"].user])
+            execute(["userdel", problem.user])
             shutil.rmtree(instance["home_directory"])
         else:
             # let's deploy them now
             problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
-            deploy_files(problem_path, instance["home_directory"], instance["files"], instance["problem"].user)
+            deploy_files(problem_path, instance["home_directory"], instance["files"], problem.user)
 
             # copy files to the web root
             for source, destination in instance["web_accessible_files"]:
@@ -418,15 +424,24 @@ def deploy_problem(problem_directory, instances=1, test=False):
                     os.makedirs(os.path.dirname(destination))
                 shutil.copy2(source, destination)
 
-            install_user_service(instance["home_directory"], instance["problem"].user, instance["service_file"])
+            install_user_service(instance["home_directory"], problem.user, instance["service_file"])
 
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
 
-            print ("\tSuccessfully deployed to {}. The flag is {}.".format(instance["home_directory"], instance["problem"].flag))
+            deployment_info = copy(problem_object)
+            deployment_info.update({"description": problem.description,
+                                    "flag": problem.flag,
+                                    "deployment_directory": instance["home_directory"],
+                                    "port": problem.port if isinstance(problem, Service) else None})
 
-            if isinstance(instance["problem"], Service):
-                print ("The service is running on port {}".format(instance["problem"].port))
+            instance_info_path = os.path.join(deployment_json_dir, str(instance_number))
+            with open(instance_info_path, "w") as f:
+                f.write(json.dumps(deployment_info))
+
+            print("\tSuccessfully deployed in {}. The instance deployment information can be found at {}.".format(
+                instance["home_directory"], instance_info_path))
+
 
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
@@ -440,7 +455,6 @@ def deploy_problems(args, config):
             raise Exception("Bundle {} does not exist.".format(args.bundle_name))
 
         problems = get_bundle(bundle_path)["problems"]
-        args.bundle_name = None
         args.problem_paths.extend(problems)
 
     for path in args.problem_paths:
