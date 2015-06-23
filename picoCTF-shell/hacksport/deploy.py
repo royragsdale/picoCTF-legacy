@@ -454,12 +454,13 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
 
-        deployment_info = copy(problem_object)
-        deployment_info.update({"description": problem.description,
-                                "flag": problem.flag,
-                                "instance": instance_number,
-                                "deployment_directory": deployment_directory,
-                                "port": problem.port if isinstance(problem, Service) else None})
+        deployment_info = {
+            "server": problem.server,
+            "description": problem.description,
+            "flag": problem.flag,
+            "iid": instance_number,
+            "port": problem.port if isinstance(problem, Service) else None
+        }
 
         instance_info_path = os.path.join(deployment_json_dir, "{}.json".format(instance_number))
         with open(instance_info_path, "w") as f:
@@ -510,6 +511,63 @@ def deploy_problems(args, config):
         else:
             raise Exception("Problem path {} cannot be found".format(path))
 
+def get_all_problems():
+    """ Returns a dictionary of name:object mappings """
+    problems = {}
+    for name in os.listdir(PROBLEM_ROOT):
+        try:
+            problem = get_problem(get_problem_root(name))
+            problems[name] = problem
+        except FileNotFoundError as e:
+            pass
+    return problems
+
+def get_all_bundles():
+    """ Returns a dictionary of name:object mappings """
+    bundles = {}
+    for name in os.listdir(BUNDLE_ROOT):
+        try:
+            bundle = get_bundle(get_bundle_root(name))
+            bundles[name] = bundle
+        except FileNotFoundError as e:
+            pass
+    return bundles
+
+def get_all_problem_instances(problem_path):
+    """ Returns a list of instances for a given problem """
+    instances = []
+    instances_dir = join(DEPLOYED_ROOT, problem_path)
+    if os.path.isdir(instances_dir):
+        for name in os.listdir(instances_dir):
+            #NOTE: the order of these may not be the same as during generation
+            if name.endswith(".json"):
+                try:
+                    instance = json.loads(open(join(instances_dir, name)).read())
+                    instances.append(instance)
+                except Exception as e:
+                    pass
+    return instances
+
+def publish(args, config):
+    """ Main entrypoint for publish """
+
+    problems = get_all_problems()
+    bundles = get_all_bundles()
+
+    output = {
+        "problems": [],
+        "bundles": []
+    }
+
+    for path, problem in problems.items():
+        problem["instances"] = get_all_problem_instances(path)
+        output["problems"].append(problem)
+
+    for path, bundle in bundles.items():
+        output["bundles"].append(bundle)
+
+    print(json.dumps(output, indent=4))
+
 def clean(args, config):
     """ Main entrypoint for clean """
 
@@ -520,40 +578,16 @@ def clean(args, config):
 def status(args, config):
     """ Main entrypoint for status """
 
-    # load in the existing bundles
-    bundles = {}
-    for name in os.listdir(BUNDLE_ROOT):
-        try:
-            bundle = get_bundle(get_bundle_root(name))
-            bundles[name] = bundle
-        except FileNotFoundError as e:
-            pass
+    bundles = get_all_bundles()
+    problems = get_all_problems()
 
-    # load in the existing problems
-    problems = {}
-    for name in os.listdir(PROBLEM_ROOT):
-        try:
-            problem = get_problem(get_problem_root(name))
-            problems[name] = problem
-        except FileNotFoundError as e:
-            pass
 
     def print_problem(problem, path, prefix="\t"):
-        instances = []
-        instances_dir = join(DEPLOYED_ROOT, path)
-        if os.path.isdir(instances_dir):
-            for name in os.listdir(instances_dir):
-                if name.endswith(".json"):
-                    try:
-                        instance = json.loads(open(join(instances_dir, name)).read())
-                        instances.append((instance, name[0]))
-                    except Exception as e:
-                        pass
-
+        instances = get_all_problem_instances(path)
         print("{}* [{}] {} ({})".format(prefix, len(instances), problem['name'], path))
-        for instance, name in instances:
+        for i, instance in enumerate(instances):
             print("{0}\t - Instance {1}:\n{0}\t\tport: {2}\n{0}\t\tflag: {3}".format(
-                            prefix, name, instance["port"], instance["flag"]))
+                            prefix, i, instance["port"], instance["flag"]))
 
     def print_bundle(bundle, path, prefix=""):
         print("{}[{} ({})]".format(prefix, bundle["name"], path))

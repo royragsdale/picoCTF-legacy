@@ -10,7 +10,8 @@ from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
-from hacksport.deploy import deploy_problems, clean, status
+from shell_manager.util import HACKSPORTS_ROOT
+from hacksport.deploy import deploy_problems, clean, status, publish
 
 from os.path import join
 from os import sep
@@ -27,12 +28,12 @@ def main():
     problem_package_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
     problem_package_parser.set_defaults(func=problem_builder)
 
-    publish_parser = subparsers.add_parser("publish", help="publish packaged problems")
-    publish_parser.add_argument("-r", "--repository", default="/usr/local/ctf-packages",
+    publish_repo_parser = subparsers.add_parser("publish_repo", help="publish packaged problems")
+    publish_repo_parser.add_argument("-r", "--repository", default="/usr/local/ctf-packages",
                                               help="Location of problem repository.")
-    publish_parser.add_argument("repo_type", choices=["local", "remote"])
-    publish_parser.add_argument("package_paths", nargs="+", type=str, help="problem packages to publish.")
-    publish_parser.set_defaults(func=update_repo)
+    publish_repo_parser.add_argument("repo_type", choices=["local", "remote"])
+    publish_repo_parser.add_argument("package_paths", nargs="+", type=str, help="problem packages to publish.")
+    publish_repo_parser.set_defaults(func=update_repo)
 
     migration_parser = subparsers.add_parser("migrate", help="migrate legacy problem formats")
     migration_parser.add_argument("-i", "--interactive", action="store_true", help="update problem fields interactively")
@@ -65,9 +66,12 @@ def main():
     status_parser.add_argument("-b", "--bundle", type=str, default=None, help="Display status information for a given bundle.")
     status_parser.set_defaults(func=status)
 
+    publish_parser = subparsers.add_parser("publish", help="Generate the information needed by the web server for this deployment.")
+    publish_parser.set_defaults(func=publish)
+
     args = parser.parse_args()
 
-    config = load_source("config", join(sep, "opt", "hacksports", "config.py"))
+    config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
 
     #Call the default function
     if "func" in args:
