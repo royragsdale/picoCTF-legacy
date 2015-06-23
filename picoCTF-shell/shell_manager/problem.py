@@ -84,10 +84,11 @@ def get_problem_root(problem_name, absolute=False):
 
     problem_root = join(PROBLEM_ROOT, sanitize_name(problem_name))
 
+    assert problem_root.startswith(os.sep)
     if absolute:
-        return join(os.sep, problem_root)
+        return problem_root
 
-    return problem_root
+    return problem_root[len(os.sep):]
 
 def get_problem(problem_path):
     """
