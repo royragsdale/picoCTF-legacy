@@ -87,7 +87,7 @@ def logout_hook():
 def status_hook():
     status = {
         "logged_in": api.auth.is_logged_in(),
-        "admin": api.user.is_admin(),
+        "admin": api.auth.is_logged_in() and api.user.is_admin(),
         "teacher": api.auth.is_logged_in() and api.user.is_teacher(),
         "enable_teachers": api.config.enable_teachers,
         "enable_feedback": api.config.enable_feedback,
