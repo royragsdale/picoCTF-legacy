@@ -71,8 +71,8 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
     random = Random(seed)
     attributes = deepcopy(problem_object)
 
-    attributes.update({"random": random, "user": user, "server": deploy_config.HOSTNAME,
-                       "directory": instance_directory})
+    attributes.update({"random": random, "user": user, "default_user": deploy_config.DEFAULT_USER,
+                       "server": deploy_config.HOSTNAME, "directory": instance_directory})
 
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
