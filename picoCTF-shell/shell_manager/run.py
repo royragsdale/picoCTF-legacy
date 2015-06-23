@@ -10,7 +10,7 @@ from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
-from hacksport.deploy import deploy_problems, clean
+from hacksport.deploy import deploy_problems, clean, status
 
 from os.path import join
 from os import sep
@@ -59,6 +59,11 @@ def main():
 
     clean_parser = subparsers.add_parser("clean", help="Clean up the intermediate staging data stored during deployments")
     clean_parser.set_defaults(func=clean)
+
+    status_parser = subparsers.add_parser("status", help="List the installed problems and bundles and any instances associated with them.")
+    status_parser.add_argument("-p", "--problem", type=str, default=None, help="Display status information for a given problem.")
+    status_parser.add_argument("-b", "--bundle", type=str, default=None, help="Display status information for a given bundle.")
+    status_parser.set_defaults(func=status)
 
     args = parser.parse_args()
 

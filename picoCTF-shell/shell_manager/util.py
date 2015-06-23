@@ -8,6 +8,13 @@ from os.path import join, isdir, isfile
 import shutil
 from shutil import copytree, copy2
 
+# the root of the hacksports local store
+HACKSPORTS_ROOT = "/opt/hacksports/"
+PROBLEM_ROOT = join(HACKSPORTS_ROOT, "sources")
+STAGING_ROOT = join(HACKSPORTS_ROOT, "staging")
+DEPLOYED_ROOT = join(HACKSPORTS_ROOT, "deployed")
+BUNDLE_ROOT = join(HACKSPORTS_ROOT, "bundles")
+
 #I will never understand why the shutil functions act
 #the way they do...
 

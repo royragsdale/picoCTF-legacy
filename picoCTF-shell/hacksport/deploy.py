@@ -21,6 +21,7 @@ from shell_manager.bundle import get_bundle
 
 from shell_manager.bundle import get_bundle, get_bundle_root
 from shell_manager.problem import get_problem, get_problem_root
+from shell_manager.util import PROBLEM_ROOT, STAGING_ROOT, DEPLOYED_ROOT, BUNDLE_ROOT
 
 import os
 import json
@@ -28,8 +29,6 @@ import shutil
 import functools
 
 PROBLEM_FILES_DIR = "problem_files"
-PROBLEM_ROOT = "/opt/hacksports/sources/"
-STAGING_ROOT = "/opt/hacksports/staging/"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -145,7 +144,7 @@ def generate_staging_directory(root=STAGING_ROOT):
     Creates a random, empty staging directory
 
     Args:
-        root: The parent directory for the new directory. Defaults to /tmp/staging/
+        root: The parent directory for the new directory. Defaults to join(HACKSPORTS_ROOT, "staging")
 
     Returns:
         The path of the generated directory
@@ -397,17 +396,9 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
         instances: The number of instances to deploy. Defaults to 1.
         test: Whether the instances are test instances or not. Defaults to False.
         deployment_directory: If not None, the challenge will be deployed here instead of their home directory
-
-    Returns:
-        TODO
     """
 
-    object_path = join(problem_directory, "problem.json")
-
-    with open(object_path, "r") as f:
-        json_string = f.read()
-
-    problem_object = json.loads(json_string)
+    problem_object = get_problem(problem_directory)
 
     instance_list = []
 
@@ -416,7 +407,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
         instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
         instance_list.append(instance)
 
-    deployment_json_dir = os.path.join("/opt/hacksports/deployed/", sanitize_name(problem_object["name"]))
+    deployment_json_dir = os.path.join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
     if not os.path.isdir(deployment_json_dir):
         os.makedirs(deployment_json_dir)
 
@@ -503,7 +494,7 @@ def deploy_problems(args, config):
             else:
                 bundle_sources_path = get_bundle_root(bundle_path, absolute=True)
                 if os.path.isdir(bundle_sources_path):
-                    bundle = get_bundle(join(bundle_sources_path, "bundle.json"))
+                    bundle = get_bundle(bundle_sources_path)
                     bundle_problems.extend(bundle["problems"])
                 else:
                     raise Exception("Could not get bundle.")
@@ -513,8 +504,8 @@ def deploy_problems(args, config):
         if os.path.isdir(path):
             deploy_problem(path, instances=args.num_instances, test=args.dry,
                             deployment_directory=args.deployment_directory)
-        elif os.path.isdir(os.path.join(PROBLEM_ROOT, path)):
-            deploy_problem(os.path.join(PROBLEM_ROOT, path), instances=args.num_instances,
+        elif os.path.isdir(os.path.join(get_problem_root(path))):
+            deploy_problem(os.path.join(get_problem_root(path)), instances=args.num_instances,
                             test=args.dry, deployment_directory=args.deployment_directory)
         else:
             raise Exception("Problem path {} cannot be found".format(path))
@@ -525,3 +516,72 @@ def clean(args, config):
     shutil.rmtree(STAGING_ROOT)
 
     #TODO: potentially perform more cleaning
+
+def status(args, config):
+    """ Main entrypoint for status """
+
+    # load in the existing bundles
+    bundles = {}
+    for name in os.listdir(BUNDLE_ROOT):
+        try:
+            bundle = get_bundle(get_bundle_root(name))
+            bundles[name] = bundle
+        except FileNotFoundError as e:
+            pass
+
+    # load in the existing problems
+    problems = {}
+    for name in os.listdir(PROBLEM_ROOT):
+        try:
+            problem = get_problem(get_problem_root(name))
+            problems[name] = problem
+        except FileNotFoundError as e:
+            pass
+
+    def print_problem(problem, path, prefix="\t"):
+        instances = []
+        instances_dir = join(DEPLOYED_ROOT, path)
+        if os.path.isdir(instances_dir):
+            for name in os.listdir(instances_dir):
+                if name.endswith(".json"):
+                    try:
+                        instance = json.loads(open(join(instances_dir, name)).read())
+                        instances.append((instance, name[0]))
+                    except Exception as e:
+                        pass
+
+        print("{}* [{}] {} ({})".format(prefix, len(instances), problem['name'], path))
+        for instance, name in instances:
+            print("{0}\t - Instance {1}:\n{0}\t\tport: {2}\n{0}\t\tflag: {3}".format(
+                            prefix, name, instance["port"], instance["flag"]))
+
+    def print_bundle(bundle, path, prefix=""):
+        print("{}[{} ({})]".format(prefix, bundle["name"], path))
+        for problem_path in bundle["problems"]:
+            problem = problems[problem_path]
+            print_problem(problem, problem_path, prefix=prefix+"\t")
+
+    if args.problem is not None:
+        problem = problems.get(args.problem, None)
+        if problem is None:
+            print("Could not find problem \"{}\"".format(args.problem))
+            return
+        print_problem(problem, args.problem, prefix="")
+    elif args.bundle is not None:
+        bundle = bundles.get(args.bundle, None)
+        if bundle is None:
+            print("Could not find bundle \"{}\"".format(args.bundle))
+            return
+        print_bundle(bundle, args.bundle, prefix="")
+    else:
+        print("** Installed Bundles [{}] **".format(len(bundles)))
+        shown_problems = []
+        for path, bundle in bundles.items():
+            print_bundle(bundle, path, prefix="\t")
+            shown_problems.extend(bundle["problems"])
+
+        print("** Installed Problems [{}] **".format(len(problems)))
+        print("   Showing status for problems not already shown...")
+        for path, problem in problems.items():
+            if path not in shown_problems:
+                print_problem(problem, path, prefix="\t")

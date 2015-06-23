@@ -9,6 +9,7 @@ from copy import deepcopy
 from os.path import join
 from re import findall
 
+from shell_manager.util import PROBLEM_ROOT
 from hacksport.utils import sanitize_name
 
 #More in-depth validation should occur with some sort of linting step.
@@ -81,7 +82,7 @@ def get_problem_root(problem_name, absolute=False):
         The tentative installation location.
     """
 
-    problem_root = join("opt", "hacksports", "sources", sanitize_name(problem_name))
+    problem_root = join(PROBLEM_ROOT, sanitize_name(problem_name))
 
     if absolute:
         return join(os.sep, problem_root)

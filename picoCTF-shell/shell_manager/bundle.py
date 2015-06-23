@@ -13,6 +13,7 @@ from shutil import rmtree, copyfile
 
 from shell_manager.problem import get_problem, get_problem_root
 from shell_manager.package import sanitize_name, DEB_DEFAULTS
+from shell_manager.util import BUNDLE_ROOT
 
 def bundle_to_control(bundle, debian_path):
     """
@@ -55,7 +56,7 @@ def get_bundle_root(bundle_name, absolute=False):
         The tentative installation location.
     """
 
-    bundle_root = join("opt", "hacksports", "bundles", sanitize_name(bundle_name))
+    bundle_root = join(BUNDLE_ROOT, sanitize_name(bundle_name))
 
     if absolute:
         return join(os.sep, bundle_root)
@@ -73,7 +74,7 @@ def get_bundle(bundle_path):
         A bundle object.
     """
 
-    bundle = json.loads(open(bundle_path, "r").read())
+    bundle = json.loads(open(join(bundle_path, "bundle.json"), "r").read())
 
     return bundle
 
@@ -82,7 +83,14 @@ def bundle_problems(args, config):
     Main entrypoint for generating problem bundles.
     """
 
-    bundle = get_bundle(args.bundle_path)
+    bundle_path = args.bundle_path
+    if os.path.isdir(args.bundle_path):
+        bundle = get_bundle(args.bundle_path)
+        bundle_path = join(args.bundle_path, "bundle.json")
+    elif os.path.isfile(args.bundle_path):
+        bundle = json.loads(open(args.bundle_path).read())
+    else:
+        raise Exception("No bundle {}".format(args.bundle_path))
 
     for problem_name in bundle["problems"]:
         installed_path = get_problem_root(problem_name, absolute=True)
@@ -99,7 +107,7 @@ def bundle_problems(args, config):
     bundle_to_control(bundle, paths["debian"])
 
     copied_bundle_path = join(paths["bundle_root"], "bundle.json")
-    copyfile(args.bundle_path, copied_bundle_path)
+    copyfile(bundle_path, copied_bundle_path)
 
     def format_deb_file_name(bundle):
         """
