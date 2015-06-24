@@ -148,6 +148,7 @@ def insert_problem(problem):
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
         old_problem = get_problem(pid=problem["pid"])
+        problem["disabled"] = old_problem["disabled"]
         assert len(problem["instances"]) >= len(old_problem["instances"]), "Cannot update problem with fewer instances."
         update_problem(problem["pid"], problem)
         return

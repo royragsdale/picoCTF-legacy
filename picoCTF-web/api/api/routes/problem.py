@@ -113,4 +113,6 @@ def load_problems():
     for problem in data["problems"]:
         api.problem.insert_problem(problem)
 
+    api.cache.clear_all()
+
     return WebSuccess("Problems inserted successfully.")
