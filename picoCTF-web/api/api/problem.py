@@ -146,10 +146,14 @@ def insert_problem(problem):
     problem["threshold"] = 0
 
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
-        raise WebException("Problem with identical pid already exists.")
+        # problem is already inserted, so update instead
+        old_problem = get_problem(pid=problem["pid"])
+        assert len(problem["instances"]) >= len(old_problem["instances"]), "Cannot update problem with fewer instances."
+        update_problem(problem["pid"], problem)
+        return
 
     if safe_fail(get_problem, name=problem["name"]) is not None:
-        raise WebException("Problem with identical name already exists.")
+        raise WebException("Problem with identical name \"{}\" already exists.".format(problem["name"]))
 
     db.problems.insert(problem)
     api.cache.fast_cache.clear()
@@ -187,11 +191,7 @@ def update_problem(pid, updated_problem):
 
     db = api.common.get_conn()
 
-    if updated_problem.get("name", None) is not None:
-        if safe_fail(get_problem, name=updated_problem["name"]) is not None:
-            raise WebException("Problem with identical name already exists.")
-
-    problem = get_problem(pid=pid, show_disabled=True).copy()
+    problem = get_problem(pid=pid).copy()
     problem.update(updated_problem)
 
     # pass validation by removing/readding pid
@@ -252,8 +252,8 @@ def add_problem_dependency(pid1, pid2):
       The new weightmap for pid1
     """
 
-    problem1 = get_problem(pid=pid1, show_disabled=True)
-    problem2 = get_problem(pid=pid2, show_disabled=True)
+    problem1 = get_problem(pid=pid1)
+    problem2 = get_problem(pid=pid2)
 
     weightmap = problem1['weightmap']
     threshold = problem1['threshold']
@@ -309,7 +309,7 @@ def get_instance_data(pid, tid):
     """
 
     instance_map = api.team.get_team(tid=tid)["instances"]
-    problem = get_problem(pid=pid, tid=tid)
+    problem = get_problem(pid=pid)
 
     if pid not in instance_map:
         iid = assign_instance_to_team(pid, tid)
@@ -355,7 +355,7 @@ def grade_problem(pid, key, tid=None):
     if tid is None:
         tid = api.user.get_user()["tid"]
 
-    problem = get_problem(pid=pid, tid=tid)
+    problem = get_problem(pid=pid)
     instance = get_instance_data(pid, tid)
 
     correct_key = instance['flag']
@@ -569,7 +569,7 @@ def reevaluate_submissions_for_problem(pid):
 
     db = api.common.get_conn()
 
-    get_problem(pid=pid, show_disabled=True)
+    get_problem(pid=pid)
 
     keys = {}
     for submission in get_submissions(pid=pid):
@@ -595,14 +595,14 @@ def reevaluate_all_submissions():
         reevaluate_submissions_for_problem(problem["pid"])
 
 @api.cache.memoize(timeout=60, fast=True)
-def get_problem(pid=None, name=None, tid=None, show_disabled=False):
+def get_problem(pid=None, name=None, tid=None, show_disabled=True):
     """
     Gets a single problem.
 
     Args:
         pid: The problem id
         name: The name of the problem
-        show_disabled: Boolean indicating whether or not to show disabled problems.
+        show_disabled: Boolean indicating whether or not to show disabled problems. Defaults to True
     Returns:
         The problem dictionary from the database
     """
@@ -666,7 +666,8 @@ def get_solved_pids(tid=None, uid=None, category=None):
         List of solved problem ids
     """
 
-    return list(set([sub['pid'] for sub in get_submissions(tid=tid, uid=uid, category=category, correctness=True)]))
+    pids = list(set([sub['pid'] for sub in get_submissions(tid=tid, uid=uid, category=category, correctness=True)]))
+    return [pid for pid in pids if not get_problem(pid=pid, show_disabled=True)["disabled"]]
 
 def get_solved_problems(tid=None, uid=None, category=None):
     """

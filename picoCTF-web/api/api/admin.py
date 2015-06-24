@@ -35,6 +35,7 @@ def set_problem_availability(pid, disabled):
         The updated problem object.
     """
 
+    api.cache.clear_all()
     return api.problem.update_problem(pid, {"disabled": disabled})
 
 def get_api_exceptions(result_limit=50, sort_direction=pymongo.DESCENDING):
