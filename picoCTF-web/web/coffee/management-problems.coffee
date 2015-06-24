@@ -4,6 +4,8 @@ Glyphicon = ReactBootstrap.Glyphicon
 Col = ReactBootstrap.Col
 Input = ReactBootstrap.Input
 
+update = React.addons.update
+
 ProblemFilter = React.createClass
   propTypes:
     onFilterChange: React.PropTypes.func.isRequired
@@ -31,8 +33,12 @@ Problem = React.createClass
     disabled: @props.disabled
 
   onStateToggle: (e) ->
-    @setState React.addons.update @state,
-      disabled: $set: !@state.disabled
+    apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@state.disabled}
+    .done ((api) ->
+      if api.status == 1
+        @setState update @state,
+          disabled: $set: !@state.disabled
+    ).bind this
 
   render: ->
     statusButton =
@@ -48,7 +54,7 @@ Problem = React.createClass
       </div>
     </div>
 
-    panelStyle = if @props.disabled then "default" else "info"
+    panelStyle = if @state.disabled then "default" else "info"
 
     <Panel bsStyle={panelStyle} header={problemHeader}>
       <p>meng</p>
@@ -64,7 +70,7 @@ ProblemTab = React.createClass
   onFilterChange: (filter) ->
     try
       newFilter = new RegExp(filter)
-      @setState React.addons.update @state,
+      @setState update @state,
         filterRegex: $set: newFilter
     catch
       # We shouldn't do anything.
