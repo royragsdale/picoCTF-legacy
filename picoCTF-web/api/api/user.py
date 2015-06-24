@@ -24,9 +24,6 @@ user_schema = Schema({
     Required('lastname'): check(
         ("Last Name must be between 1 and 50 characters.", [str, Length(min=1, max=50)])
     ),
-    Required('country'): check(
-        ("Please select a country", [str, Length(min=2, max=2)])
-    ),
     Required('username'): check(
         ("Usernames must be between 3 and 20 characters.", [str, Length(min=3, max=20)]),
         ("This username already exists.", [
@@ -148,6 +145,11 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
     if not updated_team:
         raise InternalException("There are too many users on this team!")
 
+    #All teachers are admins.
+    if admin or teacher:
+        admin = True
+        teacher = True
+
     user = {
         'uid': uid,
         'firstname': firstname,
@@ -159,9 +161,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
         'teacher': teacher,
         'admin': admin,
         'disabled': False,
-        'background': background,
         'country': country,
-        'receive_ctf_emails': receive_ctf_emails
     }
 
     db.users.insert(user)
@@ -220,19 +220,6 @@ def create_user_request(params):
         firstname: user's first name
         lastname: user's first name
         email: user's email
-        create-new-teacher:
-            boolean "true" indicating whether or not the user is a teacher
-        create-new-team:
-            boolean "true" indicating whether or not the user is creating a new team or
-            joining an already existing team.
-
-        team-name-existing: Name of existing team to join.
-        team-password-existing: Password of existing team to join.
-
-        team-name-new: Name of new team.
-        team-school-new: Name of the team's school.
-        team-password-new: Password to join team.
-
     """
 
     validate(user_schema, params)
@@ -240,62 +227,20 @@ def create_user_request(params):
     if api.config.enable_captcha and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
 
-    #Why are these strings? :o
-    if params.get("create-new-teacher", "false") == "true":
-        if not api.config.enable_teachers:
-            raise WebException("Could not create account")
+    #Implicit teams of 1
+    team_params = {
+        "team_name": "USER-" + api.common.token(),
+        "school": "N/A",
+        "password": api.common.token(),
+        "eligible": True
+    }
 
-        validate(teacher_schema, params)
+    tid = api.team.create_team(team_params)
 
-        tid = api.team.create_team({
-            "eligible": False,
-            "school": params["teacher-school"],
-            "team_name": "TEACHER-" + api.common.token()
-        })
+    if tid is None:
+        raise InternalException("Failed to create new team.")
 
-        return create_user(
-            params["username"],
-            params["firstname"],
-            params["lastname"],
-            params["email"],
-            hash_password(params["password"]),
-            tid,
-            teacher=True,
-            background=params["background"],
-            country=params["country"],
-            receive_ctf_emails=params["ctf-emails"]
-        )
-
-    elif params.get("create-new-team", "false") == "true":
-
-        # This can be customized.
-        eligible = True
-
-        if eligible:
-            validate(new_eligible_team_schema, params)
-        else:
-            validate(new_team_schema, params)
-
-        team_params = {
-            "team_name": params["team-name-new"],
-            "school": params["team-school-new"],
-            "password": params["team-password-new"],
-            "eligible": eligible
-        }
-
-        tid = api.team.create_team(team_params)
-
-        if tid is None:
-            raise InternalException("Failed to create new team")
-        team = api.team.get_team(tid=tid)
-
-    else:
-        validate(existing_team_schema, params)
-
-        team = api.team.get_team(name=params["team-name-existing"])
-
-        if team['password'] != params['team-password-existing']:
-            raise WebException("Your team passphrase is incorrect.")
+    team = api.team.get_team(tid=tid)
 
     # Create new user
     uid = create_user(
@@ -305,15 +250,12 @@ def create_user_request(params):
         params["email"],
         hash_password(params["password"]),
         team["tid"],
-        background=params["background"],
-        country=params["country"],
-        receive_ctf_emails=params["ctf-emails"]
+        country="US",
     )
 
     if uid is None:
         raise InternalException("There was an error during registration.")
 
-    api.team.determine_eligibility(tid=team['tid'])
     return uid
 
 def is_teacher(uid=None):
