@@ -45,7 +45,7 @@ from shell_manager.bundle import get_bundle
 
 from shell_manager.bundle import get_bundle, get_bundle_root
 from shell_manager.problem import get_problem, get_problem_root
-from shell_manager.util import PROBLEM_ROOT, STAGING_ROOT, DEPLOYED_ROOT, BUNDLE_ROOT
+from shell_manager.util import HACKSPORTS_ROOT, PROBLEM_ROOT, STAGING_ROOT, DEPLOYED_ROOT, BUNDLE_ROOT
 
 import os
 import json
@@ -537,6 +537,15 @@ def get_all_problem_instances(problem_path):
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
 
+    lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
+
+    if os.path.isfile(lock_file):
+        raise Exception("Cannot deploy while other deployment in progress. If you believe this is an error, "
+                         "run 'shell_manager clean'")
+
+    with open(lock_file, "w") as f:
+        f.write("1")
+
     global deploy_config, port_map
     deploy_config = config
 
@@ -582,6 +591,8 @@ def deploy_problems(args, config):
         else:
             raise Exception("Problem path {} cannot be found".format(path))
 
+    os.remove(lock_file)
+
 def publish(args, config):
     """ Main entrypoint for publish """
 
@@ -606,7 +617,15 @@ def publish(args, config):
 def clean(args, config):
     """ Main entrypoint for clean """
 
-    shutil.rmtree(STAGING_ROOT)
+    lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
+
+    # remove staging directories
+    if os.path.isdir(STAGING_ROOT):
+        shutil.rmtree(STAGING_ROOT)
+
+    # remove lock file
+    if os.path.isfile(lock_file):
+        os.remove(lock_file)
 
     #TODO: potentially perform more cleaning
 
