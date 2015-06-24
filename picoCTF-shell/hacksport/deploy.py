@@ -561,7 +561,8 @@ def publish(args, config):
 
     for path, problem in problems.items():
         problem["instances"] = get_all_problem_instances(path)
-        output["problems"].append(problem)
+        if len(problem["instances"]) > 0:
+            output["problems"].append(problem)
 
     for path, bundle in bundles.items():
         output["bundles"].append(bundle)
