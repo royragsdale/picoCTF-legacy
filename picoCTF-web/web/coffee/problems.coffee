@@ -78,12 +78,6 @@ addProblemReview = (e) ->
         new_achievements = (x for x in data.data when !x.seen)
         constructAchievementCallbackChain new_achievements
 
-toggleHint = (e) ->
-  pid = $(e.target).data("pid")
-  ga('send', 'event', 'Problem', 'OpenHint', 'Basic')
-  apiCall "GET", "/api/problems/hint", {"pid": pid, "source": "basic"}
-  #$("#"+pid+"-hint").toggle("fast")
-
 loadProblems = ->
   apiCall "GET", "/api/problems"
   .done (data) ->
@@ -123,8 +117,6 @@ loadProblems = ->
 
           $(".problem-hint").hide()
           $(".problem-submit").on "submit", submitProblem
-          $(".info-span").on "click", toggleHint
-          $(".hint-tab-button").on "click", toggleHint
 
           $(".problem-review-form").on "submit", addProblemReview
 

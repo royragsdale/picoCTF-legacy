@@ -24,7 +24,7 @@ def give_admin_role(name=None, uid=None):
     user = api.user.get_user(name=name, uid=uid)
     db.users.update({"uid": user["uid"]}, {"$set": {"admin": True}})
 
-def set_problem_availability(pid, enabled):
+def set_problem_availability(pid, disabled):
     """
     Updates a problem's availability.
 
@@ -35,7 +35,8 @@ def set_problem_availability(pid, enabled):
         The updated problem object.
     """
 
-    return api.problem.update_problem(pid, {"disabled": not(enabled)})
+    api.cache.clear_all()
+    return api.problem.update_problem(pid, {"disabled": disabled})
 
 def get_api_exceptions(result_limit=50, sort_direction=pymongo.DESCENDING):
     """
