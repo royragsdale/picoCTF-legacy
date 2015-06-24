@@ -16,30 +16,6 @@ setRequired = ->
                 $(this).prop('required', $(this).is(":visible"))
 
 
-checkEligibility = ->
-    is_us = $("#country-select").val() in ["US", ""]
-    is_k12 = $("#background-select").val() in ["student_el", "student_ms", "student_hs", "student_home"]
-    is_student = $("#background-select").val() in ["student_el", "student_ms", "student_hs", "student_home", "student_undergrad", "student_grad"]
-    is_teacher = $("#background-select").val() == "teacher"
-
-    # This should be changed to reflect your eligibility requirements
-    if not is_k12
-        $("#eligibility-warning").show()
-    else
-        $("#eligibility-warning").hide()
-
-    if is_student
-        $("#school-group").show()
-        if $("#registration-adviser-page").is(":visible")
-            $("#button-new-team").click()
-
-    if is_teacher
-        $("#button-adviser").show()
-    else
-        $("#button-adviser").hide()
-
-    setRequired()
-
 submitRegistration = (e) ->
   e.preventDefault()
 
