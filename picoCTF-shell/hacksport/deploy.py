@@ -590,7 +590,7 @@ def status(args, config):
         print("{}* [{}] {} ({})".format(prefix, len(instances), problem['name'], path))
         for i, instance in enumerate(instances):
             print("{0}\t - Instance {1}:\n{0}\t\tport: {2}\n{0}\t\tflag: {3}".format(
-                            prefix, i, instance["port"], instance["flag"]))
+                            prefix, i, instance["port"] if "port" in instance else None, instance["flag"]))
 
     def print_bundle(bundle, path, prefix=""):
         print("{}[{} ({})]".format(prefix, bundle["name"], path))
