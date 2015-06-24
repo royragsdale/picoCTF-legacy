@@ -56,7 +56,7 @@ startup_functions:
                 <ul class="nav nav-tabs">
                     <li class="<%= pill.solveClassName %>"><a href="#<%= pill.solveId %>" data-toggle="tab">Solve</a>
                     </li>
-                    <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hint</a>
+                    <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
                     </li>
                     <li class="<%= pill.reviewClassName %>"><a href="#<%= pill.reviewId %>" data-toggle="tab">Review</a>
                     </li>
@@ -69,7 +69,11 @@ startup_functions:
                     </div>
                     <div class="tab-pane" id="<%= pill.hintId %>">
                         <div class="panel-body">
-                            <%= problem.hint %>
+                            <ul class="list-group">
+                              <% for (var i = 0; i < problem.hints.length; i++){ %>
+                                <li class="list-group-item"><%= problem.hints[i] %></li>
+                              <% } %>
+                            </ul>
                         </div>
                     </div>
                     <div class="tab-pane <%= pill.reviewClassName %>" id="<%= pill.reviewId %>">
