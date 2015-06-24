@@ -2,6 +2,30 @@
 Problem deployment.
 """
 
+PROBLEM_FILES_DIR = "problem_files"
+
+# will be set to the configuration module during deployment
+deploy_config = None
+
+port_map = {}
+current_problem = None
+current_instance = None
+
+def get_deploy_context():
+    """
+    Returns the deployment context, a dictionary containing the current
+    config, port_map, problem, instance
+    """
+
+    global deploy_config, port_map, current_problem, current_instance
+
+    return {
+        "config": deploy_config,
+        "port_map": port_map,
+        "problem": current_problem,
+        "instance": current_instance
+    }
+
 from os.path import join
 from random import Random, randint
 from abc import ABCMeta
@@ -27,11 +51,6 @@ import os
 import json
 import shutil
 import functools
-
-PROBLEM_FILES_DIR = "problem_files"
-
-# will be set to the configuration module during deployment
-deploy_config = None
 
 def challenge_meta(attributes):
     """
@@ -398,11 +417,16 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
         deployment_directory: If not None, the challenge will be deployed here instead of their home directory
     """
 
+    global current_problem, current_instance
+
     problem_object = get_problem(problem_directory)
+
+    current_problem = problem_object["name"]
 
     instance_list = []
 
     for instance_number in range(instances):
+        current_instance = instance_number
         print("Generating instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
         instance_list.append(instance)
@@ -470,11 +494,50 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
         print("The instance deployment information can be found at {}.".format(instance_info_path))
 
+def get_all_problems():
+    """ Returns a dictionary of name:object mappings """
+    problems = {}
+    for name in os.listdir(PROBLEM_ROOT):
+        try:
+            problem = get_problem(get_problem_root(name, absolute=True))
+            problems[name] = problem
+        except FileNotFoundError as e:
+            pass
+    return problems
+
+def get_all_bundles():
+    """ Returns a dictionary of name:object mappings """
+    bundles = {}
+    for name in os.listdir(BUNDLE_ROOT):
+        try:
+            bundle = get_bundle(get_bundle_root(name, absolute=True))
+            bundles[name] = bundle
+        except FileNotFoundError as e:
+            pass
+    return bundles
+
+def get_all_problem_instances(problem_path):
+    """ Returns a list of instances for a given problem """
+    instances = {}
+    instances_dir = join(DEPLOYED_ROOT, problem_path)
+    if os.path.isdir(instances_dir):
+        for name in os.listdir(instances_dir):
+            if name.endswith(".json"):
+                try:
+                    instance = json.loads(open(join(instances_dir, name)).read())
+                    instances[instance["iid"]] = instance
+                except Exception as e:
+                    pass
+
+    result = []
+    for i in range(len(instances.items())):
+        result.append(instances[i])
+    return result
 
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
 
-    global deploy_config
+    global deploy_config, port_map
     deploy_config = config
 
     try:
@@ -503,6 +566,12 @@ def deploy_problems(args, config):
                     raise Exception("Could not get bundle.")
         problems = bundle_problems
 
+    # before deploying problems, load in port_map
+    for path, problem in get_all_problems().items():
+        for instance in get_all_problem_instances(path):
+            if "port" in instance:
+                port_map[instance["port"]] = (problem["name"], instance["iid"])
+
     for path in problems:
         if os.path.isdir(path):
             deploy_problem(path, instances=args.num_instances, test=args.dry,
@@ -512,43 +581,6 @@ def deploy_problems(args, config):
                             test=args.dry, deployment_directory=args.deployment_directory)
         else:
             raise Exception("Problem path {} cannot be found".format(path))
-
-def get_all_problems():
-    """ Returns a dictionary of name:object mappings """
-    problems = {}
-    for name in os.listdir(PROBLEM_ROOT):
-        try:
-            problem = get_problem(get_problem_root(name, absolute=True))
-            problems[name] = problem
-        except FileNotFoundError as e:
-            pass
-    return problems
-
-def get_all_bundles():
-    """ Returns a dictionary of name:object mappings """
-    bundles = {}
-    for name in os.listdir(BUNDLE_ROOT):
-        try:
-            bundle = get_bundle(get_bundle_root(name, absolute=True))
-            bundles[name] = bundle
-        except FileNotFoundError as e:
-            pass
-    return bundles
-
-def get_all_problem_instances(problem_path):
-    """ Returns a list of instances for a given problem """
-    instances = []
-    instances_dir = join(DEPLOYED_ROOT, problem_path)
-    if os.path.isdir(instances_dir):
-        for name in os.listdir(instances_dir):
-            #NOTE: the order of these may not be the same as during generation
-            if name.endswith(".json"):
-                try:
-                    instance = json.loads(open(join(instances_dir, name)).read())
-                    instances.append(instance)
-                except Exception as e:
-                    pass
-    return instances
 
 def publish(args, config):
     """ Main entrypoint for publish """
@@ -583,7 +615,6 @@ def status(args, config):
 
     bundles = get_all_bundles()
     problems = get_all_problems()
-
 
     def print_problem(problem, path, prefix="\t"):
         instances = get_all_problem_instances(path)

@@ -14,3 +14,7 @@ WEB_ROOT = "/usr/share/nginx/html/"
 
 # the root of the home directories for the problem instances
 HOME_DIRECTORY_ROOT = "/home/problems/"
+
+# list of ports that should not be assigned to any instances
+# this bans the first ports 0-999
+BANNED_PORTS = range(1000)

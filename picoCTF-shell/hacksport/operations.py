@@ -2,18 +2,43 @@
 Low level deployment operations.
 """
 
-from random import randint
+from random import randint, Random
 from os import path, makedirs
 from spur import LocalShell
 from time import time
 from signal import SIGTERM
 
+from hacksport.deploy import get_deploy_context
+
+port_random = None
+
 def give_port():
     """
     Returns a random port and registers it.
     """
-    #TODO: handle registering ports
-    return randint(1000, 65000)
+
+    global port_random
+
+    context = get_deploy_context()
+
+    # default behavior
+    if context["config"] is None:
+        return randint(1000, 65000)
+
+    # during real deployment, let's register a port
+    if port_random is None:
+        port_random = Random(context["config"].DEPLOY_SECRET)
+
+    if len(context["port_map"].items()) + len(context["config"].BANNED_PORTS) == 65536:
+        raise Exception("All usable ports are taken. Cannot deploy any more instances.")
+
+    while True:
+        port = port_random.randint(0, 65535)
+        if port not in context["config"].BANNED_PORTS:
+            owner, instance = context["port_map"].get(port, (None, None))
+            if owner is None or (owner is context["problem"] and instance is context["instance"]):
+                context["port_map"][port] = (context["problem"], context["instance"])
+                return port
 
 class TimeoutError(Exception):
     """
