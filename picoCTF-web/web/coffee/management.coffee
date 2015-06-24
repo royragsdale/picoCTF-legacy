@@ -27,11 +27,14 @@ ManagementTabbedArea = React.createClass
 
   render: ->
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
-        <TabPane eventKey={1} tab='Problems'>
+        <TabPane eventKey={1} tab='Manage Problems'>
           <ProblemTab problems={@state.problems}/>
         </TabPane>
         <TabPane eventKey={2} tab='Exceptions'>
           <ExceptionTab/>
+        </TabPane>
+        <TabPane eventKey={3} tab='Load Problems'>
+          <ProblemLoaderTab/>
         </TabPane>
       </TabbedArea>
 
