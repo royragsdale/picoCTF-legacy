@@ -35,22 +35,6 @@ user_schema = Schema({
     Required('password'):
         check(("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)])
     ),
-    Required('background'):
-        check(("You must provide your background!", [str, Length(min=3, max=20)])
-    )
-}, extra=True)
-
-new_eligible_team_schema = Schema({
-    Required('team-name-new'): check(
-        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
-        ("A team with that name already exists.", [
-            lambda name: safe_fail(api.team.get_team, name=name) is None])
-    ),
-    Required('team-password-new'):
-        check(("Team passphrase must be between 3 and 20 characters.", [str, Length(min=3, max=20)])),
-    Required('team-school-new'):
-        check(("School names must be between 3 and 100 characters.", [str, Length(min=3, max=100)]))
-
 }, extra=True)
 
 new_team_schema = Schema({
@@ -75,11 +59,6 @@ existing_team_schema = Schema({
     ),
     Required('team-password-existing'):
         check(("Team passwords must be between 3 and 50 characters.", [str, Length(min=3, max=50)]))
-}, extra=True)
-
-teacher_schema = Schema({
-    Required('teacher-school'):
-        check(("School names must be between 3 and 100 characters.", [str, Length(min=3, max=100)]))
 }, extra=True)
 
 def hash_password(password):
@@ -139,8 +118,7 @@ def get_user(name=None, uid=None):
 
     return user
 
-def create_user(username, firstname, lastname, email, password_hash, tid, teacher=False,
-                background="undefined", country="undefined", receive_ctf_emails=False, admin=False):
+def create_user(username, firstname, lastname, email, password_hash, tid, teacher=False, country="US", admin=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
 
