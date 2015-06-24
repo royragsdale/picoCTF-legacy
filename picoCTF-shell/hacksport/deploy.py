@@ -459,8 +459,10 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             "description": problem.description,
             "flag": problem.flag,
             "iid": instance_number,
-            "port": problem.port if isinstance(problem, Service) else None
         }
+
+        if isinstance(problem, Service):
+            deployment_info["port"] = problem.port
 
         instance_info_path = os.path.join(deployment_json_dir, "{}.json".format(instance_number))
         with open(instance_info_path, "w") as f:
@@ -505,8 +507,8 @@ def deploy_problems(args, config):
         if os.path.isdir(path):
             deploy_problem(path, instances=args.num_instances, test=args.dry,
                             deployment_directory=args.deployment_directory)
-        elif os.path.isdir(os.path.join(get_problem_root(path))):
-            deploy_problem(os.path.join(get_problem_root(path)), instances=args.num_instances,
+        elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
+            deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=args.num_instances,
                             test=args.dry, deployment_directory=args.deployment_directory)
         else:
             raise Exception("Problem path {} cannot be found".format(path))
@@ -516,7 +518,7 @@ def get_all_problems():
     problems = {}
     for name in os.listdir(PROBLEM_ROOT):
         try:
-            problem = get_problem(get_problem_root(name))
+            problem = get_problem(get_problem_root(name, absolute=True))
             problems[name] = problem
         except FileNotFoundError as e:
             pass
@@ -527,7 +529,7 @@ def get_all_bundles():
     bundles = {}
     for name in os.listdir(BUNDLE_ROOT):
         try:
-            bundle = get_bundle(get_bundle_root(name))
+            bundle = get_bundle(get_bundle_root(name, absolute=True))
             bundles[name] = bundle
         except FileNotFoundError as e:
             pass
