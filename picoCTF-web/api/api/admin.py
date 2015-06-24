@@ -22,7 +22,7 @@ def give_admin_role(name=None, uid=None):
     db = api.common.get_conn()
 
     user = api.user.get_user(name=name, uid=uid)
-    db.users.update({"uid": user["uid"]}, {"$set": {"admin": True}})
+    db.users.update({"uid": user["uid"]}, {"$set": {"admin": True, "teacher": True}})
 
 def set_problem_availability(pid, enabled):
     """
