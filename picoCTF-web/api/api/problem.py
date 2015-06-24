@@ -5,6 +5,8 @@ import pymongo
 
 import api
 
+from random import randint
+from copy import deepcopy
 from datetime import datetime
 from api.common import validate, check, safe_fail, InternalException, SevereInternalException, WebException
 from voluptuous import Schema, Length, Required, Range
@@ -12,8 +14,6 @@ from bson import json_util
 from os.path import join, isfile
 
 from api.annotations import log_action
-
-grader_base_path = "./graders"
 
 submission_schema = Schema({
     Required("tid"): check(
@@ -33,7 +33,9 @@ problem_schema = Schema({
         ("Author must be a string.", [str])),
     Required("category"): check(
         ("Category must be a string.", [str])),
-    Required("description"): check(
+    Required("instances"): check(
+        ("The instances must be a list.", [list])),
+    "description": check(
         ("The problem description must be a string.", [str])),
     "version": check(
         ("A version must be a string.", [str])),
@@ -51,10 +53,25 @@ problem_schema = Schema({
         ("Package name must be string.", [str])),
     "pkg_dependencies": check(
         ("Package dependencies must be list.", [list])),
+    "pip_requirements": check(
+        ("pip requirements must be list.", [list])),
     "pid": check(
         ("You should not specify a pid for a problem.", [lambda _: False])),
     "_id": check(
         ("Your problems should not already have _ids.", [lambda id: False]))
+})
+
+instance_schema = Schema({
+    Required("description"): check(
+        ("The description must be a string.", [str])),
+    Required("flag"): check(
+        ("The flag must be a string.", [str])),
+    Required("iid"): check(
+        ("The iid must be an int", [int])),
+    "port": check(
+        ("The port must be an int", [int])),
+    "server": check(
+        ("The server must be a string.", [str]))
 })
 
 def get_all_categories(show_disabled=False):
@@ -75,17 +92,15 @@ def get_all_categories(show_disabled=False):
 
     return db.problems.find(match).distinct("category")
 
-#TODO: Sanity checks for autogen
 def analyze_problems():
     """
     Checks the sanity of inserted problems.
-    Includes weightmap and grader verification.
+    Includes weightmap verification.
 
     Returns:
         A list of error strings describing the problems.
     """
 
-    grader_missing_error = "{}: Missing grader at '{}'."
     unknown_weightmap_pid = "{}: Has weightmap entry '{}' which does not exist."
 
     problems = get_all_problems()
@@ -93,9 +108,6 @@ def analyze_problems():
     errors = []
 
     for problem in problems:
-        if not isfile(join(grader_base_path, problem["grader"])):
-            errors.append(grader_missing_error.format(problem["name"], problem["grader"]))
-
         for pid in problem["weightmap"].keys():
             if safe_fail(get_problem, pid=pid) is None:
                 errors.append(unknown_weightmap_pid.format(problem["name"], pid))
@@ -124,7 +136,11 @@ def insert_problem(problem):
     db = api.common.get_conn()
     validate(problem_schema, problem)
 
-    problem["disabled"] = False
+    for instance in problem["instances"]:
+        validate(instance_schema, instance)
+
+    # initially disable problems
+    problem["disabled"] = True
     problem["pid"] = api.common.hash("{}-{}".format(problem["name"], problem["author"]))
     problem["weightmap"] = {}
     problem["threshold"] = 0
@@ -242,6 +258,10 @@ def add_problem_dependency(pid1, pid2):
     weightmap = problem1['weightmap']
     threshold = problem1['threshold']
 
+    # remove prior dependency if it existed
+    threshold -= weightmap.get(problem2['pid'], 0)
+
+    # update dependency
     weightmap[problem2['pid']] = 1
     threshold += 1
 
@@ -249,9 +269,77 @@ def add_problem_dependency(pid1, pid2):
 
     return weightmap
 
+def assign_instance_to_team(pid, tid=None):
+    """
+    Assigns an instance of problem pid to team tid. Updates it in the database.
+
+    Args:
+        pid: the problem id
+        tid: the team id
+
+    Returns:
+        The instance number that was assigned
+    """
+
+    team = api.team.get_team(tid=tid)
+    problem = get_problem(pid=pid)
+
+    if pid in team["instances"]:
+        raise InternalException("Team with tid {} already has an instance of pid {}.".format(tid, pid))
+
+    instance_number = randint(0, len(problem["instances"]) - 1)
+
+    team[pid] = instance_number
+
+    db = api.common.get_conn()
+    db.teams.update({"tid": tid}, {"$set": team})
+
+    return instance_number
+
+def get_instance_data(pid, tid):
+    """
+    Returns the instance dictionary for the specified pid, tid pair
+
+    Args:
+        pid: the problem id
+        tid: the team id
+
+    Returns:
+        The instance dictionary
+    """
+
+    instance_map = api.team.get_team(tid=tid)["instances"]
+    problem = get_problem(pid=pid, tid=tid)
+
+    if pid not in instance_map:
+        iid = assign_instance_to_team(pid, tid)
+    else:
+        iid = instance_map[pid]
+
+    return problem["instances"][iid]
+
+def get_problem_instance(pid, tid):
+    """
+    Returns the problem instance dictionary that can be displayed to the user.
+
+    Args:
+        pid: the problem id
+        tid: the team id
+
+    Returns:
+        The problem instance
+    """
+
+    problem = deepcopy(get_problem(pid=pid, tid=tid))
+    instance = get_instance_data(pid, tid)
+
+    problem.pop("instances")
+    problem.update(instance)
+    return problem
+
 def grade_problem(pid, key, tid=None):
     """
-    Grades the problem with its associated grader script.
+    Grades the problem with its associated flag.
 
     Args:
         tid: tid if provided
@@ -261,16 +349,17 @@ def grade_problem(pid, key, tid=None):
         A dict.
         correct: boolean
         points: number of points the problem is worth.
-        message: message returned from the grader.
+        message: message indicating the correctness of the key.
     """
 
     if tid is None:
         tid = api.user.get_user()["tid"]
 
-    problem = get_problem(pid=pid, show_disabled=True)
-    correct_key = problem['key']
+    problem = get_problem(pid=pid, tid=tid)
+    instance = get_instance_data(pid, tid)
 
-    correct = key == correct_key
+    correct_key = instance['flag']
+    correct = correct_key in key # NOTE: is this always correct?
 
     return {
         "correct": correct,
@@ -292,7 +381,7 @@ def submit_key(tid, pid, key, uid=None, ip=None):
         A dict.
         correct: boolean
         points: number of points the problem is worth.
-        message: message returned from the grader.
+        message: message indicating the correctness of the key.
     """
 
     db = api.common.get_conn()
@@ -472,7 +561,7 @@ def invalidate_submissions(pid=None, uid=None, tid=None):
 
 def reevaluate_submissions_for_problem(pid):
     """
-    In the case of the problem or grader being updated, this will reevaluate submissions for a problem.
+    In the case of the problem being updated, this will reevaluate submissions for a problem.
 
     Args:
         pid: the pid of the problem to be reevaluated.
@@ -498,7 +587,7 @@ def reevaluate_submissions_for_problem(pid):
 
 def reevaluate_all_submissions():
     """
-    In the case of the problem or grader being updated, this will reevaluate all submissions.
+    In the case of the problem being updated, this will reevaluate all submissions.
     """
 
     api.cache.clear_all()
@@ -605,6 +694,7 @@ def get_unlocked_pids(tid, category=None):
     """
 
     solved = get_solved_problems(tid=tid, category=category)
+    team = api.team.get_team(tid=tid)
 
     unlocked = []
     for problem in get_all_problems():
@@ -614,6 +704,10 @@ def get_unlocked_pids(tid, category=None):
             weightsum = sum(problem['weightmap'].get(p['pid'], 0) for p in solved)
             if weightsum >= problem['threshold']:
                 unlocked.append(problem['pid'])
+
+    for pid in unlocked:
+        if pid not in team["instances"]:
+            assign_instance_to_team(pid, tid)
 
     return unlocked
 
@@ -628,10 +722,8 @@ def get_unlocked_problems(tid, category=None):
         List of unlocked problem dictionaries
     """
 
-    solved = get_solved_problems(tid=tid)
-    unlocked = [get_problem(pid=pid) for pid in get_unlocked_pids(tid, category=category)]
+    solved = get_solved_pids(tid=tid)
+    unlocked = [get_problem_instance(pid, tid) for pid in get_unlocked_pids(tid, category=category)]
     for problem in unlocked:
-        if api.autogen.is_autogen_problem(problem["pid"]):
-            problem.update(api.autogen.get_problem_instance(problem["pid"], tid))
-        problem['solved'] = problem in solved
+        problem["solved"] = problem["pid"] in solved
     return unlocked

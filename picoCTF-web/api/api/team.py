@@ -93,6 +93,7 @@ def create_team(params):
 
     params['tid'] = api.common.token()
     params['size'] = 0
+    params['instances'] = {}
 
     db.teams.insert(params)
 
@@ -228,7 +229,6 @@ def assign_shell_account(tid=None):
 
     db.ssh.update({"tid": {"$exists": False}}, {"$set": {"tid": tid}}, multi=False)
 
-
 def determine_eligibility(tid=None):
     db = api.common.get_conn()
     members = [x for x in db.users.find({"tid": tid}) if 'disabled' not in x or not x['disabled']]
@@ -251,7 +251,6 @@ def determine_eligibility(tid=None):
                 justification.append("User %s is not from the United States" % member['username'])
     db.teams.update({'tid': tid}, {'$set': {'eligible': eligible, 'justification': justification}})
     return eligible
-
 
 
 def recalculate_all_eligibility():

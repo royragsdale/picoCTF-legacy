@@ -17,32 +17,63 @@ class TestProblems(object):
     API Tests for problem.py
     """
 
-    # create 5 base problems
-    base_problems = [
-        {
-            "name": "base-" + str(i),
-            "score": 10,
-            "author": "haxxor",
-            "category": "",
-            "description": "Base problem " + str(i),
-        }
-        for i in range(5)
-    ]
+    # test keys
+    correct = "test"
+    wrong = "wrong"
 
-    # create 5 disabled problems
-    disabled_problems = [
-        {
-            "name" : "locked-" + str(i),
-            "author": "haxxor",
-            "score" : 10,
-            "category": "",
-            "description" : "",
-        }
-        for i in range(5)
-    ]
+    def generate_base_problems(correct):
+        """A workaround for python3's list comprehension scoping"""
+        # create 5 base problems
+        base_problems = [
+            {
+                "name": "base-" + str(i),
+                "score": 10,
+                "author": "haxxor",
+                "category": "",
+                "description": "Base problem " + str(i),
+                "instances": [
+                    {
+                        "description": "Base problem " + str(i),
+                        "flag": correct,
+                        "iid": 0,
+                        "server": "hack.com"
+                    }
+                ]
+            }
+            for i in range(5)
+        ]
+
+        return base_problems
+
+    base_problems = generate_base_problems(correct)
+
+    def generate_disabled_problems(correct):
+        """A workaround for python3's list comprehension scoping"""
+        # create 5 disabled problems
+        disabled_problems = [
+            {
+                "name" : "locked-" + str(i),
+                "author": "haxxor",
+                "score" : 10,
+                "category": "",
+                "description" : "",
+                "instances": [
+                    {
+                        "description": "disabled problem " + str(i),
+                        "flag": correct,
+                        "iid": 0,
+                        "server": "hack.com"
+                    }
+                ]
+            }
+            for i in range(5)
+        ]
+        return disabled_problems
+
+    disabled_problems = generate_disabled_problems(correct)
 
 
-    def generate_problems(base_problems):
+    def generate_problems(correct, base_problems):
         """A workaround for python3's list comprehension scoping"""
 
         # create 5 level1 problems
@@ -53,20 +84,24 @@ class TestProblems(object):
                 "author": "haxxor",
                 "category": "",
                 "description" : "Level1 problem " + str(i),
+                "instances": [
+                    {
+                        "description": "Level1 problem " + str(i),
+                        "flag": correct,
+                        "iid": 0,
+                        "server": "hack.com"
+                    }
+                ]
             }
             for i in range(5)
         ]
 
         return level1_problems
 
-    level1_problems = generate_problems(base_problems)
+    level1_problems = generate_problems(correct, base_problems)
 
     enabled_problems = base_problems + level1_problems
     all_problems = enabled_problems + disabled_problems
-
-    # test keys
-    correct = "test"
-    wrong = "wrong"
 
     def setup_class(self):
         """
