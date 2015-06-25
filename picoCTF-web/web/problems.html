@@ -31,7 +31,7 @@ startup_functions:
     className: problem.solved ? "solved" : "",
     collapseClass: problem.solved ? "" : "in",
     title: problem.name + " - " + problem.score,
-    status: problem.solved ? "Solved" : "Unsolved"
+    status: (problem.unlocked ? (problem.solved ? "Solved" : "Unsolved") : "Locked")
     };
 
     var pill = {
@@ -52,41 +52,43 @@ startup_functions:
         </div>
 
         <div class="panel-collapse collapse <%= panel.collapseClass %>" id="<%= problem.pid %>">
-            <div class="problem-body panel-body">
-                <ul class="nav nav-tabs">
-                    <li class="<%= pill.solveClassName %>"><a href="#<%= pill.solveId %>" data-toggle="tab">Solve</a>
-                    </li>
-                    <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
-                    </li>
-                    <li class="<%= pill.reviewClassName %>"><a href="#<%= pill.reviewId %>" data-toggle="tab">Review</a>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane <%= pill.solveClassName %>" id="<%= pill.solveId %>">
-                        <div class="panel-body">
-                            <%= renderProblemSubmit({problem: problem}) %>
-                        </div>
-                    </div>
-                    <div class="tab-pane" id="<%= pill.hintId %>">
-                        <div class="panel-body">
-                            <ul class="list-group">
-                              <% for (var i = 0; i < problem.hints.length; i++){ %>
-                                <li class="list-group-item"><%= problem.hints[i] %></li>
-                              <% } %>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="tab-pane <%= pill.reviewClassName %>" id="<%= pill.reviewId %>">
-                        <div class="panel-body">
-                            <%= renderProblemReview({
-                            problem: problem,
-                            alreadyReviewed: alreadyReviewed,
-                            sanitizeMetricName: sanitizeMetricName
-                            }) %>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <% if (problem.unlocked) { %>
+              <div class="problem-body panel-body">
+                  <ul class="nav nav-tabs">
+                      <li class="<%= pill.solveClassName %>"><a href="#<%= pill.solveId %>" data-toggle="tab">Solve</a>
+                      </li>
+                      <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
+                      </li>
+                      <li class="<%= pill.reviewClassName %>"><a href="#<%= pill.reviewId %>" data-toggle="tab">Review</a>
+                      </li>
+                  </ul>
+                  <div class="tab-content">
+                      <div class="tab-pane <%= pill.solveClassName %>" id="<%= pill.solveId %>">
+                          <div class="panel-body">
+                              <%= renderProblemSubmit({problem: problem}) %>
+                          </div>
+                      </div>
+                      <div class="tab-pane" id="<%= pill.hintId %>">
+                          <div class="panel-body">
+                              <ul class="list-group">
+                                <% for (var i = 0; i < problem.hints.length; i++){ %>
+                                  <li class="list-group-item"><%= problem.hints[i] %></li>
+                                <% } %>
+                              </ul>
+                          </div>
+                      </div>
+                      <div class="tab-pane <%= pill.reviewClassName %>" id="<%= pill.reviewId %>">
+                          <div class="panel-body">
+                              <%= renderProblemReview({
+                              problem: problem,
+                              alreadyReviewed: alreadyReviewed,
+                              sanitizeMetricName: sanitizeMetricName
+                              }) %>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            <% } %>
         </div>
     </div>
 </script>

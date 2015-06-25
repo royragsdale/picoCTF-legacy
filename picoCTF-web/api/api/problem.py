@@ -6,7 +6,7 @@ import pymongo
 import api
 
 from random import randint
-from copy import deepcopy
+from copy import copy, deepcopy
 from datetime import datetime
 from api.common import validate, check, safe_fail, InternalException, SevereInternalException, WebException
 from voluptuous import Schema, Length, Required, Range
@@ -713,6 +713,74 @@ def get_unlocked_pids(tid, category=None):
 
     return unlocked
 
+def filter_problem(problem, remove_list, set_dict):
+    """
+    Filters the problem by removing all keys in the remove_list
+    and setting all keys in the set_dict.
+    """
+
+    problem = copy(problem)
+
+    for key in remove_list:
+        if key in problem:
+            problem.pop(key)
+
+    problem.update(set_dict)
+
+    return problem
+
+def unlocked_filter(problem, solved):
+    """
+    Returns a filtered version of the problem for when it is in an unlocked state
+
+    Args:
+        problem: the problem object
+        solved: boolean indicating if this problem is also solved
+
+    Returns:
+        A filtered problem object
+    """
+
+    return filter_problem(problem, ["flag", "tags"], {"solved": solved, "unlocked":True})
+
+def locked_filter(problem):
+    """
+    Returns a filtered version of the problem for when it is in a locked state
+
+    Args:
+        problem: the problem object
+
+    Returns:
+        A filtered problem object
+    """
+
+    return filter_problem(problem, ["description", "instances", "hints", "tags"], {"solved": False, "unlocked":False})
+
+def get_visible_problems(tid, category=None):
+    """
+    Returns all of the problems where the unlocked problems have full information and the
+    locked problems show only name, category, and score.
+
+    Args:
+        tid: The team id
+        category: Optional parameter to restrict which problems are returned
+    Returns:
+        List of visible problem dictionaries
+    """
+
+    all_problems = get_all_problems(category=category, show_disabled=False)
+    unlocked_pids = get_unlocked_pids(tid, category=category)
+    solved_pids = get_solved_pids(tid=tid)
+
+    result = []
+    for problem  in all_problems:
+        if problem["pid"] in unlocked_pids:
+            result.append(unlocked_filter(get_problem_instance(problem["pid"], tid), problem["pid"] in solved_pids))
+        else:
+            result.append(locked_filter(problem))
+
+    return result
+
 def get_unlocked_problems(tid, category=None):
     """
     Gets the unlocked problems for a given team.
@@ -724,8 +792,4 @@ def get_unlocked_problems(tid, category=None):
         List of unlocked problem dictionaries
     """
 
-    solved = get_solved_pids(tid=tid)
-    unlocked = [get_problem_instance(pid, tid) for pid in get_unlocked_pids(tid, category=category)]
-    for problem in unlocked:
-        problem["solved"] = problem["pid"] in solved
-    return unlocked
+    return [problem for problem in get_visible_problems(tid, category=category) if problem['unlocked']]
