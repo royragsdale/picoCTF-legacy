@@ -290,7 +290,7 @@ def assign_instance_to_team(pid, tid=None):
 
     instance_number = randint(0, len(problem["instances"]) - 1)
 
-    team[pid] = instance_number
+    team["instances"][pid] = instance_number
 
     db = api.common.get_conn()
     db.teams.update({"tid": tid}, {"$set": team})
@@ -317,7 +317,11 @@ def get_instance_data(pid, tid):
     else:
         iid = instance_map[pid]
 
-    return problem["instances"][iid]
+    for instance in problem["instances"]:
+        if instance["iid"] == iid:
+            return instance
+
+    raise SevereInternalException("Instance id {} for problem {} cannot be found!".format(iid, problem['name']))
 
 def get_problem_instance(pid, tid):
     """
