@@ -13,3 +13,7 @@ def run():
     cache(api.stats.get_all_team_scores)
     print("Caching the public scoreboard graph...")
     cache(api.stats.get_top_teams_score_progressions)
+
+    print("Caching the scoreboard graph for each group...")
+    for group in api.group.get_all_groups():
+        cache(api.stats.get_top_teams_score_progressions, gid=group['gid'])

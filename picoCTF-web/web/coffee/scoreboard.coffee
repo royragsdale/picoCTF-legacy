@@ -13,6 +13,14 @@ load_teamscore = ->
       when 0
         apiNotify(data)
 
+@reloadGraph = ->
+  reload = ->
+    $(".progression-graph").empty()
+    active_gid = $("ul#scoreboard-tabs li.active").data().gid
+    window.drawTopTeamsProgressionGraph "#"+active_gid+"-progression", active_gid
+
+  setTimeout reload, 100
+
 load_scoreboard = ->
   apiCall "GET", "/api/stats/scoreboard", {}
   .done (data) ->
@@ -23,7 +31,7 @@ load_scoreboard = ->
           renderScoreboard: renderScoreboard
         })
 
-        window.drawTopTeamsProgressionGraph "#top-team-score-progression-graph"
+        reloadGraph()
       when 0
         apiNotify(data)
 

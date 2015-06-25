@@ -38,7 +38,6 @@ def get_team_score_progression():
 @block_before_competition(WebError("The competition has not begun yet!"))
 def get_scoreboard_hook():
     result = {}
-    result['public'] = api.stats.get_all_team_scores()
     result['groups'] = []
 
     if api.auth.is_logged_in():
@@ -55,3 +54,9 @@ def get_scoreboard_hook():
 @api_wrapper
 def get_top_teams_score_progressions_hook():
     return WebSuccess(data=api.stats.get_top_teams_score_progressions())
+
+@blueprint.route('/group/score_progression', methods=['GET'])
+@api_wrapper
+def get_group_top_teams_score_progressions_hook():
+    gid = request.args.get("gid", None)
+    return WebSuccess(data=api.stats.get_top_teams_score_progressions(gid=gid))
