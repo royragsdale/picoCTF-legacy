@@ -28,7 +28,7 @@ load_group_info = ->
         $("#group-request-form").on "submit", join_group_request
         $(".leave-group-span").on "click", (e) ->
           leave_group $(e.target).data("group-name"), $(e.target).data("group-owner")
-            
+
 load_achievement_info = ->
     apiCall "GET", "/api/achievements"
     .done (data) ->
@@ -46,7 +46,7 @@ join_group = (group_name, group_owner) ->
     apiNotify(data)
     if data["status"] is 1
       ga('send', 'event', 'Team', 'JoinGroup', 'Success')
-      load_group_info()        
+      load_group_info()
     else
       ga('send', 'event', 'Team', 'JoinGroup', 'Failure::' + data.message)
 
@@ -63,11 +63,11 @@ leave_group = (group_name, group_owner) ->
 group_request = (e) ->
   e.preventDefault()
   form = $(this).closest "form"
-  confirmDialog("By joining a class you are allowing the instructor to see individual statistics concerning your team's performance. Are you sure you want to join this class?", 
-                "Class Confirmation", "Join", "Cancel", 
+  confirmDialog("By joining a class you are allowing the instructor to see individual statistics concerning your team's performance. Are you sure you want to join this class?",
+                "Class Confirmation", "Join", "Cancel",
         (e) ->
             form.trigger "submit"
-       ,(e) -> 
+       ,(e) ->
             ga('send', 'event', 'Team', 'JoinGroup', 'RejectPrompt'))
 
 join_group_request = (e) ->

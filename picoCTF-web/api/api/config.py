@@ -43,9 +43,6 @@ enable_feedback = True
 competition_name = "picoCTF"
 competition_urls = ["127.0.0.1:8080"]
 
-# Max users on any given team
-api.team.max_team_users = 5
-
 # Teams to display on scoreboard graph
 api.stats.top_teams = 5
 
