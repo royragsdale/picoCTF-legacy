@@ -508,12 +508,13 @@ def get_all_problems():
 def get_all_bundles():
     """ Returns a dictionary of name:object mappings """
     bundles = {}
-    for name in os.listdir(BUNDLE_ROOT):
-        try:
-            bundle = get_bundle(get_bundle_root(name, absolute=True))
-            bundles[name] = bundle
-        except FileNotFoundError as e:
-            pass
+    if os.path.isdir(BUNDLE_ROOT):
+        for name in os.listdir(BUNDLE_ROOT):
+            try:
+                bundle = get_bundle(get_bundle_root(name, absolute=True))
+                bundles[name] = bundle
+            except FileNotFoundError as e:
+                pass
     return bundles
 
 def get_all_problem_instances(problem_path):
