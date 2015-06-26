@@ -392,7 +392,9 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
     if isinstance(problem, Service):
         all_files.extend(problem.service_files)
 
-    assert all([isinstance(f, File) for f in all_files])
+    assert all([isinstance(f, File) for f in all_files]), "files must be created using the File class."
+    for f in all_files:
+        assert os.path.isfile(join(copypath, f.path)), "{} does not exist on the file system.".format(f)
 
     service_file = create_service_file(problem, instance_number, staging_directory)
 
@@ -498,15 +500,6 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
 
-    lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
-
-    if os.path.isfile(lock_file):
-        raise Exception("Cannot deploy while other deployment in progress. If you believe this is an error, "
-                         "run 'shell_manager clean'")
-
-    with open(lock_file, "w") as f:
-        f.write("1")
-
     global deploy_config, port_map
     deploy_config = config
 
@@ -541,6 +534,13 @@ def deploy_problems(args, config):
         for instance in get_all_problem_instances(path):
             if "port" in instance:
                 port_map[instance["port"]] = (problem["name"], instance["iid"])
+
+    lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
+    if os.path.isfile(lock_file):
+        raise Exception("Cannot deploy while other deployment in progress. If you believe this is an error, "
+                         "run 'shell_manager clean'")
+    with open(lock_file, "w") as f:
+        f.write("1")
 
     for path in problems:
         if os.path.isdir(path):
