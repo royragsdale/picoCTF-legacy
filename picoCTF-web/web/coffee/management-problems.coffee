@@ -3,6 +3,7 @@ Button = ReactBootstrap.Button
 Glyphicon = ReactBootstrap.Glyphicon
 Col = ReactBootstrap.Col
 Input = ReactBootstrap.Input
+Label = ReactBootstrap.Label
 
 update = React.addons.update
 
@@ -48,16 +49,24 @@ Problem = React.createClass
 
     problemHeader =
     <div>
-      {@props.name}
+      {@props.category} - {@props.name}
       <div className="pull-right">
         {statusButton}
       </div>
     </div>
 
+    problemFooter = @props.tags.map (tag, i) ->
+      <Label key={i}><a href="#">{tag}</a></Label>
+
     panelStyle = if @state.disabled then "default" else "info"
 
-    <Panel bsStyle={panelStyle} header={problemHeader}>
-      <p>meng</p>
+    <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter}>
+      <h4>Score: {@props.score}</h4>
+      <pre>
+        <code>
+          {@props.description}
+        </code>
+      </pre>
     </Panel>
 
 ProblemTab = React.createClass
@@ -76,6 +85,10 @@ ProblemTab = React.createClass
       # We shouldn't do anything.
 
   render: ->
+
+    if @props.problems.length == 0
+      return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
+
     problems = _.filter @props.problems, ((problem) ->
       @state.filterRegex.exec problem.name
     ).bind this
