@@ -14,24 +14,38 @@ startup_functions:
 </script>
 
 <script type="text/template" id="scoreboard-tabs-template">
-  <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#public">Public</a></li>
+  <ul class="nav nav-tabs" id="scoreboard-tabs">
     <% if(data.groups.length > 0) { %>
-      <% _.each(data.groups, function(group) { %>
-        <li><a data-toggle="tab" href="#<%= group.gid %>"><%- group.name %></a></li>
+      <% _.each(data.groups, function(group, index) { %>
+        <% if (index == 0) { %>
+          <li class="active" data-gid="<%= group.gid %>"><a data-toggle="tab" href="#<%= group.gid %>" onClick="window.reloadGraph()"><%- group.name %></a></li>
+        <% } else { %>
+          <li data-gid="<%= group.gid %>"><a data-toggle="tab" href="#<%= group.gid %>" onClick="window.reloadGraph()"><%- group.name %></a></li>
+        <% } %>
       <% }); %>
+    <% } else { %>
+      <li>No Classrooms</li>
     <% } %>
   </ul>
   <div class="tab-content">
-    <div id="public" class="tab-pane fade in active">
-      <div id="top-team-score-progression-graph"></div>
-      <%= renderScoreboard({scoreboard: data.public}) %>
-    </div>
-    <% _.each(data.groups, function(group) { %>
-      <div id="<%= group.gid %>" class="tab-pane fade">
-        <%= renderScoreboard({scoreboard: group.scoreboard}) %>
-      </div>
-    <% }); %>
+    <% if (data.groups.length == 0) { %>
+        <pre>
+          <p class="text-center">No classroom scoreboards to display!</p>
+        </pre>
+    <% } else { %>
+      <% _.each(data.groups, function(group, index) { %>
+        <div id="<%= group.gid %>-progression" class="progression-graph"> </div>
+        <% if (index == 0) { %>
+          <div id="<%= group.gid %>" class="tab-pane fade in active">
+            <%= renderScoreboard({scoreboard: group.scoreboard}) %>
+          </div>
+        <% } else { %>
+          <div id="<%= group.gid %>" class="tab-pane fade">
+            <%= renderScoreboard({scoreboard: group.scoreboard}) %>
+          </div>
+        <% } %>
+      <% }); %>
+    <% } %>
   </div>
 </script>
 

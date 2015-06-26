@@ -43,15 +43,16 @@ def get_group_scores(gid=None, name=None):
         gid: The group id
         name: The group name
     Returns:
-        A dictionary of tid:score mappings
+        A dictionary containing name, tid, and score
     """
 
-    members = [api.team.get_team(tid=tid) for tid in api.group.get_group(gid, name)['members']]
+    members = [api.team.get_team(tid=tid) for tid in api.group.get_group(gid=gid, name=name)['members']]
 
     result = []
     for team in members:
         result.append({
             "name": team['team_name'],
+            "tid": team['tid'],
             "score": get_score(tid=team['tid'])
         })
 
@@ -203,32 +204,41 @@ def get_score_progression(tid=None, uid=None, category=None):
 
     return result
 
-def get_top_teams():
+def get_top_teams(gid=None):
     """
     Finds the top teams
+
+    Args:
+        gid: if specified, return the top teams from this group only
 
     Returns:
         The top teams and their scores
     """
 
-    all_teams = api.stats.get_all_team_scores()
+    if gid is None:
+        all_teams = api.stats.get_all_team_scores()
+    else:
+        all_teams = api.stats.get_group_scores(gid=gid)
     return all_teams if len(all_teams) < top_teams else all_teams[:top_teams]
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
-def get_top_teams_score_progressions():
+def get_top_teams_score_progressions(gid=None):
     """
     Gets the score_progressions for the top teams
 
+    Args:
+        gid: If specified, compute the progressions for the top teams from this group only
+
     Returns:
         The top teams and their score progressions.
-        A dict of {team_name: score_progression}
+        A dict of {name: name, score_progression: score_progression}
     """
 
     return [{
         "name": team["name"],
         "score_progression": get_score_progression(tid=team["tid"]),
-    } for team in get_top_teams()]
+    } for team in get_top_teams(gid=gid)]
 
 
 # Custom statistics not necessarily to be served publicly

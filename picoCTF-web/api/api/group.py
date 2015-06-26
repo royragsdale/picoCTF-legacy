@@ -286,3 +286,13 @@ def delete_group_request(params, uid=None):
     group = get_group(name=params["group-name"], owner_uid=uid)
 
     delete_group(group['gid'])
+
+
+def get_all_groups():
+    """
+    Returns a list of all groups in the database.
+    """
+
+    db = api.common.get_conn()
+
+    return list(db.groups.find({}, {"_id": 0}))

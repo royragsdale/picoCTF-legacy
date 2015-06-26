@@ -90,10 +90,10 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   #Avoid returning a two dimensional array with 1 element
   return if dataSets.length > 1 then dataSets else _.first(dataSets)
 
-@drawTopTeamsProgressionGraph = (selector) ->
+@drawTopTeamsProgressionGraph = (selector, gid) ->
   div = divFromSelector selector
-  apiCall "GET", "/api/stats/top_teams/score_progression", {}
-  .done (data) ->
+
+  drawgraph = (data) ->
     apiCall "GET", "/api/time", {}
     .done (timedata) ->
       if data.data.length >= 2 && $(selector).is(":visible")
@@ -115,6 +115,13 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
 
           chart = new google.visualization.SteppedAreaChart(div)
           chart.draw(packagedData, topTeamsGraphOptions)
+
+  if gid != undefined
+    apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
+    .done drawgraph
+  else
+    apiCall "GET", "/api/stats/top_teams/score_progression", {}
+    .done drawgraph
 
 @drawTeamProgressionGraph = (selector, container_selector) ->
   div = divFromSelector selector
