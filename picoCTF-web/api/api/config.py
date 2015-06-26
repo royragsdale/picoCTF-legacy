@@ -94,6 +94,7 @@ api.utilities.from_name = ""
 """ CAPTCHA """
 enable_captcha = False
 captcha_url = "http://www.google.com/recaptcha/api/verify"
+reCAPTCHA_public_key = ""
 reCAPTCHA_private_key = ""
 
 

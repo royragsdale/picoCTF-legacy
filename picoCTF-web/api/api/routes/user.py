@@ -97,6 +97,7 @@ def status_hook():
         "enable_feedback": api.config.enable_feedback,
         "shell": api.config.enable_shell,
         "enable_captcha": api.config.enable_captcha,
+        "reCAPTCHA_public_key": api.config.reCAPTCHA_public_key,
         "competition_active": api.utilities.check_competition_active(),
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else ""
     }

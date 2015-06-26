@@ -1,5 +1,3 @@
-recaptchaPublicKey = ""
-
 reloadCaptcha = ->
   apiCall "GET", "/api/user/status", {}
   .done (data) ->
@@ -33,6 +31,6 @@ $ ->
   apiCall "GET", "/api/user/status", {}
   .done (data) ->
     if data.data.enable_captcha
-        Recaptcha.create(recaptchaPublicKey, "captcha", { theme: "red" })
+        Recaptcha.create(data.data.reCAPTCHA_public_key, "captcha", { theme: "red" })
 
   $("#user-registration-form").on "submit", submitRegistration
