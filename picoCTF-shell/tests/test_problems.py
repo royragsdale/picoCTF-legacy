@@ -5,10 +5,15 @@ from os.path import join, realpath, dirname
 
 PATH = dirname(realpath(__file__))
 
+config = __import__("config")
+
 class Config:
     DEPLOY_SECRET = "Af9h3mc"
     HOSTNAME = "super.shell.server"
     WEB_ROOT = "/usr/share/ngninx/html"
+    BANNED_PORTS = config.BANNED_PORTS
+    DEFAULT_USER = config.DEFAULT_USER
+    HOME_DIRECTORY_ROOT = config.HOME_DIRECTORY_ROOT
 
 hacksport.deploy.deploy_config = Config()
 
