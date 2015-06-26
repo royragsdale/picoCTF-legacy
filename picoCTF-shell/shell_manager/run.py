@@ -11,7 +11,8 @@ from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
 from shell_manager.util import HACKSPORTS_ROOT
-from hacksport.deploy import deploy_problems, clean, status, publish
+from hacksport.deploy import deploy_problems
+from hacksport.status import clean, status, publish
 
 from os.path import join
 from os import sep
