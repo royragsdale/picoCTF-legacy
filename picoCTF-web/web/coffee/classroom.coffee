@@ -103,12 +103,11 @@ loadGroupManagement = (groups, showFirstTab, callback) ->
     apiCall "GET", "/api/group/member_information", {gid: $(this).data("gid")}
     .done (teamData) ->        
         ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
-        apiCall "GET", "/api/user/status", {}
-        .done (userData) ->
-            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, userStatus: userData.data})
+        for group in groups
+          if group.name == groupName
+            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
             $(".team-visualization-enabler").on "click", (e) ->
                 teamSelectionHandler e  
-            
   if showFirstTab
     $('#class-tabs a:first').tab('show')
 

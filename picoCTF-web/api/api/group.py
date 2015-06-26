@@ -34,6 +34,7 @@ delete_group_schema = Schema({
 def is_owner_of_group(gid):
     """
     Determine whether or not the current user is an owner of the group. gid must be specified.
+    Administrators will always be considered owners.
 
     Args:
         gid: the group id
@@ -44,11 +45,11 @@ def is_owner_of_group(gid):
     group = get_group(gid=gid)
 
     if api.auth.is_logged_in():
-        uid = api.user.get_user()["uid"]
+        user = api.user.get_user()
     else:
         raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
 
-    return uid == group["owner"]
+    return user["admin"] or user["uid"] == group["owner"]
 
 def is_member_of_group(gid=None, name=None, owner_uid=None, tid=None):
     """

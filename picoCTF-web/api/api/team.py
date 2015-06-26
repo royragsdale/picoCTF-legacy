@@ -49,13 +49,25 @@ def get_groups(tid=None, uid=None):
         List of group objects the team is a member of.
     """
 
-    tid = get_team(tid=tid)["tid"]
-    if uid is None:
-        uid = api.user.get_user()["uid"]
-
+    groups = []
     db = api.common.get_conn()
 
-    groups = []
+    tid = get_team(tid=tid)["tid"]
+    if uid is None:
+        user = api.user.get_user()
+
+        # if admin, you can own all groups
+        if user["admin"] is True:
+            for group in list(db.groups.find({}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
+                owner = api.user.get_user(uid=group['owner'])['username']
+                groups.append({'name': group['name'],
+                               'gid': group['gid'],
+                               'members': group['members'],
+                               'owner': owner,
+                               'score': api.stats.get_group_average_score(gid=group['gid'])})
+            return groups
+
+        uid = user["uid"]
 
     for group in list(db.groups.find({'owner': uid}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
         owner = api.user.get_user(uid=group['owner'])['username']
