@@ -172,6 +172,9 @@ def generate_staging_directory(root=STAGING_ROOT):
     if not os.path.isdir(root):
         os.makedirs(root)
 
+    # ensure that the staging files are not world-readable
+    os.chmod(root, 0o750)
+
     def get_new_path():
         path = join(root, str(randint(0, 1e12)))
         if os.path.isdir(path):
@@ -431,9 +434,13 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
         instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
         instance_list.append(instance)
 
+
     deployment_json_dir = os.path.join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
     if not os.path.isdir(deployment_json_dir):
         os.makedirs(deployment_json_dir)
+
+    # ensure that the deployed files are not world-readable
+    os.chmod(DEPLOYED_ROOT, 0o750)
 
     # all instances generated without issue. let's do something with them
     for instance_number, instance in enumerate(instance_list):

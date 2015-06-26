@@ -6,8 +6,8 @@ import json, spur
 import copy as object_copy
 
 import os
-from os import getcwd, makedirs
-from os.path import join, isdir, basename
+from os import getcwd, makedirs, chmod
+from os.path import join, isdir, basename, dirname
 
 from shutil import rmtree, copyfile
 
@@ -103,6 +103,10 @@ def bundle_problems(args, config):
     paths["bundle_root"] = join(paths["staging"], get_bundle_root(bundle["name"]))
 
     [makedirs(staging_path) for _, staging_path in paths.items() if not isdir(staging_path)]
+
+    # note that this chmod does not work correct if on a vagrant shared folder,
+    # so we need to package the problems elsewhere
+    chmod(dirname(paths["bundle_root"]), 0o750)
 
     bundle_to_control(bundle, paths["debian"])
 
