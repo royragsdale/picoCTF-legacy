@@ -118,11 +118,13 @@ class TestProblems(object):
         self.base_pids = []
         for problem in self.base_problems:
             pid = api.problem.insert_problem(problem)
+            api.problem.update_problem(pid, {"disabled": False})
             self.base_pids.append(pid)
 
         self.enabled_pids = self.base_pids[:]
         for problem in self.level1_problems:
             pid = api.problem.insert_problem(problem)
+            api.problem.update_problem(pid, {"disabled": False})
             self.enabled_pids.append(pid)
             for pid2 in self.base_pids:
                 api.problem.add_problem_dependency(pid, pid2)
@@ -131,7 +133,6 @@ class TestProblems(object):
         for problem in self.disabled_problems:
             pid = api.problem.insert_problem(problem)
             self.disabled_pids.append(pid)
-            api.problem.update_problem(pid, {"disabled":True})
 
         self.all_pids = self.enabled_pids + self.disabled_pids
 
@@ -157,6 +158,7 @@ class TestProblems(object):
         for problem in self.all_problems:
             with pytest.raises(APIException):
                 api.problem.insert_problem(problem)
+                api.problem.update_problem(problem["pid"], {"disabled": False})
                 assert False, "Was able to insert a problem twice."
 
         # verify that the enabled problems match

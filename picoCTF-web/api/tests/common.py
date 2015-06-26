@@ -30,19 +30,6 @@ new_team_user = {
     "team-password-new": base_team['password']
 }
 
-teacher_user = {
-    "username": "valid",
-    "password": "valid❤",
-    "firstname": "Mr. Fred",
-    "lastname": "Hacker",
-    "email": "valid@hs.edu",
-    "background": "teacher",
-    "create-new-teacher": "true",
-    "teacher-school": "µ Hacks HS",
-    "country": "US",
-    "ctf-emails": False
-}
-
 base_user = {
     "username": "validµ",
     "firstname": "Fred",

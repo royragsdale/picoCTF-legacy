@@ -11,8 +11,11 @@ import api.team
 
 from api.common import safe_fail, WebException, InternalException
 from common import clear_collections, ensure_empty_collections
-from common import base_team, base_user, new_team_user, teacher_user
+from common import base_team, base_user, new_team_user
 from conftest import setup_db, teardown_db
+
+# set the max team size to be 2
+api.team.max_team_users = 2
 
 class TestUsers(object):
     """
@@ -165,20 +168,22 @@ class TestUsers(object):
 
         with pytest.raises(WebException):
             invalid_team_user = base_user.copy()
+            invalid_team_user["username"] = "asdf"
             invalid_team_user["team-name-existing"] = "Totally Invalid"
             api.user.create_user_request(invalid_team_user)
             assert False, "Was able to join a team that doesn't exist."
 
         with pytest.raises(WebException):
             invalid_team_user = base_user.copy()
+            invalid_team_user["username"] = "asdf"
             invalid_team_user["team-password-existing"] = "Not correct"
             api.user.create_user_request(invalid_team_user)
             assert False, "Was able to join a team with an invalid password."
 
         team_uids = api.team.get_team_uids(tid)
 
-        assert uid in team_uids, "User was not successfully placed into the existing team."
         assert len(team_uids) == 1, "Invalid teams were created though the tests passed."
+        assert uid in team_uids, "User was not successfully placed into the existing team."
 
     @ensure_empty_collections("users", "teams")
     @clear_collections("users", "teams")
@@ -207,25 +212,3 @@ class TestUsers(object):
         with pytest.raises(WebException):
             api.user.update_password_request({"new-password": "", "new-password-confirmation":""}, uid)
             assert False, "Should not be able to update password to nothing."
-
-    @ensure_empty_collections("users", "teams")
-    @clear_collections("users", "teams")
-    def test_create_teacher(self):
-        """
-        Tests teacher account creation.
-
-        Covers:
-            user.create_user_request
-            user.is_teacher
-            user.get_all_users
-        """
-
-        teacher_uid = api.user.create_user_request(teacher_user.copy())
-
-
-        eligible_uids = [u['uid'] for u in api.user.get_all_users()]
-        all_uids = [u['uid'] for u in api.user.get_all_users(show_teachers=True)]
-
-        assert api.user.is_teacher(uid=teacher_uid), "Teacher account is not flagged as teacher"
-        assert teacher_uid not in eligible_uids, "Teacher was set to be eligible"
-        assert teacher_uid in all_uids, "Teacher was not in list of all users"

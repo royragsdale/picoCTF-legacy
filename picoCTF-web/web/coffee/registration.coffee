@@ -18,7 +18,8 @@ setRequired = ->
 submitRegistration = (e) ->
   e.preventDefault()
   registrationData = $("#user-registration-form").serializeObject()
-  apiCall "POST", "/api/user/create", registrationData
+
+  apiCall "POST", "/api/user/create_simple", registrationData
   .done (data) ->
     switch data['status']
       when 0
