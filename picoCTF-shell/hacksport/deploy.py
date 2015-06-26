@@ -496,28 +496,33 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
 def get_all_problems():
     """ Returns a dictionary of name:object mappings """
+
     problems = {}
-    for name in os.listdir(PROBLEM_ROOT):
-        try:
-            problem = get_problem(get_problem_root(name, absolute=True))
-            problems[name] = problem
-        except FileNotFoundError as e:
-            pass
+    if os.path.isdir(PROBLEM_ROOT):
+        for name in os.listdir(PROBLEM_ROOT):
+            try:
+                problem = get_problem(get_problem_root(name, absolute=True))
+                problems[name] = problem
+            except FileNotFoundError as e:
+                pass
     return problems
 
 def get_all_bundles():
     """ Returns a dictionary of name:object mappings """
+
     bundles = {}
-    for name in os.listdir(BUNDLE_ROOT):
-        try:
-            bundle = get_bundle(get_bundle_root(name, absolute=True))
-            bundles[name] = bundle
-        except FileNotFoundError as e:
-            pass
-    return bundles
+    if os.path.isdir(PROBLEM_ROOT):
+        for name in os.listdir(BUNDLE_ROOT):
+            try:
+                bundle = get_bundle(get_bundle_root(name, absolute=True))
+                bundles[name] = bundle
+            except FileNotFoundError as e:
+                pass
+        return bundles
 
 def get_all_problem_instances(problem_path):
     """ Returns a list of instances for a given problem """
+
     instances = {}
     instances_dir = join(DEPLOYED_ROOT, problem_path)
     if os.path.isdir(instances_dir):
