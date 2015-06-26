@@ -212,6 +212,54 @@ def _validate_captcha(data):
     return response.split("\n")[0].lower() == "true"
 
 @log_action
+def create_simple_user_request(params):
+    """
+    Registers a new user and creates a team for them automatically. Validates all fields.
+    Assume arguments to be specified in a dict.
+
+    Args:
+        username: user's username
+        password: user's password
+        firstname: user's first name
+        lastname: user's first name
+        email: user's email
+    """
+
+    params["country"] = "US"
+    validate(user_schema, params)
+
+    if api.config.enable_captcha and not _validate_captcha(params):
+        raise WebException("Incorrect captcha!")
+
+    team_params = {
+        "team_name": params["username"],
+        "password": api.common.token(),
+        "eligible": True
+    }
+
+    tid = api.team.create_team(team_params)
+
+    if tid is None:
+        raise InternalException("Failed to create new team")
+    team = api.team.get_team(tid=tid)
+
+    # Create new user
+    uid = create_user(
+        params["username"],
+        params["firstname"],
+        params["lastname"],
+        params["email"],
+        hash_password(params["password"]),
+        team["tid"],
+        country=params["country"],
+    )
+
+    if uid is None:
+        raise InternalException("There was an error during registration.")
+
+    return uid
+
+@log_action
 def create_user_request(params):
     """
     Registers a new user and creates/joins a team. Validates all fields.

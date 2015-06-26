@@ -19,13 +19,7 @@ submitRegistration = (e) ->
   e.preventDefault()
   registrationData = $("#user-registration-form").serializeObject()
 
-  # set defaults for cyberstakes online
-  registrationData['country'] = 'US'
-  registrationData['create-new-team'] = true
-  registrationData['team-name-new'] = registrationData['username']
-  registrationData['team-password-new'] = "hack"
-
-  apiCall "POST", "/api/user/create", registrationData
+  apiCall "POST", "/api/user/create_simple", registrationData
   .done (data) ->
     switch data['status']
       when 0

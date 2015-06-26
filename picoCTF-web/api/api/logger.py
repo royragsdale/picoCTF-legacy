@@ -222,7 +222,6 @@ def get_request_information():
                 "username": user["username"],
                 "email": user["email"],
                 "team_name": team["team_name"],
-                "school": team["school"],
                 "groups": [group["name"] for group in groups]
             }
 
