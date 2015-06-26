@@ -5,6 +5,7 @@ from shell_manager.problem import get_problem, get_problem_root
 from os.path import join
 
 import os
+import shutil
 import socket
 import json
 
