@@ -14,7 +14,7 @@ blueprint = Blueprint("problem_api", __name__)
 @require_login
 @block_before_competition(WebError("The competition has not begun yet!"))
 def get_unlocked_problems_hook():
-    return WebSuccess(data=api.problem.get_unlocked_problems(api.user.get_user()['tid']))
+    return WebSuccess(data=api.problem.get_visible_problems(api.user.get_user()['tid']))
 
 @blueprint.route('/solved', methods=['GET'])
 @api_wrapper
