@@ -26,7 +26,6 @@ userLoggedIn =
   Problems: "/problems"
   Shell: "/shell"
   Profile: "/profile"
-  Chat: "/chat"
   Scoreboard: "/scoreboard"
   About:
     About: "/about"
@@ -37,7 +36,6 @@ userLoggedIn =
 
 userLoggedInNoCompetition =
   Profile: "/profile"
-  Chat: "/chat"
   Scoreboard: "/scoreboard"
   About:
     About: "/about"
