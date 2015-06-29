@@ -1,11 +1,11 @@
-picoCTF-Platform 2
+Cyberstakes-Platform 2
 ==============
 
-The picoCTF Platform 2 is the infrastructure on which picoCTF runs. The 
+The Cyberstakes Platform 2 is the infrastructure on which Cyberstakes runs. The 
 platform is designed to be easily adapted to other CTF or programming 
 competitions.
 
-picoCTF Platform 2 targets Ubuntu 14.04 LTS but should work on just about 
+Cyberstakes Platform 2 targets Ubuntu 14.04 LTS but should work on just about 
 any "standard" Linux distribution. It would probably even work on 
 Windows. MongoDB must be installed; all default configurations should 
 work.
