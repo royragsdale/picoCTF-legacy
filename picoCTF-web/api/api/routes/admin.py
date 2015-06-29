@@ -38,12 +38,6 @@ def get_exceptions_hook():
     except (ValueError, TypeError):
         return WebError("limit is not a valid integer.")
 
-@blueprint.route('/flag_sharing', methods=['GET'])
-@api_wrapper
-@require_admin
-def get_flag_shares():
-    return WebSuccess(data=api.stats.check_invalid_instance_submissions())
-
 @blueprint.route("/problems/availability", methods=["POST"])
 @api_wrapper
 @require_admin

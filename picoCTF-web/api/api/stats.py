@@ -494,10 +494,15 @@ def get_days_active_breakdown(eligible=True, user_breakdown=None):
     return day_breakdown
 
 @api.cache.memoize(timeout=300)
-def check_invalid_instance_submissions():
+def check_invalid_instance_submissions(gid=None):
     db = api.api.common.get_conn()
     badteams = set()
     shared_key_submisssions = []
+
+    group = None
+    if gid is not None:
+        group = api.group.get_group(gid=gid)
+
     for problem in api.problem.get_all_problems(show_disabled=True):
         valid_keys = [instance['flag'] for instance in problem['instances']]
         incorrect_submissions = db.submissions.find({'pid': problem['pid'], 'correct': False}, {"_id": 0})
@@ -505,8 +510,9 @@ def check_invalid_instance_submissions():
             if submission['key'] in valid_keys:
                 # make sure that the key is still invalid
                 if not api.problem.grade_problem(submission['pid'], submission['key'], tid=submission['tid'])['correct']:
-                    submission['username'] = api.user.get_user(uid=submission['uid'])['username']
-                    shared_key_submisssions.append(submission)
+                    if group is None or submission['tid'] in group['members']:
+                        submission['username'] = api.user.get_user(uid=submission['uid'])['username']
+                        shared_key_submisssions.append(submission)
 
     return shared_key_submisssions
 
