@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-picoCTF Profiling script
+Cyberstakes Profiling script
 """
 from pyinstrument import Profiler
 from line_profiler import LineProfiler
@@ -111,7 +111,7 @@ def run_profiling(args):
 
 def main():
 
-    parser = ArgumentParser(description="picoCTP API performace profiling")
+    parser = ArgumentParser(description="Cyberstakes API performace profiling")
     parser.add_argument("-p", "--print", action="store_true", help="print output to console", default=False)
     parser.add_argument("-o", "--output", required=True, action="store", help="file to store statistics")
     parser.add_argument("-w", "--output-html", action="store", help="file to store html statistics", default=None)

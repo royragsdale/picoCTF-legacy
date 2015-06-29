@@ -1,5 +1,5 @@
 """
-Caching Library for picoCTF API
+Caching Library for Cyberstakes API
 """
 
 from functools import wraps
