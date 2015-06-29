@@ -58,3 +58,47 @@ def change_problem_availability_hook():
 
     api.admin.set_problem_availability(pid, state)
     return WebSuccess(data="Problem state changed successfully.")
+
+
+@blueprint.route("/shell_servers", methods=["GET"])
+@api_wrapper
+@require_admin
+def get_shell_servers():
+    return WebSuccess(data=api.shell_servers.get_servers())
+
+@blueprint.route("/shell_servers/add", methods=["POST"])
+@api_wrapper
+@require_admin
+def add_shell_server():
+    params = api.common.flat_multi(request.form)
+    api.shell_servers.add_server(params)
+    return WebSuccess("Shell server {} added.".format(params["host"]))
+
+@blueprint.route("/shell_servers/update", methods=["POST"])
+@api_wrapper
+@require_admin
+def update_shell_server():
+    params = api.common.flat_multi(request.form)
+    api.shell_servers.update_server(params["host"], params)
+    return WebSuccess("Shell server {} updated.".format(params["host"]))
+
+@blueprint.route("/shell_servers/remove", methods=["POST"])
+@api_wrapper
+@require_admin
+def remove_shell_server():
+    host = request.form.get("host", None)
+    if host is None:
+        return WebError("Must specify host to be removed")
+
+    api.shell_servers.remove_server(host)
+    return WebSuccess("Shell server {} removed.".format(host))
+
+@blueprint.route("/shell_servers/load_problems", methods=["POST"])
+@api_wrapper
+@require_admin
+def load_problems_from_shell_server():
+    host = request.form.get("host", None)
+    if host is None:
+        return WebError("Must provide host to load from.")
+    api.shell_servers.load_problems_from_server(host)
+    return WebSuccess("Problems from shell server {} added.".format(host))

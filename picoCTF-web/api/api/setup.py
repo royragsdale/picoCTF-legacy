@@ -28,3 +28,5 @@ def index_mongo():
     db.cache.ensure_index("expireAt", expireAfterSeconds=0)
     db.cache.ensure_index("kwargs", name="kwargs")
     db.cache.ensure_index("args", name="args")
+
+    db.shell_servers.ensure_index("host", unique=True, name="shell server hosts")

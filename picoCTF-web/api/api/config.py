@@ -66,22 +66,6 @@ enable_achievements = True
 
 api.achievement.processor_base_path = "./achievements"
 
-""" SHELL SERVER """
-
-enable_shell = False
-
-shell_host = "127.0.0.1"
-shell_username = "vagrant"
-shell_password = "vagrant"
-shell_port = 22
-
-shell_user_prefixes  = list("abcdefghijklmnopqrstuvwxyz")
-shell_password_length = 4
-shell_free_acounts = 10
-shell_max_accounts = 9999
-
-shell_user_creation = "sudo useradd -m {username} -p {password}"
-
 """ EMAIL (SMTP) """
 
 api.utilities.enable_email = False

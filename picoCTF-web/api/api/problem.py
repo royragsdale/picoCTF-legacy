@@ -797,3 +797,20 @@ def get_unlocked_problems(tid, category=None):
     """
 
     return [problem for problem in get_visible_problems(tid, category=category) if problem['unlocked']]
+
+
+def load_published(data):
+    """
+    Load in the problems from the shell_manager publish blob.
+
+    Args:
+        data: The output of "shell_manager publish"
+    """
+
+    if "problems" not in data:
+        raise WebException("Please provide a problems list in your json.")
+
+    for problem in data["problems"]:
+        insert_problem(problem)
+
+    api.cache.clear_all()
