@@ -6,7 +6,7 @@ import json, re, gzip
 import spur, os
 
 from os import makedirs, listdir, getcwd, chmod
-from os.path import join, isdir, isfile
+from os.path import join, isdir, isfile, dirname
 
 from shutil import copy, rmtree
 
@@ -121,12 +121,17 @@ def problem_builder(args, config):
     paths["data"] = join(paths["staging"], get_problem_root(problem["name"]))
     paths["install_data"] = join(paths["data"], "__files")
 
+
     #Make all of the directories, order does not matter with makedirs
     [makedirs(staging_path) for _, staging_path in paths.items() if not isdir(staging_path)]
 
     args.ignore.append("__staging")
 
     full_copy(problem_path, paths["data"], ignore=args.ignore)
+
+    # note that this chmod does not work correct if on a vagrant shared folder,
+    # so we need to package the problems elsewhere
+    chmod(dirname(paths["data"]), 0o750)
 
     problem_to_control(problem, paths["debian"])
 
