@@ -43,17 +43,15 @@ def add_server(params):
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 
-    try:
-        db.shell_servers.insert(params)
-    except pymongo.errors.DuplicateKeyError as e:
-        raise WebException("Host '{}' has already been added.".format(params['host']))
+    params["sid"] = api.common.token()
+    db.shell_servers.insert(params)
 
-def update_server(host, params):
+def update_server(sid, params):
     """
     Update a shell server from the pool of servers.
 
     Args:
-        host: The host to update
+        sid: The sid of the server to update
         params: A dict containing:
             port
             username
@@ -62,28 +60,46 @@ def update_server(host, params):
 
     db = api.common.get_conn()
 
-    if db.shell_servers.find_one({"host": host}) is None:
-        raise WebException("Shell server with host '{}' does not exist.".format(host))
+    if db.shell_servers.find_one({"sid": sid}) is None:
+        raise WebException("Shell server with sid '{}' does not exist.".format(sid))
 
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 
-    db.shell_servers.update({"host": host}, {"$set": params})
+    db.shell_servers.update({"sid": sid}, {"$set": params})
 
-def remove_server(host):
+def remove_server(sid):
     """
     Remove a shell server from the pool of servers.
 
     Args:
-        host: the host of the server to be removed
+        sid: the sid of the server to be removed
     """
 
     db = api.common.get_conn()
 
-    if db.shell_servers.find_one({"host": host}) is None:
-        raise WebException("Shell server with host '{}' does not exist.".format(host))
+    if db.shell_servers.find_one({"sid": sid}) is None:
+        raise WebException("Shell server with sid '{}' does not exist.".format(sid))
 
-    db.shell_servers.remove({"host": host})
+    db.shell_servers.remove({"sid": sid})
+
+def get_server(sid):
+    """
+    Returns the server object corresponding to the sid provided
+
+    Args:
+        sid: the server id to lookup
+
+    Returns:
+        The server object
+    """
+
+    db = api.common.get_conn()
+    server = db.shell_servers.find_one({"sid": sid})
+    if server is None:
+        raise WebException("Server with sid '{}' does not exist".format(sid))
+
+    return server
 
 def get_servers():
     """
@@ -93,22 +109,35 @@ def get_servers():
     db = api.common.get_conn()
     return list(db.shell_servers.find({}, {"_id": 0}))
 
-def load_problems_from_server(host):
+def get_problem_status_from_server(sid):
+    """
+    Connects to the server and checks the status of the problems running there.
+    Runs `sudo shell_manager status` and parses its output.
+
+    Args:
+        sid: The sid of the server to check
+
+    Returns:
+        True if all problems are online and false otherwise
+    """
+
+    server = get_server(sid)
+    shell = get_connection(server['host'], server['port'], server['username'], server['password'])
+
+    output = shell.run(["sudo", "shell_manager", "status"]).output.decode("utf-8")
+
+    return "OFFLINE" not in output
+
+def load_problems_from_server(sid):
     """
     Connects to the server and loads the problems from its deployment state.
     Runs `sudo shell_manager publish` and captures its output.
 
     Args:
-        host: The host of the server to load problems from.
+        sid: The sid of the server to load problems from.
     """
 
-    db = api.common.get_conn()
-
-    server = db.shell_servers.find_one({"host": host})
-
-    if server is None:
-        raise WebException("Server with host '{}' does not exist".format(host))
-
+    server = get_server(sid)
     shell = get_connection(server['host'], server['port'], server['username'], server['password'])
 
     result = shell.run(["sudo", "shell_manager", "publish"])

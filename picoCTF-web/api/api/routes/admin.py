@@ -72,33 +72,44 @@ def get_shell_servers():
 def add_shell_server():
     params = api.common.flat_multi(request.form)
     api.shell_servers.add_server(params)
-    return WebSuccess("Shell server {} added.".format(params["host"]))
+    return WebSuccess("Shell server added.")
 
 @blueprint.route("/shell_servers/update", methods=["POST"])
 @api_wrapper
 @require_admin
 def update_shell_server():
     params = api.common.flat_multi(request.form)
-    api.shell_servers.update_server(params["host"], params)
-    return WebSuccess("Shell server {} updated.".format(params["host"]))
+    api.shell_servers.update_server(params["sid"], params)
+    return WebSuccess("Shell server updated.")
 
 @blueprint.route("/shell_servers/remove", methods=["POST"])
 @api_wrapper
 @require_admin
 def remove_shell_server():
-    host = request.form.get("host", None)
-    if host is None:
-        return WebError("Must specify host to be removed")
+    sid = request.form.get("sid", None)
+    if sid is None:
+        return WebError("Must specify sid to be removed")
 
-    api.shell_servers.remove_server(host)
-    return WebSuccess("Shell server {} removed.".format(host))
+    api.shell_servers.remove_server(sid)
+    return WebSuccess("Shell server removed.")
 
 @blueprint.route("/shell_servers/load_problems", methods=["POST"])
 @api_wrapper
 @require_admin
 def load_problems_from_shell_server():
-    host = request.form.get("host", None)
-    if host is None:
-        return WebError("Must provide host to load from.")
-    api.shell_servers.load_problems_from_server(host)
-    return WebSuccess("Problems from shell server {} added.".format(host))
+    sid = request.form.get("sid", None)
+    if sid is None:
+        return WebError("Must provide sid to load from.")
+    api.shell_servers.load_problems_from_server(sid)
+    return WebSuccess("Problems from shell server added.")
+
+@blueprint.route("/shell_servers/check_status", methods=["GET"])
+@api_wrapper
+@require_admin
+def check_status_of_shell_server():
+    sid = request.args.get("sid", None)
+    if sid is None:
+        return WebError("Must provide sid to load from.")
+
+    all_online = api.shell_servers.get_problem_status_from_server(sid)
+    return WebSuccess("All problems are online") if all_online else WebError("One or more problems are offline. Please connect and fix the errors.")
