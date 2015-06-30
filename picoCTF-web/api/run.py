@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-picoCTF API Startup script
+Cyberstakes API Startup script
 """
 
 import api
@@ -10,10 +10,10 @@ from api.app import app
 
 def main():
     """
-    Runtime management of the picoCTF API
+    Runtime management of the Cyberstakes API
     """
 
-    parser = ArgumentParser(description="picoCTF API configuration")
+    parser = ArgumentParser(description="Cyberstakes API configuration")
 
     parser.add_argument("-v", "--verbose", action="count", help="increase verbosity", default=0)
 

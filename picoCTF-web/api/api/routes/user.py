@@ -20,12 +20,16 @@ def get_shell_account_hook():
         return WebSuccess(data=api.team.get_shell_account())
     return WebError(data="Shell is not available.")
 
+@blueprint.route('/create_simple', methods=['POST'])
+@api_wrapper
+def create_simple_user_hook():
+    new_uid = api.user.create_simple_user_request(api.common.flat_multi(request.form))
+    session['uid'] = new_uid
+    return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
+
 @blueprint.route('/create', methods=['POST'])
 @api_wrapper
 def create_user_hook():
-    # This is safe even if the user were to additionally add an admin=true to
-    # the data as create_user_request does not call create_user in such a way
-    # that it could possibly create an admin user.
     new_uid = api.user.create_user_request(api.common.flat_multi(request.form))
     session['uid'] = new_uid
     return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
@@ -93,6 +97,7 @@ def status_hook():
         "enable_feedback": api.config.enable_feedback,
         "shell": api.config.enable_shell,
         "enable_captcha": api.config.enable_captcha,
+        "reCAPTCHA_public_key": api.config.reCAPTCHA_public_key,
         "competition_active": api.utilities.check_competition_active(),
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else ""
     }

@@ -1,5 +1,5 @@
 """
-Common set of functionality for picoAPI testing.
+Common set of functionality for Cyberstakes API testing.
 Fixtures defined within this file are available to all
 other testing modules.
 """
