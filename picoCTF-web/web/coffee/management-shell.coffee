@@ -39,7 +39,7 @@ ServerForm = React.createClass
   loadProblems: ->
     apiCall "POST", "/api/admin/shell_servers/load_problems", {"sid": @state.shellServer.sid}
     .done (data) ->
-      apiNotify data
+      apiNotify data, "/management"
 
   checkStatus: ->
     apiCall "GET", "/api/admin/shell_servers/check_status", {"sid": @state.shellServer.sid}
