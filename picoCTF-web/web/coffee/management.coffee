@@ -33,7 +33,7 @@ ManagementTabbedArea = React.createClass
         <TabPane eventKey={2} tab='Exceptions'>
           <ExceptionTab/>
         </TabPane>
-        <TabPane eventKey={4} tab='Shell Server'>
+        <TabPane eventKey={3} tab='Shell Server'>
           <ShellServerTab/>
         </TabPane>
       </TabbedArea>
