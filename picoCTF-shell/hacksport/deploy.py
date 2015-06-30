@@ -482,6 +482,8 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             shutil.rmtree(instance["staging_directory"])
 
         deployment_info = {
+            "user": problem.user,
+            "service": os.path.basename(instance["service_file"]),
             "server": problem.server,
             "description": problem.description,
             "flag": problem.flag,

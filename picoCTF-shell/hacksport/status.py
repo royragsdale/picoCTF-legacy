@@ -1,6 +1,7 @@
 from shell_manager.util import HACKSPORTS_ROOT, PROBLEM_ROOT, STAGING_ROOT, DEPLOYED_ROOT, BUNDLE_ROOT
 from shell_manager.bundle import get_bundle, get_bundle_root
 from shell_manager.problem import get_problem, get_problem_root
+from hacksport.operations import execute
 
 from os.path import join
 
@@ -97,51 +98,109 @@ def status(args, config):
     bundles = get_all_bundles()
     problems = get_all_problems()
 
-    def print_problem(problem, path, prefix="\t"):
-        instances = get_all_problem_instances(path)
-        print("{}* [{}] {} ({})".format(prefix, len(instances), problem['name'], path))
-        for i, instance in enumerate(instances):
-            if "port" in instance:
-                status = "(online)"
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.connect(("localhost", instance["port"]))
-                except ConnectionRefusedError as e:
-                    status = "[OFFLINE]"
-            else:
-                status = ""
+    def get_instance_status(instance):
+        status = {
+            "iid": instance["iid"],
+            "port": instance["port"] if "port" in instance else None,
+            "flag": instance["flag"]
+        }
 
-            print("{0}\t - Instance {1}:\n{0}\t\tport: {2} {4}\n{0}\t\tflag: {3}".format(
-                            prefix, i, instance["port"] if "port" in instance else None, instance["flag"],
-                            status))
+        result = execute("sudo su -l {} bash -c 'systemctl --user is-failed {}'".format(instance["user"], instance["service"]), allow_error=True)
+        status["service"] = result.return_code == 1
+
+        status["connection"] = False
+        if "port" in instance:
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect(("localhost", instance["port"]))
+                s.close()
+                status["connection"] = True
+            except ConnectionRefusedError as e:
+                pass
+
+        return status
+
+    def get_problem_status(path, problem):
+        problem_status = {"name": problem["name"]}
+        instances = get_all_problem_instances(path)
+        instance_statuses = []
+        for instance in instances:
+            instance_statuses.append(get_instance_status(instance))
+
+        problem_status["instances"] = instance_statuses
+
+        return problem_status
+
+    def print_problem_status(problem, path, prefix=""):
+        def pprint(string):
+            print("{}{}".format(prefix, string))
+
+        pprint("* [{}] {} ({})".format(len(problem["instances"]), problem['name'], path))
+
+        for instance in problem["instances"]:
+            pprint("   - Instance {}:".format(instance["iid"]))
+            pprint("       flag: {}".format(instance["flag"]))
+            pprint("       port: {}".format(instance["port"]))
+            pprint("       service: {}".format("active" if instance["service"] else "failed"))
+            pprint("       connection: {}".format("online" if instance["connection"] else "offline"))
 
     def print_bundle(bundle, path, prefix=""):
-        print("{}[{} ({})]".format(prefix, bundle["name"], path))
+        def pprint(string):
+            print("{}{}".format(prefix, string))
+
+        pprint("[{} ({})]".format(bundle["name"], path))
         for problem_path in bundle["problems"]:
-            problem = problems[problem_path]
-            print_problem(problem, problem_path, prefix=prefix+"\t")
+            problem = problems.get(problem_path, None)
+            if problem is None:
+                pprint("  ! Invalid problem '{}' !".format(problem_path))
+                continue
+            pprint("  {} ({})".format(problem['name'], problem_path))
+
+    def get_bundle_status(bundle):
+        problem_statuses = []
+        for problem_path in bundle["problems"]:
+            problem = problems.get(problem_path)
+            problem_statuses.append(get_problem_status(problem_path, problem))
+        bundle["problems"] = problem_statuses
+        return bundle
 
     if args.problem is not None:
         problem = problems.get(args.problem, None)
         if problem is None:
             print("Could not find problem \"{}\"".format(args.problem))
             return
-        print_problem(problem, args.problem, prefix="")
+
+        problem_status = get_problem_status(args.problem, problem)
+        if args.json:
+            print(json.dumps(problem_status, indent=4))
+        else:
+            print_problem_status(problem_status, args.problem, prefix="")
+
     elif args.bundle is not None:
         bundle = bundles.get(args.bundle, None)
         if bundle is None:
             print("Could not find bundle \"{}\"".format(args.bundle))
             return
-        print_bundle(bundle, args.bundle, prefix="")
-    else:
-        print("** Installed Bundles [{}] **".format(len(bundles)))
-        shown_problems = []
-        for path, bundle in bundles.items():
-            print_bundle(bundle, path, prefix="\t")
-            shown_problems.extend(bundle["problems"])
 
-        print("** Installed Problems [{}] **".format(len(problems)))
-        print("   Showing status for problems not already shown...")
-        for path, problem in problems.items():
-            if path not in shown_problems:
-                print_problem(problem, path, prefix="\t")
+        if args.json:
+            print(json.dumps(get_bundle_status(bundle), indent=4))
+        else:
+            print_bundle(bundle, args.bundle, prefix="")
+
+    else:
+        if args.json:
+            result = {
+                "bundles": bundles,
+                "problems": list(map(lambda tup: get_problem_status(*tup), problems.items()))
+            }
+            print(json.dumps(result, indent=4))
+        else:
+            print("** Installed Bundles [{}] **".format(len(bundles)))
+            shown_problems = []
+            for path, bundle in bundles.items():
+                print_bundle(bundle, path, prefix="  ")
+
+            print("** Installed Problems [{}] **".format(len(problems)))
+            for path, problem in problems.items():
+                problem_status = get_problem_status(path, problem)
+                print_problem_status(problem_status, path, prefix="  ")
