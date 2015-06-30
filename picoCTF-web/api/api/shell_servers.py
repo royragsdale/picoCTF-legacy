@@ -112,21 +112,43 @@ def get_servers():
 def get_problem_status_from_server(sid):
     """
     Connects to the server and checks the status of the problems running there.
-    Runs `sudo shell_manager status` and parses its output.
+    Runs `sudo shell_manager status --json` and parses its output.
 
     Args:
         sid: The sid of the server to check
 
     Returns:
-        True if all problems are online and false otherwise
+        A tuple containing:
+            - True if all problems are online and false otherwise
+            - A list of errors (dictionaries containing "problem", "instance", "type")
     """
 
     server = get_server(sid)
     shell = get_connection(server['host'], server['port'], server['username'], server['password'])
 
-    output = shell.run(["sudo", "shell_manager", "status"]).output.decode("utf-8")
+    output = shell.run(["sudo", "shell_manager", "status", "--json"]).output.decode("utf-8")
+    data = json.loads(output)
 
-    return "OFFLINE" not in output
+    errors = []
+    for problem in data["problems"]:
+        for instance in problem["instances"]:
+            # if the service is not working
+            if not instance["service"]:
+                errors.append({
+                    "problem": problem["name"],
+                    "instance": instance["iid"],
+                    "type": "service"
+                })
+
+            # if the connection is not working and it is a remote challenge
+            if not instance["connection"] and instance["port"] is not None:
+                errors.append({
+                    "problem": problem["name"],
+                    "instance": instance["iid"],
+                    "type": "connection"
+                })
+
+    return (len(errors) == 0, errors)
 
 def load_problems_from_server(sid):
     """

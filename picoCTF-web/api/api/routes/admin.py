@@ -111,5 +111,5 @@ def check_status_of_shell_server():
     if sid is None:
         return WebError("Must provide sid to load from.")
 
-    all_online = api.shell_servers.get_problem_status_from_server(sid)
-    return WebSuccess("All problems are online") if all_online else WebError("One or more problems are offline. Please connect and fix the errors.")
+    all_online, errors = api.shell_servers.get_problem_status_from_server(sid)
+    return WebSuccess("All problems are online") if all_online else WebError("One or more problems are offline. Please connect and fix the errors.", data=errors)

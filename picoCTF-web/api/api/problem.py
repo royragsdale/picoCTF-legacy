@@ -72,7 +72,7 @@ instance_schema = Schema({
         ("The port must be an int", [int])),
     "server": check(
         ("The server must be a string.", [str]))
-})
+}, extra=True)
 
 def get_all_categories(show_disabled=False):
     """
