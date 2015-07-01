@@ -3,9 +3,13 @@ TabPane = ReactBootstrap.TabPane
 
 ManagementTabbedArea = React.createClass
   getInitialState: ->
+    tab = window.location.hash.substring(1)
+    if tab == ""
+      tab = "problems"
+
     updates: []
     problems: []
-    tabKey: 1
+    tabKey: tab
 
   componentDidMount: ->
     # Formatting hack
@@ -27,13 +31,13 @@ ManagementTabbedArea = React.createClass
 
   render: ->
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
-        <TabPane eventKey={1} tab='Manage Problems'>
+        <TabPane eventKey='problems' tab='Manage Problems'>
           <ProblemTab problems={@state.problems}/>
         </TabPane>
-        <TabPane eventKey={2} tab='Exceptions'>
+        <TabPane eventKey='exceptions' tab='Exceptions'>
           <ExceptionTab/>
         </TabPane>
-        <TabPane eventKey={3} tab='Shell Server'>
+        <TabPane eventKey='shell-servers' tab='Shell Server'>
           <ShellServerTab/>
         </TabPane>
       </TabbedArea>
