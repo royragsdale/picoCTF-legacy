@@ -100,8 +100,8 @@ def load_problems_from_shell_server():
     sid = request.form.get("sid", None)
     if sid is None:
         return WebError("Must provide sid to load from.")
-    api.shell_servers.load_problems_from_server(sid)
-    return WebSuccess("Problems from shell server added.")
+    number = api.shell_servers.load_problems_from_server(sid)
+    return WebSuccess("Loaded {} problems from the server".format(number))
 
 @blueprint.route("/shell_servers/check_status", methods=["GET"])
 @api_wrapper
@@ -111,5 +111,9 @@ def check_status_of_shell_server():
     if sid is None:
         return WebError("Must provide sid to load from.")
 
-    all_online, errors = api.shell_servers.get_problem_status_from_server(sid)
-    return WebSuccess("All problems are online") if all_online else WebError("One or more problems are offline. Please connect and fix the errors.", data=errors)
+    all_online, data = api.shell_servers.get_problem_status_from_server(sid)
+
+    if all_online:
+        return WebSuccess("All problems are online", data=data)
+    else:
+        return WebError("One or more problems are offline. Please connect and fix the errors.", data=data)

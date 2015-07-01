@@ -26,6 +26,16 @@ def get_connection(host, port, username, password):
 
     return shell
 
+def ensure_setup(shell):
+    """
+    Runs sanity checks on the shell connection to ensure that
+    shell_manager is set up correctly.
+    """
+
+    result = shell.run(["sudo", "shell_manager", "status"], allow_error=True)
+    if result.return_code == 1 and "command not found" in result.stderr_output.decode("utf-8"):
+        raise WebException("shell_manager not installed on server.")
+
 def add_server(params):
     """
     Add a shell server to the pool of servers.
@@ -120,35 +130,29 @@ def get_problem_status_from_server(sid):
     Returns:
         A tuple containing:
             - True if all problems are online and false otherwise
-            - A list of errors (dictionaries containing "problem", "instance", "type")
+            - The output data of shell_manager status --json
     """
 
     server = get_server(sid)
     shell = get_connection(server['host'], server['port'], server['username'], server['password'])
+    ensure_setup(shell)
 
     output = shell.run(["sudo", "shell_manager", "status", "--json"]).output.decode("utf-8")
     data = json.loads(output)
 
-    errors = []
+    all_online = True
+
     for problem in data["problems"]:
         for instance in problem["instances"]:
             # if the service is not working
             if not instance["service"]:
-                errors.append({
-                    "problem": problem["name"],
-                    "instance": instance["iid"],
-                    "type": "service"
-                })
+                all_online = False
 
             # if the connection is not working and it is a remote challenge
             if not instance["connection"] and instance["port"] is not None:
-                errors.append({
-                    "problem": problem["name"],
-                    "instance": instance["iid"],
-                    "type": "connection"
-                })
+                all_online = False
 
-    return (len(errors) == 0, errors)
+    return (all_online, data)
 
 def load_problems_from_server(sid):
     """
@@ -157,11 +161,17 @@ def load_problems_from_server(sid):
 
     Args:
         sid: The sid of the server to load problems from.
+
+    Returns:
+        The number of problems loaded
     """
 
     server = get_server(sid)
     shell = get_connection(server['host'], server['port'], server['username'], server['password'])
+    ensure_setup(shell)
 
     result = shell.run(["sudo", "shell_manager", "publish"])
     data = json.loads(result.output.decode("utf-8"))
     api.problem.load_published(data)
+
+    return len(data["problems"])
