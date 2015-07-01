@@ -17,6 +17,7 @@ import api.stats
 import api.utilities
 import api.problem_feedback
 import api.admin
+import api.shell_servers
 
 # MUST BE LAST
 import api.config

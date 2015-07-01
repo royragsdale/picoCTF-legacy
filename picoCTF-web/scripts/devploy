@@ -1,8 +1,10 @@
 #!/bin/bash
 
+ROOT=/home/vagrant/
+
 # Transpile the CoffeeScript files
 echo "Transpiling Coffeescript"
-cjsx -bc -o /home/vagrant/web/js/ /home/vagrant/web/coffee/
+cjsx -bc -o $ROOT/web/js/ $ROOT/web/coffee/
 
 # Shutdown the server
 echo "Shutting down nginx"
@@ -13,13 +15,13 @@ echo "Cleaning up old files"
 sudo rm -rf /srv/http/ctf/*
 
 echo "Generating web with Jekyll"
-cd /home/vagrant/web
+cd $ROOT/web
 sudo jekyll build
 
 echo "Copying files to server"
-#sudo cp -r /home/vagrant/web/* /srv/http/ctf/
-mkdir -p /home/vagrant/problem_static
-sudo cp -r /home/vagrant/problem_static /srv/http/ctf/problem-static
+#sudo cp -r $ROOT/web/* /srv/http/ctf/
+mkdir -p $ROOT/problem_static
+sudo cp -r $ROOT/problem_static /srv/http/ctf/problem-static
 
 # Make sure everything is in UNIX format.
 sudo dos2unix -q /srv/http/ctf/*.html
@@ -30,7 +32,7 @@ sudo service nginx start
 
 # Clear the cache
 echo "Clearing the API cache"
-/home/vagrant/api/api_manager.py database clear cache
+$ROOT/api/api_manager.py database clear cache
 
 #Start Cyberstakes API
 echo "Starting the Cyberstakes API"

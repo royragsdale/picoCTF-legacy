@@ -58,3 +58,70 @@ def change_problem_availability_hook():
 
     api.admin.set_problem_availability(pid, state)
     return WebSuccess(data="Problem state changed successfully.")
+
+
+@blueprint.route("/shell_servers", methods=["GET"])
+@api_wrapper
+@require_admin
+def get_shell_servers():
+    return WebSuccess(data=api.shell_servers.get_servers())
+
+@blueprint.route("/shell_servers/add", methods=["POST"])
+@api_wrapper
+@require_admin
+def add_shell_server():
+    params = api.common.flat_multi(request.form)
+    api.shell_servers.add_server(params)
+    return WebSuccess("Shell server added.")
+
+@blueprint.route("/shell_servers/update", methods=["POST"])
+@api_wrapper
+@require_admin
+def update_shell_server():
+    params = api.common.flat_multi(request.form)
+
+    sid = params.get("sid", None)
+    if sid is None:
+        return WebError("Must specify sid to be updated")
+
+    api.shell_servers.update_server(sid, params)
+    return WebSuccess("Shell server updated.")
+
+@blueprint.route("/shell_servers/remove", methods=["POST"])
+@api_wrapper
+@require_admin
+def remove_shell_server():
+    sid = request.form.get("sid", None)
+    if sid is None:
+        return WebError("Must specify sid to be removed")
+
+    api.shell_servers.remove_server(sid)
+    return WebSuccess("Shell server removed.")
+
+@blueprint.route("/shell_servers/load_problems", methods=["POST"])
+@api_wrapper
+@require_admin
+def load_problems_from_shell_server():
+    sid = request.form.get("sid", None)
+
+    if sid is None:
+        return WebError("Must provide sid to load from.")
+
+    number = api.shell_servers.load_problems_from_server(sid)
+    return WebSuccess("Loaded {} problems from the server".format(number))
+
+@blueprint.route("/shell_servers/check_status", methods=["GET"])
+@api_wrapper
+@require_admin
+def check_status_of_shell_server():
+    sid = request.args.get("sid", None)
+
+    if sid is None:
+        return WebError("Must provide sid to load from.")
+
+    all_online, data = api.shell_servers.get_problem_status_from_server(sid)
+
+    if all_online:
+        return WebSuccess("All problems are online", data=data)
+    else:
+        return WebError("One or more problems are offline. Please connect and fix the errors.", data=data)
