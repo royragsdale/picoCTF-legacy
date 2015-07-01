@@ -9,10 +9,8 @@ ManagementTabbedArea = React.createClass
 
   componentDidMount: ->
     # Formatting hack
-    $("#main-content").prepend """
-      <div class="col-md-2 fill-container" id="aux-pane"></div>
-    """
-    $("#main-content>.container").addClass("col-md-10")
+    $("#main-content>.container").addClass("container-fluid")
+    $("#main-content>.container").removeClass("container")
 
     apiCall "GET", "/api/admin/problems"
     .done ((api) ->
