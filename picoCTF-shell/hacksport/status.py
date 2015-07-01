@@ -69,10 +69,13 @@ def publish(args, config):
         if len(problem["instances"]) > 0:
             output["problems"].append(problem)
 
-    for path, bundle in bundles.items():
-        output["bundles"].append(bundle)
+    for _, bundle in bundles.items():
+        for problem in output["problems"]:
+            if problem["name"] in bundle["problems"]:
+                output["bundles"].append(bundle)
+                break
 
-    print(json.dumps(output, indent=4))
+    print(json.dumps(output, indent=2))
 
 def clean(args, config):
     """ Main entrypoint for clean """
