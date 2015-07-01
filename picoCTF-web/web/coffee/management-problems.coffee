@@ -1,11 +1,37 @@
 Panel = ReactBootstrap.Panel
 Button = ReactBootstrap.Button
+ButtonGroup = ReactBootstrap.ButtonGroup
 Glyphicon = ReactBootstrap.Glyphicon
 Col = ReactBootstrap.Col
 Input = ReactBootstrap.Input
 Label = ReactBootstrap.Label
+PanelGroup = ReactBootstrap.PanelGroup
+Row = ReactBootstrap.Row
 
 update = React.addons.update
+
+SortableButton = React.createClass
+  propTypes:
+    name: React.PropTypes.string.isRequired
+
+  getInitialState: ->
+    ascending: true
+    focused: false
+
+  #TODO: Needs reworked.
+  handleClick: (e) ->
+    if not @state.focused and false
+      @setState update @state,
+        focused: $set: true
+    else
+      @setState update @state,
+        ascending: $set: !@state.ascending
+
+     @props.onSortChange @props.name, !@state.ascending
+
+  render: ->
+    glyph = if @state.ascending then <Glyphicon glyph="chevron-up"/> else <Glyphicon glyph="chevron-down"/>
+    <Button active={@props.active} onClick={@handleClick}>{@props.name} {glyph}</Button>
 
 ProblemFilter = React.createClass
   propTypes:
@@ -22,12 +48,25 @@ ProblemFilter = React.createClass
 
   render: ->
     glyph = <Glyphicon glyph="search"/>
-    <Input type='text' className="form-control"
-      ref="filter"
-      label="Search"
-      addonBefore={glyph}
-      onChange={@onChange}
-      value={@state.filter}/>
+    <Panel>
+      <Col xs={12}>
+        Search
+        <Input type='text' className="form-control"
+          ref="filter"
+          addonBefore={glyph}
+          onChange={@onChange}
+          value={@state.filter}/>
+      </Col>
+      <Col xs={12}>
+        <SortableButton name="score" onSortChange={@props.onSortChange}/>
+        <SortableButton name="name" onSortChange={@props.onSortChange}/>
+        <SortableButton name="category" onSortChange={@props.onSortChange}/>
+      </Col>
+    </Panel>
+
+ProblemClassifier = React.createClass
+  render: ->
+    <div/>
 
 Problem = React.createClass
   getInitialState: ->
@@ -69,12 +108,33 @@ Problem = React.createClass
       </pre>
     </Panel>
 
+ProblemList = React.createClass
+  propTypes:
+    problems: React.PropTypes.array.isRequired
+
+  render: ->
+    if @props.problems.length == 0
+      return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
+
+    problemComponents = @props.problems.map (problem, i) ->
+      <Col xs={6} lg={4} key={i}>
+        <Problem {...problem}/>
+      </Col>
+
+    <div>
+      {problemComponents}
+    </div>
+
 ProblemTab = React.createClass
   propTypes:
     problems: React.PropTypes.array.isRequired
 
   getInitialState: ->
     filterRegex: /.*/
+    activeSort:
+      name: "score"
+      ascending: true
+    problemClassifier: (problem) -> true
 
   onFilterChange: (filter) ->
     try
@@ -84,31 +144,32 @@ ProblemTab = React.createClass
     catch
       # We shouldn't do anything.
 
-  render: ->
+  onSortChange: (name, ascending) ->
+    @setState update @state,
+      activeSort: $set: {name: name, ascending: ascending}
 
-    if @props.problems.length == 0
-      return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
-
-    problems = _.filter @props.problems, ((problem) ->
+  filterProblems: (problems) ->
+    visibleProblems = _.filter problems, ((problem) ->
       @state.filterRegex.exec problem.name
     ).bind this
 
-    problemComponents = problems.map (problem, i) ->
-      <Col xs={6} lg={4} key={i}>
-        <Problem {...problem}/>
-      </Col>
+    sortedProblems = _.sortBy visibleProblems, @state.activeSort.name
+    if @state.activeSort.ascending
+      sortedProblems
+    else
+      sortedProblems.reverse()
 
-    filterDisplay =
-    <div className="row">
-      <Col xs={3}>
-        <h3>Challenges</h3>
+  render: ->
+    <Row className="pad">
+      <Col xs={3} md={3}>
+        <Row>
+          <ProblemFilter onSortChange={@onSortChange} filter="" onFilterChange={@onFilterChange}/>
+        </Row>
+        <Row>
+          <ProblemClassifier/>
+        </Row>
       </Col>
-      <Col xs={9} className="pad">
-        <ProblemFilter filter="" onFilterChange={@onFilterChange}/>
+      <Col xs={9} md={9}>
+        <ProblemList problems={@filterProblems(@props.problems)}/>
       </Col>
-    </div>
-
-    <div>
-      {filterDisplay}
-      {problemComponents}
-    </div>
+    </Row>
