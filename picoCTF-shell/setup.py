@@ -11,6 +11,11 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
+import sys
+
+if 'bdist_wheel' in sys.argv:
+    raise RuntimeError("This setup.py does not support wheels")
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
