@@ -7,6 +7,8 @@ Input = ReactBootstrap.Input
 Label = ReactBootstrap.Label
 PanelGroup = ReactBootstrap.PanelGroup
 Row = ReactBootstrap.Row
+ListGroup = ReactBootstrap.ListGroup
+ListGroupItem = ReactBootstrap.ListGroupItem
 
 update = React.addons.update
 
@@ -64,10 +66,52 @@ ProblemFilter = React.createClass
       </Col>
     </Panel>
 
+ProblemClassifierList = React.createClass
+  render: ->
+    fakeAll = [
+      {
+        name: "Show all problems",
+        size: 20,
+        classifier: (problem) -> true
+      },
+      {
+        name: "Show none of the problems",
+        size: 0,
+        classifier: (problem) -> false
+      }
+    ]
+
+    <PanelGroup className="problem-classifier" collapsible>
+      <ProblemClassifier name="All" data={fakeAll} {...@props}/>
+      <ProblemClassifier name="Categories" data={[]} {...@props}/>
+      <ProblemClassifier name="Organizations" data={[]} {...@props}/>
+    </PanelGroup>
+
+ClassifierItem = React.createClass
+  getInitialState: ->
+    active: false
+
+  handleClick: (e) ->
+    activeState = !@state.active
+    @setState {active: activeState}
+    console.log @props
+    @props.setClassifier activeState, @props.classifier
+
+  render: ->
+    <ListGroupItem
+      onClick={@handleClick}
+      active={if @state.active then "active" else ""}>
+        {@props.name} <div className="pull-right"><Badge>{@props.size}</Badge></div>
+    </ListGroupItem>
+
 ProblemClassifier = React.createClass
   render: ->
-    <Panel header="Category" defaultExpanded collapsible>
-      test
+    <Panel header={@props.name} defaultExpanded collapsible>
+      <ListGroup fill>
+        {@props.data.map ((data, i) ->
+          <ClassifierItem key={i} setClassifier={@props.setClassifier} {...data}/>
+        ).bind this}
+      </ListGroup>
     </Panel>
 
 Problem = React.createClass
@@ -150,6 +194,10 @@ ProblemTab = React.createClass
     @setState update @state,
       activeSort: $set: {name: name, ascending: ascending}
 
+  setClassifier: (state, classifier) ->
+    @setState update @state,
+      problemClassifier: $set: classifier
+
   filterProblems: (problems) ->
     visibleProblems = _.filter problems, ((problem) ->
       (@state.filterRegex.exec problem.name) != null and @state.problemClassifier problem
@@ -168,7 +216,7 @@ ProblemTab = React.createClass
           <ProblemFilter onSortChange={@onSortChange} filter="" onFilterChange={@onFilterChange}/>
         </Row>
         <Row>
-          <ProblemClassifier/>
+          <ProblemClassifierList setClassifier={@setClassifier}/>
         </Row>
       </Col>
       <Col xs={9} md={9}>
