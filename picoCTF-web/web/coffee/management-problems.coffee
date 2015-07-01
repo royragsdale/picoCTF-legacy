@@ -89,28 +89,32 @@ ProblemClassifierList = React.createClass
     </PanelGroup>
 
 ClassifierItem = React.createClass
-  getInitialState: ->
-    active: false
-
   handleClick: (e) ->
-    activeState = !@state.active
-    @setState {active: activeState}
-    console.log @props, activeState
-    @props.setClassifier activeState, @props.classifier
+    @props.setClassifier !@props.active, @props.classifier
+    @props.onExclusiveClick @props.name
 
   render: ->
     glyph = <Glyphicon glyph="ok"/>
 
     <ListGroupItem onClick={@handleClick}>
-        {@props.name} {if @state.active then glyph} <div className="pull-right"><Badge>{@props.size}</Badge></div>
+        {@props.name} {if @props.active then glyph} <div className="pull-right"><Badge>{@props.size}</Badge></div>
     </ListGroupItem>
 
 ProblemClassifier = React.createClass
+  getInitialState: ->
+    _.object ([classifier.name, false] for classifier in @props.data)
+
+  handleClick: (name) ->
+    activeStates = @getInitialState()
+    activeStates[name] = !@state[name]
+    @setState activeStates
+
   render: ->
     <Panel header={@props.name} defaultExpanded collapsible>
       <ListGroup fill>
         {@props.data.map ((data, i) ->
-          <ClassifierItem key={i+data} setClassifier={@props.setClassifier} {...data}/>
+          <ClassifierItem onExclusiveClick={@handleClick} active={@state[data.name]}
+            key={i} setClassifier={@props.setClassifier} {...data}/>
         ).bind this}
       </ListGroup>
     </Panel>
@@ -181,7 +185,9 @@ ProblemTab = React.createClass
     activeSort:
       name: "score"
       ascending: true
-    problemClassifier: (problem) -> true
+    problemClassifier: [
+      (problem) -> true
+    ]
 
   onFilterChange: (filter) ->
     try
@@ -196,15 +202,19 @@ ProblemTab = React.createClass
       activeSort: $set: {name: name, ascending: ascending}
 
   setClassifier: (classifierState, classifier) ->
-    if not classifierState
-      classifier = (problem) -> true
-
-    @setState update @state,
-      problemClassifier: $set: classifier
+    #bug here
+    console.log classifierState, classifier
+    if classifierState
+      @setState update @state,
+        problemClassifier: $push: [classifier]
+    else
+      otherClassifiers = _.without @state.problemClassifier, classifier
+      @setState update @state,
+        problemClassifier: $set: otherClassifiers
 
   filterProblems: (problems) ->
     visibleProblems = _.filter problems, ((problem) ->
-      (@state.filterRegex.exec problem.name) != null and @state.problemClassifier problem
+      (@state.filterRegex.exec problem.name) != null and _.all (classifier problem for classifier in @state.problemClassifier)
     ).bind this
 
     sortedProblems = _.sortBy visibleProblems, @state.activeSort.name
