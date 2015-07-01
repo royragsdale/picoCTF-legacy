@@ -67,7 +67,7 @@ instance_schema = Schema({
     Required("flag"): check(
         ("The flag must be a string.", [str])),
     Required("iid"): check(
-        ("The iid must be an int", [int])),
+        ("The iid must be a string", [str])),
     "port": check(
         ("The port must be an int", [int])),
     "server": check(
@@ -193,6 +193,14 @@ def update_problem(pid, updated_problem):
     db = api.common.get_conn()
 
     problem = get_problem(pid=pid).copy()
+
+    if "instances" in updated_problem:
+        instances = {instance["iid"]: instance for instance in problem["instances"]}
+        for instance in updated_problem["instances"]:
+            instances[instance["iid"]] = instance
+
+        problem["instances"] = [instance for iid,instance in instances.items()]
+
     problem.update(updated_problem)
 
     # pass validation by removing/readding pid
@@ -221,25 +229,6 @@ def search_problems(*conditions):
     db = api.common.get_conn()
 
     return list(db.problems.find({"$or": list(conditions)}, {"_id":0}))
-
-def insert_problem_from_json(blob):
-    """
-    Converts json blob of problem(s) into dicts. Runs insert_problem on each one.
-    See insert_problem for more information.
-
-    Returns:
-        A list of the created problem pids if an array of problems is specified.
-    """
-
-    result = json_util.loads(blob)
-
-    if type(result) == list:
-        return [insert_problem(problem) for problem in result]
-    elif type(result) == dict:
-        return insert_problem(result)
-    else:
-        raise InternalException("JSON blob does not appear to be a list of problems or a single problem.")
-
 
 def add_problem_dependency(pid1, pid2):
     """
@@ -279,7 +268,7 @@ def assign_instance_to_team(pid, tid=None):
         tid: the team id
 
     Returns:
-        The instance number that was assigned
+        The iid that was assigned
     """
 
     team = api.team.get_team(tid=tid)
@@ -289,8 +278,9 @@ def assign_instance_to_team(pid, tid=None):
         raise InternalException("Team with tid {} already has an instance of pid {}.".format(tid, pid))
 
     instance_number = randint(0, len(problem["instances"]) - 1)
+    iid = problem["instances"][instance_number]["iid"]
 
-    team["instances"][pid] = instance_number
+    team["instances"][pid] = iid
 
     db = api.common.get_conn()
     db.teams.update({"tid": tid}, {"$set": team})
