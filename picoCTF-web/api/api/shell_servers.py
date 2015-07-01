@@ -3,7 +3,19 @@ import pymongo
 import spur
 import json
 
-from api.common import WebException
+from api.common import validate, check, WebException
+from voluptuous import Schema, Required
+
+server_schema = Schema({
+    Required("host"): check(
+        ("Host must be a string", [str])),
+    Required("port"): check(
+        ("Port must be a string", [str])),
+    Required("username"): check(
+        ("Username must be a string", [str])),
+    Required("password"): check(
+        ("Username must be a string", [str]))
+}, extra=True)
 
 def get_connection(host, port, username, password):
     """
@@ -49,6 +61,8 @@ def add_server(params):
     """
 
     db = api.common.get_conn()
+
+    validate(server_schema, params)
 
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
