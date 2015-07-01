@@ -87,6 +87,8 @@ def update_server(sid, params):
     if db.shell_servers.find_one({"sid": sid}) is None:
         raise WebException("Shell server with sid '{}' does not exist.".format(sid))
 
+    validate(server_schema, params)
+
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 

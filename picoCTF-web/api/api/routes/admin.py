@@ -82,7 +82,7 @@ def update_shell_server():
 
     sid = params.get("sid", None)
     if sid is None:
-        return WebError("Must specify sid to be removed")
+        return WebError("Must specify sid to be updated")
 
     api.shell_servers.update_server(sid, params)
     return WebSuccess("Shell server updated.")
@@ -103,8 +103,10 @@ def remove_shell_server():
 @require_admin
 def load_problems_from_shell_server():
     sid = request.form.get("sid", None)
+
     if sid is None:
         return WebError("Must provide sid to load from.")
+
     number = api.shell_servers.load_problems_from_server(sid)
     return WebSuccess("Loaded {} problems from the server".format(number))
 
@@ -113,6 +115,7 @@ def load_problems_from_shell_server():
 @require_admin
 def check_status_of_shell_server():
     sid = request.args.get("sid", None)
+
     if sid is None:
         return WebError("Must provide sid to load from.")
 
