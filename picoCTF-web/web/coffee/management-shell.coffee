@@ -6,40 +6,43 @@ Grid = ReactBootstrap.Grid
 Row = ReactBootstrap.Row
 Col = ReactBootstrap.Col
 Well = ReactBootstrap.Well
+ListGroupItem = ReactBootstrap.ListGroupItem
+ListGroup = ReactBootstrap.ListGroup
+Accordion = ReactBootstrap.Accordion
 
 ServerForm = React.createClass
-  getInitialState: ->
-    {shellServer: {"host":"", "port":"22", "username":"", "password":""}}
+  propTypes:
+    new: React.PropTypes.bool.isRequired
+    refresh: React.PropTypes.func.isRequired
+    server: React.PropTypes.object
 
-  componentDidMount: ->
-    apiCall "GET", "/api/admin/shell_servers"
-    .done ((api) ->
-      if api.data.length == 0
-        @setState {new: true, shellServer: @state.shellServer}
-      else
-        @setState {new: false, shellServer: api.data[0]}
-    ).bind this
+  getInitialState: ->
+    if @props.new
+      server = {"host":"", "port":"22", "username":"", "password":""}
+    else
+      server = @props.server
+
+    {new: @props.new, shellServer: server}
+
+  notifyAndRefresh: (data) ->
+    apiNotify data
+    @props.refresh()
 
   addServer: ->
     apiCall "POST", "/api/admin/shell_servers/add", @state.shellServer
-    .done (data) ->
-      apiNotify data, "/management"
+    .done @notifyAndRefresh
 
   deleteServer: ->
     apiCall "POST", "/api/admin/shell_servers/remove", {"sid": @state.shellServer.sid}
-    .done (data) ->
-      console.log(data)
-      apiNotify data, "/management"
+    .done @notifyAndRefresh
 
   updateServer: ->
     apiCall "POST", "/api/admin/shell_servers/update", @state.shellServer
-    .done (data) ->
-      apiNotify data
+    .done @notifyAndRefresh
 
   loadProblems: ->
     apiCall "POST", "/api/admin/shell_servers/load_problems", {"sid": @state.shellServer.sid}
-    .done (data) ->
-      apiNotify data, "/management"
+    .done @notifyAndRefresh
 
   checkStatus: ->
     apiCall "GET", "/api/admin/shell_servers/check_status", {"sid": @state.shellServer.sid}
@@ -68,10 +71,10 @@ ServerForm = React.createClass
 
   createFormEntry: (name, type, value, onChange) ->
     <Row>
-      <Col md={2}>
+      <Col md={4}>
         <h4 className="pull-right">{name}</h4>
       </Col>
-      <Col md={10}>
+      <Col md={8}>
         <Input className="form-control" type={type} value={value} onChange={onChange} />
       </Col>
     </Row>
@@ -79,10 +82,12 @@ ServerForm = React.createClass
   render: ->
     if @state.new
       buttons =
-        <Button onClick={@addServer}>Add</Button>
+        <ButtonToolbar className="pull-right">
+          <Button onClick={@addServer}>Add</Button>
+        </ButtonToolbar>
     else
       buttons =
-        <ButtonToolbar>
+        <ButtonToolbar className="pull-right">
           <Button onClick={@updateServer}>Update</Button>
           <Button onClick={@deleteServer}>Delete</Button>
           <Button onClick={@loadProblems}>Load Deployment</Button>
@@ -97,6 +102,39 @@ ServerForm = React.createClass
       {buttons}
     </div>
 
+ShellServerList = React.createClass
+
+  getInitialState: ->
+    {shellServers: []}
+
+  refresh: ->
+    apiCall "GET", "/api/admin/shell_servers"
+    .done ((api) ->
+      @setState {shellServers: api.data}
+    ).bind this
+
+  componentDidMount: ->
+    @refresh()
+
+  createShellServerForm: (server, i) ->
+    if server == null
+      shellServer = <ServerForm new={true} key={i+"new"} refresh={@refresh}/>
+      header = <div> New Shell Server </div>
+    else
+      shellServer = <ServerForm new={false} server={server} key={server.sid} refresh={@refresh}/>
+      header = <div> {server.host} </div>
+
+    <Panel bsStyle={"default"} eventKey={i} key={i} header={header}>
+      {shellServer}
+    </Panel>
+
+  render: ->
+    serverList = _.map @state.shellServers, @createShellServerForm
+    serverList.push(@createShellServerForm(null, @state.shellServers.length))
+
+    <Accordion defaultActiveKey={0}>
+      {serverList}
+    </Accordion>
 
 ProblemLoaderTab = React.createClass
   getInitialState: ->
@@ -118,7 +156,7 @@ ProblemLoaderTab = React.createClass
     publishArea =
     <div className="form-group">
       <h4>Paste your published JSON here:</h4>
-      <Input className="form-control" type='textarea' rows="7"
+      <Input className="form-control" type='textarea' rows="10"
         value={@state.publishedJSON} onChange={@handleChange}/>
     </div>
 
@@ -132,6 +170,7 @@ ProblemLoaderTab = React.createClass
       </Row>
     </div>
 
+
 ShellServerTab = React.createClass
 
   render: ->
@@ -141,10 +180,10 @@ ShellServerTab = React.createClass
           <h4>To add problems, either enter your shell server information on the left or paste your published JSON on the right.</h4>
         </Row>
         <Row>
-          <Col md={5}>
-            <ServerForm />
+          <Col md={6}>
+            <ShellServerList />
           </Col>
-          <Col md={5} className="pull-right">
+          <Col md={6} className="pull-right">
             <ProblemLoaderTab/>
           </Col>
         </Row>
