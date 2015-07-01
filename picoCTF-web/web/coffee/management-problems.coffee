@@ -66,7 +66,9 @@ ProblemFilter = React.createClass
 
 ProblemClassifier = React.createClass
   render: ->
-    <div/>
+    <Panel header="Category" defaultExpanded collapsible>
+      test
+    </Panel>
 
 Problem = React.createClass
   getInitialState: ->
@@ -150,7 +152,7 @@ ProblemTab = React.createClass
 
   filterProblems: (problems) ->
     visibleProblems = _.filter problems, ((problem) ->
-      @state.filterRegex.exec problem.name
+      (@state.filterRegex.exec problem.name) != null and @state.problemClassifier problem
     ).bind this
 
     sortedProblems = _.sortBy visibleProblems, @state.activeSort.name
