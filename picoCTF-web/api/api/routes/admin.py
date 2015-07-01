@@ -79,7 +79,12 @@ def add_shell_server():
 @require_admin
 def update_shell_server():
     params = api.common.flat_multi(request.form)
-    api.shell_servers.update_server(params["sid"], params)
+
+    sid = params.get("sid", None)
+    if sid is None:
+        return WebError("Must specify sid to be removed")
+
+    api.shell_servers.update_server(sid, params)
     return WebSuccess("Shell server updated.")
 
 @blueprint.route("/shell_servers/remove", methods=["POST"])
