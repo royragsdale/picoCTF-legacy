@@ -39,7 +39,7 @@ def get_all_bundles():
 def get_all_problem_instances(problem_path):
     """ Returns a list of instances for a given problem """
 
-    instances = {}
+    instances = []
     instances_dir = join(DEPLOYED_ROOT, problem_path)
     if os.path.isdir(instances_dir):
         for name in os.listdir(instances_dir):
@@ -49,12 +49,9 @@ def get_all_problem_instances(problem_path):
                 except Exception as e:
                     continue
 
-                instances[instance["iid"]] = instance
+                instances.append(instance)
 
-    result = []
-    for i in range(len(instances.items())):
-        result.append(instances[i])
-    return result
+    return instances
 
 def publish(args, config):
     """ Main entrypoint for publish """
@@ -138,7 +135,7 @@ def status(args, config):
         pprint("* [{}] {} ({})".format(len(problem["instances"]), problem['name'], path))
 
         for instance in problem["instances"]:
-            pprint("   - Instance {}:".format(instance["iid"]))
+            pprint("   - Instance ID: {}".format(instance["iid"]))
             pprint("       flag: {}".format(instance["flag"]))
             pprint("       port: {}".format(instance["port"]))
             pprint("       service: {}".format("active" if instance["service"] else "failed"))

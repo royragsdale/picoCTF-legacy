@@ -302,7 +302,7 @@ def install_user_service(home_directory, user, service_file):
 
     # enable automatic starting of user services
     execute("loginctl enable-linger {}".format(user))
-    execute("systemctl restart user@{}.service".format(userpw.pw_uid))
+    execute("systemctl restart user@{}.service".format(userpw.pw_uid), timeout=5)
 
     # set environment variable so "su -l problem_user" will correctly populate it
     # this is due to a known issue with su -l
@@ -488,13 +488,16 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
 
+        unique = problem_object["name"] + problem_object["author"] + str(instance_number) + deploy_config.DEPLOY_SECRET
+
+        iid = md5(unique.encode("utf-8")).hexdigest()
         deployment_info = {
             "user": problem.user,
             "service": os.path.basename(instance["service_file"]),
             "server": problem.server,
             "description": problem.description,
             "flag": problem.flag,
-            "iid": instance_number,
+            "iid": iid
         }
 
         if isinstance(problem, Service):
