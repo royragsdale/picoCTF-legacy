@@ -90,7 +90,9 @@ bundle_schema = Schema({
     "organization": check(
         ("The bundle organization must be a string.", [str])),
     "dependencies": check(
-        ("The bundle dependencies must be a dict.", [dict]))
+        ("The bundle dependencies must be a dict.", [dict])),
+    "dependencies_enabled": check(
+        ("The dependencies enabled state must be a bool.", [lambda x: type(x) == bool]))
 })
 
 def get_all_categories(show_disabled=False):
@@ -712,7 +714,7 @@ def is_problem_unlocked(problem, solved):
 
     for bundle in get_all_bundles():
         if problem["sanitized_name"] in bundle["problems"]:
-            if "dependencies" in bundle:
+            if "dependencies" in bundle and bundle["dependencies_enabled"]:
                 if problem["sanitized_name"] in bundle["dependencies"]:
                     dependency = bundle["dependencies"][problem["sanitized_name"]]
                     weightsum = sum(dependency['weightmap'].get(p['sanitized_name'], 0) for p in solved)
@@ -828,6 +830,20 @@ def get_unlocked_problems(tid, category=None):
 
     return [problem for problem in get_visible_problems(tid, category=category) if problem['unlocked']]
 
+def insert_bundle(bundle):
+    """
+    Inserts the bundle into the database after
+    validating it with the bundle_schema
+    """
+
+    db = api.common.get_conn()
+    validate(bundle_schema, bundle)
+
+    bundle["bid"] = api.common.token()
+    bundle["dependencies_enabled"] = False
+
+    db.bundles.insert(bundle)
+
 def load_published(data):
     """
     Load in the problems from the shell_manager publish blob.
@@ -845,10 +861,42 @@ def load_published(data):
     if "bundles" in data:
         db = api.common.get_conn()
         for bundle in data["bundles"]:
-            validate(bundle_schema, bundle)
-            db.bundles.insert(bundle)
+            insert_bundle(bundle)
 
     api.cache.clear_all()
+
+def get_bundle(bid):
+    """
+    Returns the bundle object corresponding to the given bid
+    """
+
+    db = api.common.get_conn()
+
+    bundle = api.bundles.find_one({"bid" : bid})
+
+    if bundle is None:
+        raise WebException("Bundle with bid {} does not exist".format(bid))
+
+    return bundle
+
+def update_bundle(bid, updates):
+    """
+    Updates the bundle object in the database with the given updates.
+    """
+
+    db = api.common.get_conn()
+
+    bundle = db.bundles.find_one({"bid" : bid}, {"_id": 0})
+    if bundle is None:
+        raise WebException("Bundle with bid {} does not exist".format(bid))
+
+    # pop the bid temporarily to check with schema
+    bid = bundle.pop("bid")
+    bundle.update(updates)
+    validate(bundle_schema, bundle)
+    bundle["bid"] = bid
+
+    db.bundles.update({"bid": bid}, {"$set": bundle})
 
 def get_all_bundles():
     """
@@ -858,3 +906,16 @@ def get_all_bundles():
     db = api.common.get_conn()
 
     return list(db.bundles.find({}, {"_id": 0}))
+
+def set_bundle_dependencies_enabled(bid, enabled):
+    """
+    Sets the dependencies_enabled field in the object in the database.
+    This will affect the unlocked problems.
+
+    Args:
+        bid: the bundle id to update
+        enabled:
+    """
+
+    update_bundle(bid, {"dependencies_enabled": enabled})
+    api.cache.clear_all()

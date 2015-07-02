@@ -126,3 +126,25 @@ def check_status_of_shell_server():
         return WebSuccess("All problems are online", data=data)
     else:
         return WebError("One or more problems are offline. Please connect and fix the errors.", data=data)
+
+@blueprint.route("/bundle/dependencies_active", methods=["POST"])
+@api_wrapper
+@require_admin
+def bundle_dependencies():
+    bid = request.form.get("bid", None)
+    state = request.form.get("state", None)
+
+    if bid is None:
+        return WebError("Must provide bid to load from.")
+
+    if state is None:
+        return WebError("Must provide a state to set.")
+
+    if state == "true":
+        state = True
+    elif state == "false":
+        state = False
+
+    api.problem.set_bundle_dependencies_enabled(bid, state)
+
+    return WebSuccess("Dependencies are now {}.".format("enabled" if state else "disabled"))
