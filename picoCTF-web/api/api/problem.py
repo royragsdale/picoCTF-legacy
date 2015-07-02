@@ -113,27 +113,6 @@ def get_all_categories(show_disabled=False):
 
     return db.problems.find(match).distinct("category")
 
-def analyze_problems():
-    """
-    Checks the sanity of inserted problems.
-    Includes weightmap verification.
-
-    Returns:
-        A list of error strings describing the problems.
-    """
-
-    unknown_weightmap_pid = "{}: Has weightmap entry '{}' which does not exist."
-
-    problems = get_all_problems()
-
-    errors = []
-
-    for problem in problems:
-        for pid in problem["weightmap"].keys():
-            if safe_fail(get_problem, pid=pid) is None:
-                errors.append(unknown_weightmap_pid.format(problem["name"], pid))
-    return errors
-
 def insert_problem(problem):
     """
     Inserts a problem into the database. Does sane validation.
@@ -163,8 +142,6 @@ def insert_problem(problem):
     # initially disable problems
     problem["disabled"] = True
     problem["pid"] = api.common.hash("{}-{}".format(problem["name"], problem["author"]))
-    problem["weightmap"] = {}
-    problem["threshold"] = 0
 
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
@@ -250,35 +227,6 @@ def search_problems(*conditions):
     db = api.common.get_conn()
 
     return list(db.problems.find({"$or": list(conditions)}, {"_id":0}))
-
-def add_problem_dependency(pid1, pid2):
-    """
-    Adds pid2 to the weightmap of pid1 and updates the threshold
-
-    Args:
-      pid1: problem that depends on pid2
-      pid2: problem that is a dependency for pid1
-
-    Returns:
-      The new weightmap for pid1
-    """
-
-    problem1 = get_problem(pid=pid1)
-    problem2 = get_problem(pid=pid2)
-
-    weightmap = problem1['weightmap']
-    threshold = problem1['threshold']
-
-    # remove prior dependency if it existed
-    threshold -= weightmap.get(problem2['pid'], 0)
-
-    # update dependency
-    weightmap[problem2['pid']] = 1
-    threshold += 1
-
-    update_problem(pid1, {"weightmap":weightmap, "threshold":threshold})
-
-    return weightmap
 
 def assign_instance_to_team(pid, tid=None):
     """
