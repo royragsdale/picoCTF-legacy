@@ -11,11 +11,12 @@ blueprint = Blueprint("admin_api", __name__)
 @blueprint.route('/problems', methods=['GET'])
 @api_wrapper
 @require_admin
-def get_all_problems_hook():
-    problems = api.problem.get_all_problems(show_disabled=True)
-    if problems is None:
-        return WebError("There was an error querying problems from the database.")
-    return WebSuccess(data=problems)
+def get_problem_data_hook():
+    data = {
+        "problems": api.problem.get_all_problems(show_disabled=True),
+        "bundles": api.problem.get_all_bundles()
+    }
+    return WebSuccess(data=data)
 
 @blueprint.route('/users', methods=['GET'])
 @api_wrapper

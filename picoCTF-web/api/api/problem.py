@@ -27,6 +27,8 @@ submission_schema = Schema({
 problem_schema = Schema({
     Required("name"): check(
         ("The problem's display name must be a string.", [str])),
+    Required("sanitized_name"): check(
+        ("The problems's sanitized name must be a string.", [str])),
     Required("score"): check(
         ("Score must be a positive integer.", [int, Range(min=0)])),
     Required("author"): check(
@@ -73,6 +75,23 @@ instance_schema = Schema({
     "server": check(
         ("The server must be a string.", [str]))
 }, extra=True)
+
+bundle_schema = Schema({
+    Required("name"): check(
+        ("The bundle name must be a string.", [str])),
+    Required("author"): check(
+        ("The bundle author must be a string.", [str])),
+    Required("categories"): check(
+        ("The bundle categories must be a list.", [list])),
+    Required("problems"): check(
+        ("The bundle problems must be a list.", [list])),
+    Required("description"): check(
+        ("The bundle description must be a string.", [str])),
+    "organization": check(
+        ("The bundle organization must be a string.", [str])),
+    "dependencies": check(
+        ("The bundle dependencies must be a dict.", [dict]))
+})
 
 def get_all_categories(show_disabled=False):
     """
@@ -677,6 +696,31 @@ def get_solved_problems(tid=None, uid=None, category=None):
 
     return [get_problem(pid=pid) for pid in get_solved_pids(tid=tid, uid=uid, category=category)]
 
+def is_problem_unlocked(problem, solved):
+    """
+    Checks if the specified problem is unlocked.
+    A problem is unlocked if either:
+        1. It has no dependencies in any of the bundles
+        2. Its threshold is reached in all bundles that specify a dependency for it
+
+    Args:
+        problem: the problem object to check
+        solved: the list of solved problem objects
+    """
+
+    unlocked = True
+
+    for bundle in get_all_bundles():
+        if problem["sanitized_name"] in bundle["problems"]:
+            if "dependencies" in bundle:
+                if problem["sanitized_name"] in bundle["dependencies"]:
+                    dependency = bundle["dependencies"][problem["sanitized_name"]]
+                    weightsum = sum(dependency['weightmap'].get(p['sanitized_name'], 0) for p in solved)
+                    if weightsum < dependency['threshold']:
+                        unlocked = False
+
+    return unlocked
+
 @api.cache.memoize()
 def get_unlocked_pids(tid, category=None):
     """
@@ -694,12 +738,8 @@ def get_unlocked_pids(tid, category=None):
 
     unlocked = []
     for problem in get_all_problems():
-        if 'weightmap' not in problem or 'threshold' not in problem:
-            unlocked.append(problem['pid'])
-        else:
-            weightsum = sum(problem['weightmap'].get(p['pid'], 0) for p in solved)
-            if weightsum >= problem['threshold']:
-                unlocked.append(problem['pid'])
+        if is_problem_unlocked(problem, solved):
+            unlocked.append(problem["pid"])
 
     for pid in unlocked:
         if pid not in team["instances"]:
@@ -788,7 +828,6 @@ def get_unlocked_problems(tid, category=None):
 
     return [problem for problem in get_visible_problems(tid, category=category) if problem['unlocked']]
 
-
 def load_published(data):
     """
     Load in the problems from the shell_manager publish blob.
@@ -803,4 +842,19 @@ def load_published(data):
     for problem in data["problems"]:
         insert_problem(problem)
 
+    if "bundles" in data:
+        db = api.common.get_conn()
+        for bundle in data["bundles"]:
+            validate(bundle_schema, bundle)
+            db.bundles.insert(bundle)
+
     api.cache.clear_all()
+
+def get_all_bundles():
+    """
+    Returns all bundles from the database
+    """
+
+    db = api.common.get_conn()
+
+    return list(db.bundles.find({}, {"_id": 0}))
