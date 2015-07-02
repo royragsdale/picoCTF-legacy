@@ -74,6 +74,7 @@ ProblemClassifierList = React.createClass
       size: problems.length
       classifier: (problem) ->
         problem.category == category
+    categoryData = _.sortBy categoryData, "name"
 
     organizations = _.groupBy @props.problems, "organization"
     organizationData = _.map organizations, (problems, organization) ->
@@ -81,6 +82,7 @@ ProblemClassifierList = React.createClass
       size: problems.length
       classifier: (problem) ->
         problem.organization == organization
+    organizationData = _.sortBy organizationData, "name"
 
     problemStates = _.countBy @props.problems, "disabled"
     problemStateData = []
