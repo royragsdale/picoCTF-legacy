@@ -157,7 +157,7 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
         with open(challenge_path, "r") as challenge_file:
             challenge = challenge_file.read()
             dependencies = []
-            for requirements in ["local_requirements", ""]:
+            for requirements in ["local_requirements", "remote_requirements"]:
                 requirements_index = challenge.find(requirements)
 
                 #Could not find it, we shouldn't do anything.
