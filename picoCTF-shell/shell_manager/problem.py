@@ -30,8 +30,9 @@ PROBLEM_FIELDS = [
 
 PROBLEM_DEFAULTS = {
     "version": lambda problem: "1.0-0",
-    "pkg_description": lambda problem: problem["description"],
     "pkg_dependencies": lambda problem: [],
+    "tags": lambda problem: [],
+    "hints": lambda problem: [],
     "organization": "ctf"
 }
 
@@ -140,6 +141,15 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
         "categories": "category"
     }
 
+    category_translations = {
+        "binary": "Binary Exploitation",
+        "crypto": "Cryptography",
+        "web": "Web Exploitation",
+        "forensics": "Forensics",
+        "reversing": "Reverse Engineering",
+        "tutorial": "Tutorial"
+    }
+
     new_defaults = {
         "author": lambda problem: overrides.get("author", "Nihil"),
         "organization": lambda problem: overrides.get("organization", "ctf")
@@ -178,7 +188,9 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
     translate_problem_fields(field_table, problem)
 
     #Get the first, primary category.
-    problem["category"] = problem["category"][0]
+    problem["category"] = problem["category"][0] if type(problem["category"]) == list else problem["category"]
+    if problem["category"] in category_translations:
+        problem["category"] = category_translations[problem["category"]]
 
     set_problem_defaults(problem, additional_defaults=new_defaults)
 
