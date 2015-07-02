@@ -82,7 +82,23 @@ ProblemClassifierList = React.createClass
       classifier: (problem) ->
         problem.organization == organization
 
+    problemStates = _.countBy @props.problems, "disabled"
+    problemStateData = []
+
+    if problemStates[false] > 0
+      problemStateData.push
+        name: "Enabled problems",
+        size: problemStates[false],
+        classifier: (problem) -> !problem.disabled
+
+    if problemStates[true] > 0
+      problemStateData.push
+        name: "Disabled problems",
+        size: problemStates[true],
+        classifier: (problem) -> problem.disabled
+
     <PanelGroup className="problem-classifier" collapsible>
+      <ProblemClassifier name="State" data={problemStateData} {...@props}/>
       <ProblemClassifier name="Categories" data={categoryData} {...@props}/>
       <ProblemClassifier name="Organizations" data={organizationData} {...@props}/>
       <ProblemClassifier name="Bundles" data={[]} {...@props}/>
@@ -90,7 +106,7 @@ ProblemClassifierList = React.createClass
 
 ClassifierItem = React.createClass
   handleClick: (e) ->
-    @props.setClassifier !@props.active, @props.classifier
+    @props.setClassifier !@props.active, @props.classifier, @props.name
     @props.onExclusiveClick @props.name
 
   render: ->
@@ -120,21 +136,14 @@ ProblemClassifier = React.createClass
     </Panel>
 
 Problem = React.createClass
-  getInitialState: ->
-    disabled: @props.disabled
-
   onStateToggle: (e) ->
-    apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@state.disabled}
-    .done ((api) ->
-      if api.status == 1
-        @setState update @state,
-          disabled: $set: !@state.disabled
-    ).bind this
+    apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
+    .done @props.onProblemChange()
 
   render: ->
     statusButton =
     <Button bsSize="xsmall" onClick={@onStateToggle}>
-      {if @state.disabled then "Enable" else "Disable"}
+      {if @props.disabled then "Enable" else "Disable"}
     </Button>
 
     problemHeader =
@@ -145,18 +154,17 @@ Problem = React.createClass
       </div>
     </div>
 
-    problemFooter = @props.tags.map (tag, i) ->
-      <Label key={i}><a href="#">{tag}</a></Label>
+    if @props.tags is undefined or @props.tags.length == 0
+      problemFooter = "No tags"
+    else
+      problemFooter = @props.tags.map (tag, i) ->
+        <Label key={i}><a href="#">{tag}</a></Label>
 
-    panelStyle = if @state.disabled then "default" else "info"
+
+    panelStyle = if @props.disabled then "default" else "info"
 
     <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter}>
       <h4>Score: {@props.score}</h4>
-      <pre>
-        <code>
-          {@props.description}
-        </code>
-      </pre>
     </Panel>
 
 ProblemList = React.createClass
@@ -167,14 +175,15 @@ ProblemList = React.createClass
     if @props.problems.length == 0
       return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
 
-    problemComponents = @props.problems.map (problem, i) ->
+    problemComponents = @props.problems.map ((problem, i) ->
       <Col xs={6} lg={4} key={i}>
-        <Problem {...problem}/>
+        <Problem onProblemChange={@props.onProblemChange} {...problem}/>
       </Col>
+    ).bind this
 
-    <div>
+    <Row>
       {problemComponents}
-    </div>
+    </Row>
 
 ProblemTab = React.createClass
   propTypes:
@@ -186,7 +195,7 @@ ProblemTab = React.createClass
       name: "score"
       ascending: true
     problemClassifier: [
-      (problem) -> true
+      {name: "all", func: (problem) -> true}
     ]
 
   onFilterChange: (filter) ->
@@ -201,23 +210,23 @@ ProblemTab = React.createClass
     @setState update @state,
       activeSort: $set: {name: name, ascending: ascending}
 
-  setClassifier: (classifierState, classifier) ->
-    #bug here
-    console.log classifierState, classifier
+  setClassifier: (classifierState, classifier, name) ->
     if classifierState
       @setState update @state,
-        problemClassifier: $push: [classifier]
+        problemClassifier: $push: [{name: name, func: classifier}]
     else
-      otherClassifiers = _.without @state.problemClassifier, classifier
+      otherClassifiers = _.filter @state.problemClassifier, (classifierObject) ->
+        classifierObject.name != name
       @setState update @state,
         problemClassifier: $set: otherClassifiers
 
   filterProblems: (problems) ->
     visibleProblems = _.filter problems, ((problem) ->
-      (@state.filterRegex.exec problem.name) != null and _.all (classifier problem for classifier in @state.problemClassifier)
+      (@state.filterRegex.exec problem.name) != null and _.all (classifier.func problem for classifier in @state.problemClassifier)
     ).bind this
 
     sortedProblems = _.sortBy visibleProblems, @state.activeSort.name
+
     if @state.activeSort.ascending
       sortedProblems
     else
@@ -225,6 +234,7 @@ ProblemTab = React.createClass
 
   render: ->
     filteredProblems = @filterProblems @props.problems
+
     <Row className="pad">
       <Col xs={3} md={3}>
         <Row>
@@ -235,6 +245,6 @@ ProblemTab = React.createClass
         </Row>
       </Col>
       <Col xs={9} md={9}>
-        <ProblemList problems={filteredProblems}/>
+        <ProblemList problems={filteredProblems} onProblemChange={@props.onProblemChange}/>
       </Col>
     </Row>
