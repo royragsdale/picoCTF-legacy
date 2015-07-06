@@ -60,16 +60,3 @@ def get_top_teams_score_progressions_hook():
 def get_group_top_teams_score_progressions_hook():
     gid = request.args.get("gid", None)
     return WebSuccess(data=api.stats.get_top_teams_score_progressions(gid=gid))
-
-@blueprint.route('/flag_sharing', methods=['GET'])
-@api_wrapper
-def get_flag_shares():
-    gid = request.args.get("gid", None)
-    if gid is None:
-        if get_user()['admin'] is False:
-            return WebError("You must be admin to see all flag sharing statistics.")
-    else:
-        if not api.group.is_owner_of_group(gid):
-            return WebError("You must own a group to see its flag sharing statistics.")
-
-    return WebSuccess(data=api.stats.check_invalid_instance_submissions(gid=gid))
