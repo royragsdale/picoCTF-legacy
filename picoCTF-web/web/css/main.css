@@ -1,3 +1,6 @@
+.classifier-item {
+    padding-left: 30px !important;
+}
 
 #main-content {
     min-height: 35vh;
