@@ -146,7 +146,8 @@ ProblemLoaderTab = React.createClass
   pushData: ->
     apiCall "POST", "/api/problems/load_problems", {competition_data: @state.publishedJSON}
     .done ((data) ->
-      apiNotify data, "/management"
+      apiNotify data
+      @clearPublishedJSON()
     ).bind this
 
   clearPublishedJSON: ->
