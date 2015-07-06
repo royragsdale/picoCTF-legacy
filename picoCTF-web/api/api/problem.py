@@ -787,7 +787,14 @@ def insert_bundle(bundle):
     db = api.common.get_conn()
     validate(bundle_schema, bundle)
 
-    bundle["bid"] = api.common.token()
+    bid = api.common.hash("{}-{}".format(bundle["name"], bundle["author"]))
+
+    if safe_fail(get_bundle, bid) is not None:
+        # bundle already exists, update it instead
+        update_bundle(bid, bundle)
+        return
+
+    bundle["bid"] = bid
     bundle["dependencies_enabled"] = False
 
     db.bundles.insert(bundle)
@@ -820,7 +827,7 @@ def get_bundle(bid):
 
     db = api.common.get_conn()
 
-    bundle = api.bundles.find_one({"bid" : bid})
+    bundle = db.bundles.find_one({"bid" : bid})
 
     if bundle is None:
         raise WebException("Bundle with bid {} does not exist".format(bid))
