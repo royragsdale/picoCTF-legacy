@@ -11,11 +11,12 @@ blueprint = Blueprint("admin_api", __name__)
 @blueprint.route('/problems', methods=['GET'])
 @api_wrapper
 @require_admin
-def get_all_problems_hook():
-    problems = api.problem.get_all_problems(show_disabled=True)
-    if problems is None:
-        return WebError("There was an error querying problems from the database.")
-    return WebSuccess(data=problems)
+def get_problem_data_hook():
+    data = {
+        "problems": api.problem.get_all_problems(show_disabled=True),
+        "bundles": api.problem.get_all_bundles()
+    }
+    return WebSuccess(data=data)
 
 @blueprint.route('/users', methods=['GET'])
 @api_wrapper
@@ -125,3 +126,25 @@ def check_status_of_shell_server():
         return WebSuccess("All problems are online", data=data)
     else:
         return WebError("One or more problems are offline. Please connect and fix the errors.", data=data)
+
+@blueprint.route("/bundle/dependencies_active", methods=["POST"])
+@api_wrapper
+@require_admin
+def bundle_dependencies():
+    bid = request.form.get("bid", None)
+    state = request.form.get("state", None)
+
+    if bid is None:
+        return WebError("Must provide bid to load from.")
+
+    if state is None:
+        return WebError("Must provide a state to set.")
+
+    if state == "true":
+        state = True
+    elif state == "false":
+        state = False
+
+    api.problem.set_bundle_dependencies_enabled(bid, state)
+
+    return WebSuccess("Dependencies are now {}.".format("enabled" if state else "disabled"))

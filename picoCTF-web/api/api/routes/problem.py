@@ -107,5 +107,5 @@ def request_problem_hint_hook():
 def load_problems():
     data = json.loads(request.form.get("competition_data", ""))
 
-    api.problem.load_published(data)
-    return WebSuccess("Problems inserted successfully.")
+    num_inserted = api.problem.load_published(data)
+    return WebSuccess("Inserted {} problems.".format(num_inserted))
