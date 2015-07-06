@@ -144,9 +144,16 @@ ProblemClassifier = React.createClass
     </Panel>
 
 Problem = React.createClass
+
+  getInitialState: ->
+    expanded: false
+
   onStateToggle: (e) ->
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
     .done @props.onProblemChange
+
+  handleExpand: (e, i) ->
+    @setState {expanded: !@state.expanded}
 
   render: ->
     statusButton =
@@ -173,8 +180,16 @@ Problem = React.createClass
 
     panelStyle = if @props.disabled then "default" else "info"
 
-    <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible>
-      <h4>Score: {@props.score}</h4>
+    <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
+      expanded={@state.expanded} onSelect={@handleExpand}>
+      <Row>
+        <Col md={6}>
+          <ProblemSubmissionDoughnut valid={6} invalid={12} visible={@state.expanded}/>
+        </Col>
+        <Col md={6}>
+          <h4>Score: {@props.score}</h4>
+        </Col>
+      </Row>
     </Panel>
 
 ProblemList = React.createClass
