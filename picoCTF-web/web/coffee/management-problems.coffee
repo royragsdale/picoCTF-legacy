@@ -146,7 +146,7 @@ ProblemClassifier = React.createClass
 Problem = React.createClass
   onStateToggle: (e) ->
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
-    .done @props.onProblemChange()
+    .done @props.onProblemChange
 
   render: ->
     statusButton =
@@ -169,8 +169,7 @@ Problem = React.createClass
         <Label key={i}><a href="#">{tag}</a></Label>
 
     #TEMP
-    problemFooter = ""
-
+    problemFooter = "test"
 
     panelStyle = if @props.disabled then "default" else "info"
 
@@ -187,7 +186,7 @@ ProblemList = React.createClass
       return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
 
     problemComponents = @props.problems.map ((problem, i) ->
-      <Col xs={12} lg={6} key={i}>
+      <Col xs={12} lg={12} key={i}>
         <Problem onProblemChange={@props.onProblemChange} {...problem}/>
       </Col>
     ).bind this
@@ -195,6 +194,28 @@ ProblemList = React.createClass
     <Row>
       {problemComponents}
     </Row>
+
+ProblemDependencyView = React.createClass
+  handleClick: (bundle) ->
+    apiCall "POST", "/api/admin/bundle/dependencies_active", {bid: bundle.bid, state: !bundle.dependencies_enabled}
+    .done @props.onProblemChange
+
+  render: ->
+    bundleDisplay = @props.bundles.map ((bundle, i) ->
+      switchText = if bundle.dependencies_enabled then "Disable" else "Enable"
+      <ListGroupItem key={i} className="clearfix">
+          {bundle.name}
+          <div className="pull-right">
+            <Button bsSize="xsmall" onClick={@handleClick.bind null, bundle}>{switchText}</Button>
+          </div>
+      </ListGroupItem>
+    ).bind this
+
+    <Panel header="Problem Dependencies">
+      <ListGroup fill>
+        {bundleDisplay}
+      </ListGroup>
+    </Panel>
 
 ProblemTab = React.createClass
   propTypes:
@@ -253,6 +274,9 @@ ProblemTab = React.createClass
         <Row>
           <ProblemClassifierList setClassifier={@setClassifier} problems={filteredProblems}
             bundles={@props.bundles}/>
+        </Row>
+        <Row>
+          <ProblemDependencyView bundles={@props.bundles} onProblemChange={@props.onProblemChange}/>
         </Row>
       </Col>
       <Col xs={9} md={9}>
