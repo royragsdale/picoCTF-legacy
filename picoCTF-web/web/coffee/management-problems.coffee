@@ -70,7 +70,7 @@ ProblemClassifierList = React.createClass
   render: ->
     categories = _.groupBy @props.problems, "category"
     categoryData = _.map categories, (problems, category) ->
-      name: "Only #{category} problems"
+      name: "Only #{category}"
       size: problems.length
       classifier: (problem) ->
         problem.category == category
@@ -114,7 +114,7 @@ ClassifierItem = React.createClass
   render: ->
     glyph = <Glyphicon glyph="ok"/>
 
-    <ListGroupItem onClick={@handleClick}>
+    <ListGroupItem onClick={@handleClick} className="classifier-item">
         {@props.name} {if @props.active then glyph} <div className="pull-right"><Badge>{@props.size}</Badge></div>
     </ListGroupItem>
 
@@ -162,10 +162,13 @@ Problem = React.createClass
       problemFooter = @props.tags.map (tag, i) ->
         <Label key={i}><a href="#">{tag}</a></Label>
 
+    #TEMP
+    problemFooter = ""
+
 
     panelStyle = if @props.disabled then "default" else "info"
 
-    <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter}>
+    <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible>
       <h4>Score: {@props.score}</h4>
     </Panel>
 
@@ -178,7 +181,7 @@ ProblemList = React.createClass
       return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
 
     problemComponents = @props.problems.map ((problem, i) ->
-      <Col xs={6} lg={4} key={i}>
+      <Col xs={12} lg={6} key={i}>
         <Problem onProblemChange={@props.onProblemChange} {...problem}/>
       </Col>
     ).bind this
