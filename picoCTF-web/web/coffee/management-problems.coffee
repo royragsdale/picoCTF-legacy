@@ -99,11 +99,17 @@ ProblemClassifierList = React.createClass
         size: problemStates[true],
         classifier: (problem) -> problem.disabled
 
+    problemNames = _.map @props.problems, (problem) -> problem.sanitized_name
+    bundleData = _.map @props.bundles, (bundle) ->
+      name: bundle.name
+      size: _.intersection(bundle.problems, problemNames).length
+      classifier: (problem) -> problem.sanitized_name in problemNames
+
     <PanelGroup className="problem-classifier" collapsible>
       <ProblemClassifier name="State" data={problemStateData} {...@props}/>
       <ProblemClassifier name="Categories" data={categoryData} {...@props}/>
       <ProblemClassifier name="Organizations" data={organizationData} {...@props}/>
-      <ProblemClassifier name="Bundles" data={[]} {...@props}/>
+      <ProblemClassifier name="Bundles" data={bundleData} {...@props}/>
     </PanelGroup>
 
 ClassifierItem = React.createClass
@@ -239,14 +245,14 @@ ProblemTab = React.createClass
 
   render: ->
     filteredProblems = @filterProblems @props.problems
-
     <Row className="pad">
       <Col xs={3} md={3}>
         <Row>
           <ProblemFilter onSortChange={@onSortChange} filter="" onFilterChange={@onFilterChange}/>
         </Row>
         <Row>
-          <ProblemClassifierList setClassifier={@setClassifier} problems={filteredProblems}/>
+          <ProblemClassifierList setClassifier={@setClassifier} problems={filteredProblems}
+            bundles={@props.bundles}/>
         </Row>
       </Col>
       <Col xs={9} md={9}>

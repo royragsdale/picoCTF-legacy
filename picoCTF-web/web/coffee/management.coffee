@@ -7,7 +7,7 @@ ManagementTabbedArea = React.createClass
     if tab == ""
       tab = "problems"
 
-    updates: []
+    bundles: []
     problems: []
     tabKey: tab
 
@@ -15,7 +15,8 @@ ManagementTabbedArea = React.createClass
     apiCall "GET", "/api/admin/problems"
     .done ((api) ->
       @setState React.addons.update @state,
-        {problems: {$set: api.data}}
+        problems: $set: api.data.problems
+        bundles: $set: api.data.bundles
     ).bind this
 
   componentDidMount: ->
@@ -32,8 +33,9 @@ ManagementTabbedArea = React.createClass
 
   render: ->
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
-        <TabPane eventKey={1} tab='Manage Problems'>
-          <ProblemTab problems={@state.problems} onProblemChange={@onProblemChange}/>
+        <TabPane eventKey='problems' tab='Manage Problems'>
+          <ProblemTab problems={@state.problems} onProblemChange={@onProblemChange}
+            bundles={@state.bundles}/>
         </TabPane>
         <TabPane eventKey='exceptions' tab='Exceptions'>
           <ExceptionTab/>
