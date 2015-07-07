@@ -21,4 +21,4 @@ ProblemSubmissionDoughnut = React.createClass
         animateRotate: false
 
   render: ->
-    <canvas height="300" width="300"/>
+    <canvas height="200" width="200"/>
