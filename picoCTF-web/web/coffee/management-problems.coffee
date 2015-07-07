@@ -359,7 +359,7 @@ ProblemTab = React.createClass
 
   onFilterChange: (filter) ->
     try
-      newFilter = new RegExp(filter)
+      newFilter = new RegExp filter, "i"
       @setState update @state,
         filterRegex: $set: newFilter
     catch
