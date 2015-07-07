@@ -25,7 +25,6 @@ ManagementTabbedArea = React.createClass
     #get_all_problems
     apiCall "GET", "/api/admin/problems/submissions"
     .done ((api) ->
-      console.log api.data
       @setState React.addons.update @state,
         submissions: $set: api.data
     ).bind this
