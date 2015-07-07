@@ -18,24 +18,44 @@ SortableButton = React.createClass
   propTypes:
     name: React.PropTypes.string.isRequired
 
-  getInitialState: ->
-    ascending: true
-    focused: false
-
-  #TODO: Needs reworked.
   handleClick: (e) ->
-    if not @state.focused and false
-      @setState update @state,
-        focused: $set: true
-    else
-      @setState update @state,
-        ascending: $set: !@state.ascending
+    @props.onFocus @props.name
 
-     @props.onSortChange @props.name, !@state.ascending
+    if @props.active
+      @props.onSortChange @props.name, !@props.ascending
+    else
+      #Make it active. No-op on sorting.
+      @props.onSortChange @props.name, @props.ascending
 
   render: ->
-    glyph = if @state.ascending then <Glyphicon glyph="chevron-up"/> else <Glyphicon glyph="chevron-down"/>
-    <Button active={@props.active} onClick={@handleClick}>{@props.name} {glyph}</Button>
+    glyph = if @props.ascending then <Glyphicon glyph="chevron-down"/> else <Glyphicon glyph="chevron-up"/>
+    <Button bsSize="small" active={@props.active} onClick={@handleClick}>{@props.name} {glyph}</Button>
+
+
+SortableButtonGroup = React.createClass
+  getInitialState: ->
+    state = _.object ([name, {active: false, ascending: true}] for name in @props.data)
+    state[@props.activeSort.name] = {active: true, ascending: @props.activeSort.ascending}
+    state
+
+  handleClick: (name) ->
+    #Reset all active states.
+    activeStates = _.reduce @getInitialState(), ((memo, sortState, name) ->
+      memo[name] = {active: false, ascending: true}
+      memo), {}
+    activeStates[name].active = true
+    @setState activeStates
+    console.log activeStates
+
+  render: ->
+    activeState = @state
+    activeState[@props.activeSort.name] = {active: true, ascending: @props.activeSort.ascending}
+    <ButtonGroup>
+      {@props.data.map ((name, i) ->
+        <SortableButton key={i} active={activeState[name].active} ascending={activeState[name].ascending}
+          name={name} onSortChange={@props.onSortChange} onFocus={@handleClick}/>
+      ).bind this}
+    </ButtonGroup>
 
 ProblemFilter = React.createClass
   propTypes:
@@ -62,9 +82,8 @@ ProblemFilter = React.createClass
           value={@state.filter}/>
       </Col>
       <Col xs={12}>
-        <SortableButton name="score" onSortChange={@props.onSortChange}/>
-        <SortableButton name="name" onSortChange={@props.onSortChange}/>
-        <SortableButton name="category" onSortChange={@props.onSortChange}/>
+        <SortableButtonGroup key={@props.activeSort} activeSort={@props.activeSort}
+          onSortChange={@props.onSortChange} data={["name", "category", "score"]}/>
       </Col>
     </Panel>
 
@@ -166,10 +185,10 @@ CollapsibleInformation = React.createClass
 
   render: ->
     styles = @getCollapsibleClassSet()
-    glyph = if @state.expanded then <Glyphicon glyph="chevron-down"/> else <Glyphicon glyph="chevron-right"/>
+    glyph = if @state.expanded then "chevron-down" else "chevron-right"
     <div className="collapsible-information">
       <a onClick={this.onHandleToggle}>
-        {@props.title} <div className="pull-right">{glyph}</div>
+        {@props.title} <Glyphicon glyph={glyph} className="collapsible-information-chevron"/>
       </a>
       <div ref="panel" className={@classNames styles}>
         {this.props.children}
@@ -189,10 +208,29 @@ ProblemFlagTable = React.createClass
       </thead>
       <tbody>
       {@props.instances.map (instance, i) ->
-        <tr>
+        <tr key={i}>
           <td>{i+1}</td>
           <td>{instance.iid}</td>
           <td>{instance.flag}</td>
+        </tr>}
+      </tbody>
+    </Table>
+
+
+ProblemHintTable = React.createClass
+  render: ->
+    <Table responsive>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Hint</th>
+        </tr>
+      </thead>
+      <tbody>
+      {@props.hints.map (hint, i) ->
+        <tr key={i}>
+          <td>{i+1}</td>
+          <td>{hint}</td>
         </tr>}
       </tbody>
     </Table>
@@ -206,10 +244,12 @@ Problem = React.createClass
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
     .done @props.onProblemChange
 
-  handleExpand: ->
+  handleExpand: (e) ->
+    e.preventDefault()
     @setState {expanded: !@state.expanded}
 
   render: ->
+
     statusButton =
     <Button bsSize="xsmall" onClick={@onStateToggle}>
       {if @props.disabled then "Enable" else "Disable"}
@@ -229,7 +269,8 @@ Problem = React.createClass
       problemFooter = @props.tags.map (tag, i) ->
         <Label key={i}>{tag}</Label>
 
-    panelStyle = if @props.disabled then "default" else "info"
+    #Do something interesting here.
+    panelStyle = if @props.disabled then "default" else "default"
 
     submissionDisplay = if @props.submissions and @props.submissions.valid + @props.submissions.invalid >= 1 then \
     <ProblemSubmissionDoughnut valid={@props.submissions.valid} invalid={@props.submissions.invalid} visible={@state.expanded}/>
@@ -238,15 +279,22 @@ Problem = React.createClass
     <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
       expanded={@state.expanded} onSelect={@handleExpand}>
       <Row>
-        <Col md={6}>
+        <Col md={4}>
           <h4>Score: {@props.score}</h4>
           {submissionDisplay}
         </Col>
-        <Col md={6}>
+        <Col md={8}>
           <h4>
-            Author: {@props.author}
-            {if @props.organization then <div className="pull-right">Organization: {@props.organization}</div>}
+            {@props.author}
+            {if @props.organization then " @ "+@props.organization}
           </h4>
+          <hr/>
+          <CollapsibleInformation title="Description">
+            <p className="problem-description">{@props.description}</p>
+          </CollapsibleInformation>
+          <CollapsibleInformation title="Hints">
+            <ProblemHintTable hints={@props.hints}/>
+          </CollapsibleInformation>
           <CollapsibleInformation title="Instance Flags">
             <ProblemFlagTable instances={@props.instances}/>
           </CollapsibleInformation>
@@ -259,12 +307,11 @@ ProblemList = React.createClass
     problems: React.PropTypes.array.isRequired
 
   render: ->
-    console.log "rendering"
     if @props.problems.length == 0
       return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
 
     problemComponents = @props.problems.map ((problem, i) ->
-      <Col xs={12} lg={12}>
+      <Col xs={12}>
         <Problem key={i} onProblemChange={@props.onProblemChange} submissions={@props.submissions[problem.name]} {...problem}/>
       </Col>
     ).bind this
@@ -282,10 +329,13 @@ ProblemDependencyView = React.createClass
     bundleDisplay = @props.bundles.map ((bundle, i) ->
       switchText = if bundle.dependencies_enabled then "Disable" else "Enable"
       <ListGroupItem key={i} className="clearfix">
-          {bundle.name}
+        <div>{bundle.name}
           <div className="pull-right">
-            <Button bsSize="xsmall" onClick={@handleClick.bind null, bundle}>{switchText}</Button>
+            <Button bsSize="xsmall" onClick={@handleClick.bind null, bundle}>
+              {switchText}
+            </Button>
           </div>
+        </div>
       </ListGroupItem>
     ).bind this
 
@@ -302,7 +352,7 @@ ProblemTab = React.createClass
   getInitialState: ->
     filterRegex: /.*/
     activeSort:
-      name: "score"
+      name: "name"
       ascending: true
     problemClassifier: [
       {name: "all", func: (problem) -> true}
@@ -317,6 +367,7 @@ ProblemTab = React.createClass
       # We shouldn't do anything.
 
   onSortChange: (name, ascending) ->
+    console.log name, ascending
     @setState update @state,
       activeSort: $set: {name: name, ascending: ascending}
 
@@ -343,11 +394,12 @@ ProblemTab = React.createClass
       sortedProblems.reverse()
 
   render: ->
+    console.log @state.activeSort
     filteredProblems = @filterProblems @props.problems
     <Row className="pad">
       <Col xs={3} md={3}>
         <Row>
-          <ProblemFilter onSortChange={@onSortChange} filter="" onFilterChange={@onFilterChange}/>
+          <ProblemFilter onSortChange={@onSortChange} filter="" activeSort={@state.activeSort} onFilterChange={@onFilterChange}/>
         </Row>
         <Row>
           <ProblemClassifierList setClassifier={@setClassifier} problems={filteredProblems}
@@ -358,6 +410,6 @@ ProblemTab = React.createClass
         </Row>
       </Col>
       <Col xs={9} md={9}>
-        <ProblemList problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
+        <ProblemList key={Math.random()} problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
       </Col>
     </Row>
