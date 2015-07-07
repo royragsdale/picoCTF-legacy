@@ -45,7 +45,6 @@ SortableButtonGroup = React.createClass
       memo), {}
     activeStates[name].active = true
     @setState activeStates
-    console.log activeStates
 
   render: ->
     activeState = @state
@@ -367,7 +366,6 @@ ProblemTab = React.createClass
       # We shouldn't do anything.
 
   onSortChange: (name, ascending) ->
-    console.log name, ascending
     @setState update @state,
       activeSort: $set: {name: name, ascending: ascending}
 
@@ -394,7 +392,6 @@ ProblemTab = React.createClass
       sortedProblems.reverse()
 
   render: ->
-    console.log @state.activeSort
     filteredProblems = @filterProblems @props.problems
     <Row className="pad">
       <Col xs={3} md={3}>
