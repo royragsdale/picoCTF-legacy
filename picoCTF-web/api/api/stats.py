@@ -493,30 +493,28 @@ def get_days_active_breakdown(eligible=True, user_breakdown=None):
         day_breakdown[len(days_active)] += 1
     return day_breakdown
 
-
-def check_invalid_autogen_submissions():
+@api.cache.memoize(timeout=300)
+def check_invalid_instance_submissions(gid=None):
     db = api.api.common.get_conn()
     badteams = set()
-    cheaters = []
-    for problem in api.problem.get_all_problems():
-        good_flags = set()
-        if 'autogen' in problem and problem['autogen']:
-            correct_flags = db.submissions.find({'pid': problem['pid'], 'correct': True})
-            for flag in correct_flags:
-                good_flags.add(flag['key'])
-            incorrect_flags = db.submissions.find({'pid': problem['pid'], 'correct': False})
-            for flag in incorrect_flags:
-                if flag['key'] in good_flags:
-                    team = api.team.get_team(tid=flag['tid'])
-                    solution = db.submissions.find_one({'pid': problem['pid'], 'tid': flag['tid'], 'correct': True})
-                    if team['eligible'] and team['tid'] not in badteams:
-                        if solution is None:
-                            cheaters.append((team['team_name'], get_score(tid=flag['tid']), problem['name'], flag['key']))
-                        else:
-                            cheaters.append((team['team_name'], get_score(tid=flag['tid']), problem['name'], flag['key'], solution['key']))
-                        badteams.add(team['tid'])
-    print('\n'.join([str(x) for x in sorted(cheaters, key=lambda x: x[1], reverse=True)]))
+    shared_key_submisssions = []
 
+    group = None
+    if gid is not None:
+        group = api.group.get_group(gid=gid)
+
+    for problem in api.problem.get_all_problems(show_disabled=True):
+        valid_keys = [instance['flag'] for instance in problem['instances']]
+        incorrect_submissions = db.submissions.find({'pid': problem['pid'], 'correct': False}, {"_id": 0})
+        for submission in incorrect_submissions:
+            if submission['key'] in valid_keys:
+                # make sure that the key is still invalid
+                if not api.problem.grade_problem(submission['pid'], submission['key'], tid=submission['tid'])['correct']:
+                    if group is None or submission['tid'] in group['members']:
+                        submission['username'] = api.user.get_user(uid=submission['uid'])['username']
+                        shared_key_submisssions.append(submission)
+
+    return shared_key_submisssions
 
 def get_review_stats():
     results = []

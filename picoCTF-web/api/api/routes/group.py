@@ -81,3 +81,15 @@ def leave_group_hook():
 def delete_group_hook():
     api.group.delete_group_request(api.common.flat_multi(request.form))
     return WebSuccess("Successfully deleted group")
+
+@blueprint.route('/flag_sharing', methods=['GET'])
+@api_wrapper
+def get_flag_shares():
+    gid = request.args.get("gid", None)
+    if gid is None:
+        return WebError("You must specify a gid")
+    else:
+        if not api.group.is_owner_of_group(gid):
+            return WebError("You must own a group to see its flag sharing statistics.")
+
+    return WebSuccess(data=api.stats.check_invalid_instance_submissions(gid=gid))

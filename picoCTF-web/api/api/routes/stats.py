@@ -27,7 +27,7 @@ def get_team_solved_problems_hook():
 @require_login
 @block_before_competition(WebError("The competition has not begun yet!"))
 def get_team_score_progression():
-    category = request.form.get("category", None)
+    category = request.args.get("category", None)
 
     tid = api.user.get_team()["tid"]
 

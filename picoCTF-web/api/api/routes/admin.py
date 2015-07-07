@@ -39,7 +39,6 @@ def get_exceptions_hook():
     except (ValueError, TypeError):
         return WebError("limit is not a valid integer.")
 
-
 @blueprint.route("/problems/availability", methods=["POST"])
 @api_wrapper
 @require_admin
