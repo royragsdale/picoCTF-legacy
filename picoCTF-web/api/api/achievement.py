@@ -12,8 +12,6 @@ from api.common import check, InternalException, SevereInternalException, valida
 
 from api.annotations import log_action
 
-processor_base_path = "./processors"
-
 achievement_schema = Schema({
     Required("name"): check(
         ("The achievement's display name must be a string.", [str])),
@@ -250,7 +248,8 @@ def get_processor(aid):
 
     try:
         path = get_achievement(aid=aid, show_disabled=True)["processor"]
-        return imp.load_source(path[:-3], join(processor_base_path, path))
+        base_path = api.config.get_settings()["achievements"]["processor_base_path"]
+        return imp.load_source(path[:-3], join(base_path, path))
     except FileNotFoundError:
         raise InternalException("Achievement processor is offline.")
 

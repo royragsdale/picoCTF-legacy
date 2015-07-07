@@ -40,6 +40,9 @@ ManagementTabbedArea = React.createClass
         <TabPane eventKey='shell-servers' tab='Shell Server'>
           <ShellServerTab/>
         </TabPane>
+        <TabPane eventKey='configuration' tab='Configuration'>
+          <SettingsTab/>
+        </TabPane>
       </TabbedArea>
 
 $ ->

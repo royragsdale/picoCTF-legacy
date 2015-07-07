@@ -59,8 +59,10 @@ startup_functions:
                       </li>
                       <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
                       </li>
-                      <li class="<%= pill.reviewClassName %>"><a href="#<%= pill.reviewId %>" data-toggle="tab">Review</a>
-                      </li>
+                      <% if (document.competition_status.enable_feedback) { %>
+                        <li class="<%= pill.reviewClassName %>"><a href="#<%= pill.reviewId %>" data-toggle="tab">Review</a>
+                        </li>
+                      <% } %>
                   </ul>
                   <div class="tab-content">
                       <div class="tab-pane <%= pill.solveClassName %>" id="<%= pill.solveId %>">
