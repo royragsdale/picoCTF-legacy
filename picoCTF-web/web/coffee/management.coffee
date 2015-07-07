@@ -9,6 +9,7 @@ ManagementTabbedArea = React.createClass
 
     bundles: []
     problems: []
+    submissions: []
     tabKey: tab
 
   onProblemChange: ->
@@ -18,6 +19,17 @@ ManagementTabbedArea = React.createClass
         problems: $set: api.data.problems
         bundles: $set: api.data.bundles
     ).bind this
+
+    #This could take awhile. However, it may
+    #introduce a minor race condition with
+    #get_all_problems
+    apiCall "GET", "/api/admin/problems/submissions"
+    .done ((api) ->
+      console.log api.data
+      @setState React.addons.update @state,
+        submissions: $set: api.data
+    ).bind this
+
 
   componentDidMount: ->
     # Formatting hack
@@ -35,7 +47,7 @@ ManagementTabbedArea = React.createClass
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
         <TabPane eventKey='problems' tab='Manage Problems'>
           <ProblemTab problems={@state.problems} onProblemChange={@onProblemChange}
-            bundles={@state.bundles}/>
+            bundles={@state.bundles} submissions={@state.submissions}/>
         </TabPane>
         <TabPane eventKey='exceptions' tab='Exceptions'>
           <ExceptionTab/>

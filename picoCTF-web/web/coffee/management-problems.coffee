@@ -9,6 +9,8 @@ PanelGroup = ReactBootstrap.PanelGroup
 Row = ReactBootstrap.Row
 ListGroup = ReactBootstrap.ListGroup
 ListGroupItem = ReactBootstrap.ListGroupItem
+CollapsibleMixin = ReactBootstrap.CollapsibleMixin
+Table = ReactBootstrap.Table
 
 update = React.addons.update
 
@@ -143,16 +145,68 @@ ProblemClassifier = React.createClass
       </ListGroup>
     </Panel>
 
+CollapsibleInformation = React.createClass
+  mixins: [CollapsibleMixin]
+
+  classNames: (styles) ->
+    _.reduce styles, ((memo, val, key) ->
+      if val
+        memo += " #{key}"
+      memo), ""
+
+  getCollapsibleDOMNode: ->
+    React.findDOMNode @refs.panel
+
+  getCollapsibleDimensionValue: ->
+    (React.findDOMNode @refs.panel).scrollHeight;
+
+  onHandleToggle: (e) ->
+    e.preventDefault()
+    @setState {expanded: !@state.expanded}
+
+  render: ->
+    styles = @getCollapsibleClassSet()
+    glyph = if @state.expanded then <Glyphicon glyph="chevron-down"/> else <Glyphicon glyph="chevron-right"/>
+    <div className="collapsible-information">
+      <a onClick={this.onHandleToggle}>
+        {@props.title} <div className="pull-right">{glyph}</div>
+      </a>
+      <div ref="panel" className={@classNames styles}>
+        {this.props.children}
+      </div>
+    </div>
+
+ProblemFlagTable = React.createClass
+
+  render: ->
+    <Table responsive>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Instance</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody>
+      {@props.instances.map (instance, i) ->
+        <tr>
+          <td>{i+1}</td>
+          <td>{instance.iid}</td>
+          <td>{instance.flag}</td>
+        </tr>}
+      </tbody>
+    </Table>
+
 Problem = React.createClass
 
   getInitialState: ->
     expanded: false
 
-  onStateToggle: (e) ->
+  onStateToggle: ->
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
     .done @props.onProblemChange
 
-  handleExpand: (e, i) ->
+  handleExpand: ->
     @setState {expanded: !@state.expanded}
 
   render: ->
@@ -173,21 +227,29 @@ Problem = React.createClass
       problemFooter = "No tags"
     else
       problemFooter = @props.tags.map (tag, i) ->
-        <Label key={i}><a href="#">{tag}</a></Label>
-
-    #TEMP
-    problemFooter = "test"
+        <Label key={i}>{tag}</Label>
 
     panelStyle = if @props.disabled then "default" else "info"
+
+    submissionDisplay = if @props.submissions and @props.submissions.valid + @props.submissions.invalid >= 1 then \
+    <ProblemSubmissionDoughnut valid={@props.submissions.valid} invalid={@props.submissions.invalid} visible={@state.expanded}/>
+    else <p>No solve attempts.</p>
 
     <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
       expanded={@state.expanded} onSelect={@handleExpand}>
       <Row>
         <Col md={6}>
-          <ProblemSubmissionDoughnut valid={6} invalid={12} visible={@state.expanded}/>
+          <h4>Score: {@props.score}</h4>
+          {submissionDisplay}
         </Col>
         <Col md={6}>
-          <h4>Score: {@props.score}</h4>
+          <h4>
+            Author: {@props.author}
+            {if @props.organization then <div className="pull-right">Organization: {@props.organization}</div>}
+          </h4>
+          <CollapsibleInformation title="Instance Flags">
+            <ProblemFlagTable instances={@props.instances}/>
+          </CollapsibleInformation>
         </Col>
       </Row>
     </Panel>
@@ -197,12 +259,13 @@ ProblemList = React.createClass
     problems: React.PropTypes.array.isRequired
 
   render: ->
+    console.log "rendering"
     if @props.problems.length == 0
       return <h4>No problems have been loaded. Click <a href='#'>here</a> to get started.</h4>
 
     problemComponents = @props.problems.map ((problem, i) ->
-      <Col xs={12} lg={12} key={i}>
-        <Problem onProblemChange={@props.onProblemChange} {...problem}/>
+      <Col xs={12} lg={12}>
+        <Problem key={i} onProblemChange={@props.onProblemChange} submissions={@props.submissions[problem.name]} {...problem}/>
       </Col>
     ).bind this
 
@@ -295,6 +358,6 @@ ProblemTab = React.createClass
         </Row>
       </Col>
       <Col xs={9} md={9}>
-        <ProblemList problems={filteredProblems} onProblemChange={@props.onProblemChange}/>
+        <ProblemList problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
       </Col>
     </Row>

@@ -172,6 +172,24 @@ def get_team_member_stats(tid):
 
     return {member['username']: _get_problem_names(api.problem.get_solved_problems(uid=member['uid'])) for member in members}
 
+def get_problem_submission_stats(pid=None, name=None):
+    """
+    Retrieves the number of valid and invalid submissions for a given problem.
+
+    Args:
+        pid: the pid of the problem
+        nmae: the name of the problem
+    Returns:
+        Dict of {valid: #, invalid: #}
+    """
+
+    problem = api.problem.get_problem(pid=pid, name=name)
+
+    return {
+        "valid": len(api.problem.get_submissions(pid=problem["pid"], correctness=True)),
+        "invalid": len(api.problem.get_submissions(pid=problem["pid"], correctness=False)),
+    }
+
 @api.cache.memoize()
 def get_score_progression(tid=None, uid=None, category=None):
     """
