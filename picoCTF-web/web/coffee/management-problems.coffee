@@ -311,7 +311,7 @@ ProblemList = React.createClass
 
     problemComponents = @props.problems.map ((problem, i) ->
       <Col xs={12}>
-        <Problem key={i} onProblemChange={@props.onProblemChange} submissions={@props.submissions[problem.name]} {...problem}/>
+        <Problem key={problem.name} onProblemChange={@props.onProblemChange} submissions={@props.submissions[problem.name]} {...problem}/>
       </Col>
     ).bind this
 
@@ -407,6 +407,6 @@ ProblemTab = React.createClass
         </Row>
       </Col>
       <Col xs={9} md={9}>
-        <ProblemList key={Math.random()} problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
+        <ProblemList problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
       </Col>
     </Row>
