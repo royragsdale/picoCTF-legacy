@@ -11,6 +11,9 @@ startup_functions:
  - redirectIfNotLoggedIn()
  - redirectIfTeacher()
 ---
+
+<script type="text/javascript" src="/js/libs/Chart.min.js"></script>
+
 <div class="container">
   <div class="row">
     <div class="col-md-6">
@@ -20,7 +23,7 @@ startup_functions:
              <h3 class="panel-title">Score Progression</h3>
           </div>
           <div class="panel-body team-panel-body">
-             <div id="team-progression-graph"></div>
+             <canvas id="team-progression-graph"></canvas>
           </div>
       </div>
     </div>

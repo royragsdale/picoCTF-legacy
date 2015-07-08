@@ -16,8 +16,10 @@ load_teamscore = ->
 @reloadGraph = ->
   reload = ->
     $(".progression-graph").empty()
-    active_gid = $("ul#scoreboard-tabs li.active").data().gid
-    window.drawTopTeamsProgressionGraph "#"+active_gid+"-progression", active_gid
+    active_tab = $("ul#scoreboard-tabs li.active").data()
+    if active_tab != undefined
+      active_gid = active_tab.gid
+      window.drawTopTeamsProgressionGraph "#"+active_gid+"-progression", active_gid
 
   setTimeout reload, 100
 

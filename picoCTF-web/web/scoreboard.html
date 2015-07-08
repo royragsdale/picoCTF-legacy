@@ -7,6 +7,8 @@ post_scripts:
 startup_functions:
 ---
 
+<script type="text/javascript" src="/js/libs/Chart.min.js"></script>
+
 <script type="text/template" id="scoreboard-teamscore-template">
   <div class="pull-right">
     <h3>Score: <strong><%= teamscore%></strong></h3>
@@ -34,7 +36,9 @@ startup_functions:
         </pre>
     <% } else { %>
       <% _.each(data.groups, function(group, index) { %>
-        <div id="<%= group.gid %>-progression" class="progression-graph"> </div>
+        <div class="row">
+          <canvas id="<%= group.gid %>-progression" width="auto"> </canvas>
+        </div>
         <% if (index == 0) { %>
           <div id="<%= group.gid %>" class="tab-pane fade in active">
             <%= renderScoreboard({scoreboard: group.scoreboard}) %>
