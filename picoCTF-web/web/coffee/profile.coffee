@@ -2,18 +2,6 @@ renderTeamInformation = _.template($("#team-info-template").remove().text())
 renderGroupInformation = _.template($("#group-info-template").remove().text())
 renderAchievementInformation = _.template($("#achievement-info-template").remove().text())
 
-load_team_info = ->
-  apiCall "GET", "/api/team"
-  .done (data) ->
-    switch data["status"]
-      when 0
-        apiNotify(data)
-        ga('send', 'event', 'Team', 'LoadFailure', data.message)
-      when 1
-        $("#team-info").html renderTeamInformation({data: data.data})
-        x = "<ul>" + ("<li>" + _.escape(j) + "</li>" for j in data.data.justification).join("") + "</ul>"
-        $('#eligibility-exp').data "content", x
-
 load_group_info = ->
   apiCall "GET", "/api/group/list"
   .done (data) ->
@@ -37,7 +25,6 @@ load_achievement_info = ->
             apiNotify(data)
             ga('send', 'event', 'Achievements', 'LoadFailure', data.message);
         when 1
-            console.log(data.data)
             $("#achievement-info").html renderAchievementInformation({data: data.data})
 
 join_group = (group_name, group_owner) ->
@@ -77,8 +64,79 @@ join_group_request = (e) ->
   group_owner = $("#group-owner-input").val()
   join_group group_name, group_owner
 
+update = React.addons.update
+Panel = ReactBootstrap.Panel
+ProgressBar = ReactBootstrap.ProgressBar
+Glyphicon = ReactBootstrap.Glyphicon
+Row = ReactBootstrap.Row
+Col = ReactBootstrap.Col
+
+ProblemInfo = React.createClass
+  getInitialState: ->
+    solvedProblems: []
+    problems: []
+    team: {}
+
+  componentWillMount: ->
+    apiCall "GET", "/api/team"
+    .done ((api) ->
+      @setState update @state,
+        team: $set: api.data
+    ).bind this
+
+    apiCall "GET", "/api/problems"
+    .done ((api) ->
+      @setState update @state,
+        problems: $set: api.data
+    ).bind this
+
+    apiCall "GET", "/api/problems/solved"
+    .done ((api) ->
+      @setState update @state,
+        solvedProblems: $set: api.data
+    ).bind this
+
+  render: ->
+    allProblemsByCategory = _.groupBy @state.problems, "category"
+    solvedProblemsByCategory = _.groupBy @state.solvedProblems, "category"
+
+    categories = _.keys allProblemsByCategory
+
+    styles = ["success", "info", "primary", "warning", "danger"]
+
+    glyphs =
+      "Cryptography": "lock"
+      "Web Exploitation": "bitcoin"
+      "Binary Exploitation": "fire"
+      "Reverse Engineering": "leaf"
+      "Forensics": "lamp"
+
+    panelHeader =
+    <div>
+      Progress Overview
+      <div className="pull-right">Score: {@state.team.score}</div>
+    </div>
+
+    <Panel key={categories} header={panelHeader}>
+      {categories.map (category, i) ->
+        currentlySolved = if solvedProblemsByCategory[category] then solvedProblemsByCategory[category].length else 0
+        <Row key={i}>
+          <Col xs={8} className="progress-container">
+            <ProgressBar
+              now={currentlySolved} bsStyle={styles[i % styles.length]}
+              max={allProblemsByCategory[category].length}
+              label="%(now)s / %(max)s"/>
+          </Col>
+          <Col xs={4} className="progress-label">
+            <Glyphicon glyph={if glyphs[category] then glyphs[category] else "lock"}/>
+            <div className="pull-right">{category}</div>
+          </Col>
+        </Row>}
+    </Panel>
+
 $ ->
-  load_team_info()
+  #load_team_info()
+  React.render <ProblemInfo/>, document.getElementById("progress-info")
   load_group_info()
   load_achievement_info()
   window.drawTeamProgressionGraph("#team-progression-graph", "#team-progression-graph-container")

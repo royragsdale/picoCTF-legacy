@@ -1,3 +1,19 @@
+.progress {
+    padding: 0px !important;
+}
+
+.progress-container {
+    padding-right: 0px !important;
+}
+
+.progress-bar>span>span {
+    color: #000 !important;
+}
+
+.progress-label {
+    padding-left: 5px !important;
+}
+
 .collapsible-information {
     padding-top: 10px !important;
 }
