@@ -66,6 +66,10 @@ join_group_request = (e) ->
 
 update = React.addons.update
 Panel = ReactBootstrap.Panel
+ProgressBar = ReactBootstrap.ProgressBar
+Glyphicon = ReactBootstrap.Glyphicon
+Row = ReactBootstrap.Row
+Col = ReactBootstrap.Col
 
 ProblemInfo = React.createClass
   getInitialState: ->
@@ -93,7 +97,38 @@ ProblemInfo = React.createClass
     ).bind this
 
   render: ->
-    <div/>
+    allProblemsByCategory = _.groupBy @state.problems, "category"
+    solvedProblemsByCategory = _.groupBy @state.solvedProblems, "category"
+
+    categories = _.keys allProblemsByCategory
+
+    styles = ["success", "info", "primary", "warning", "danger"]
+
+    glyphs =
+      "Cryptography": "lock"
+      "Web Exploitation": "bitcoin"
+      "Binary Exploitation": "fire"
+      "Reverse Engineering": "leaf"
+      "Forensics": "lamp"
+
+    <Panel key={categories} header="Progress Overview">
+      {categories.map (category, i) ->
+        currentlySolved = if solvedProblemsByCategory[category] then solvedProblemsByCategory[category].length else 0
+        <Row key={i}>
+          <Col xs={8}>
+            <ProgressBar
+              now={currentlySolved} min={-1} bsStyle={styles[i % styles.length]}
+              max={allProblemsByCategory[category].length}
+              label="%(now)s / %(max)s"/>
+          </Col>
+          <Col xs={4}>
+            {category}
+            <div className="pull-right">
+              <Glyphicon glyph={if glyphs[category] then glyphs[category] else "lock"}/>
+            </div>
+          </Col>
+        </Row>}
+    </Panel>
 
 $ ->
   #load_team_info()

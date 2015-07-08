@@ -1,3 +1,7 @@
+.progress {
+    padding: 0px !important;
+}
+
 .collapsible-information {
     padding-top: 10px !important;
 }
