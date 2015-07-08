@@ -4,8 +4,11 @@ CTF API Configuration File
 Note this is just a python script. It does config things.
 """
 
+from api.common import WebException
+
 import api
 import datetime
+import json
 
 import api.app
 
@@ -35,18 +38,12 @@ testing_mongo_db_name = "ctf_test"
 testing_mongo_addr = "127.0.0.1"
 testing_mongo_port = 27017
 
-""" CTF SETTINGS """
-
-enable_teachers = True
-enable_feedback = True
-
+""" SETUP """
 competition_name = "Cyberstakes"
 competition_urls = ["127.0.0.1:8080"]
 
-# Teams to display on scoreboard graph
-api.stats.top_teams = 5
 
-# start and end times!
+# Helper class for timezones
 class EST(datetime.tzinfo):
     def __init__(self, utc_offset):
         self.utc_offset = utc_offset
@@ -57,34 +54,75 @@ class EST(datetime.tzinfo):
     def dst(self, dt):
         return datetime.timedelta(0)
 
-start_time = datetime.datetime(2000, 10, 27, 12, 13, 0, tzinfo=EST(4))
-end_time = datetime.datetime(2055, 11, 7, 23, 59, 59, tzinfo=EST(5))
 
-""" ACHIEVEMENTS """
+""" CTF Settings
+These are the default settings that will be loaded
+into the database if no settings are already loaded.
+"""
+default_settings = {
+    "enable_teachers": True,
+    "enable_feedback": True,
+    # start and end times!
+    "start_time": datetime.datetime(2015, 6, 1, 0, 0, 0, tzinfo=EST(4)),
+    "end_time": datetime.datetime(2015, 6, 30, 0, 0, 0, tzinfo=EST(5)),
+    # ACHIEVEMENTS
+    "achievements": {
+        "enable_achievements": True,
+        "processor_base_path": "./achievements",
+    },
+    # EMAIL (SMTP)
+    "email":{
+        "enable_email": False,
+        "smtp_url":"",
+        "email_username": "",
+        "email_password":  "",
+        "from_addr": "",
+        "from_name": "",
+    },
+    # CAPTCHA
+    "captcha": {
+        "enable_captcha": False,
+        "captcha_url": "http://www.google.com/recaptcha/api/verify",
+        "reCAPTCHA_public_key":  "",
+        "reCAPTCHA_private_key": "",
+    },
+    # LOGGING
+    # Will be emailed any severe internal exceptions!
+    # Requires email block to be setup.
+    "logging": {
+        "admin_emails": ["ben@example.com", "joe@example.com"],
+        "critical_error_timeout": 600
+    }
+}
 
-enable_achievements = True
+""" Helper functions to get settings. Do not change these """
 
-api.achievement.processor_base_path = "./achievements"
+def get_settings():
+    db = api.common.get_conn()
+    return db.settings.find_one({}, {"_id":0})
 
-""" EMAIL (SMTP) """
+def change_settings(changes):
+    db = api.common.get_conn()
+    settings = db.settings.find_one({})
 
-api.utilities.enable_email = False
-api.utilities.smtp_url = ""
-api.utilities.email_username = ""
-api.utilities.email_password = ""
-api.utilities.from_addr = ""
-api.utilities.from_name = ""
+    def check_keys(real, changed):
+        keys = list(changed.keys())
+        for key in keys:
+            if key not in real:
+                raise WebException("Cannot update setting for '{}'".format(key))
+            elif type(real[key]) != type(changed[key]):
+                raise WebException("Cannot update setting for '{}'".format(key))
+            elif isinstance(real[key], dict):
+                check_keys(real[key], changed[key])
+                # change the key so mongo $set works correctly
+                for key2 in changed[key]:
+                    changed["{}.{}".format(key,key2)] = changed[key][key2]
+                changed.pop(key)
 
-""" CAPTCHA """
-enable_captcha = False
-captcha_url = "http://www.google.com/recaptcha/api/verify"
-reCAPTCHA_public_key = ""
-reCAPTCHA_private_key = ""
+    check_keys(settings, changes)
 
+    db.settings.update({"_id":settings["_id"]}, {"$set": changes})
 
-""" LOGGING """
-
-# Will be emailed any severe internal exceptions!
-# Requires email block to be setup.
-api.logger.admin_emails = ["ben@example.com", "joe@example.com"]
-api.logger.critical_error_timeout = 600
+if get_settings() is None:
+    db = api.common.get_conn()
+    db.settings.insert(default_settings)

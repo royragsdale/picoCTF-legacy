@@ -21,7 +21,7 @@ submitRegistration = (e) ->
   .done (data) ->
     switch data['status']
       when 0
-        $(submitButton).apiNotify(data, {position: "right"})
+        $("#register-button-create").apiNotify(data, {position: "right"})
         ga('send', 'event', 'Registration', 'Failure', "NewTeam::" + data.message)
         reloadCaptcha()
       when 1
