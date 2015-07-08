@@ -4,7 +4,7 @@ divFromSelector = (selector) ->
   _.first($(selector))
 
 topTeamsGraphOptions = {
-  title: "Top Team Score Progression",
+  title: "Top Score Progression",
   legend: {
     position: "top"
   },
@@ -20,7 +20,7 @@ topTeamsGraphOptions = {
 }
 
 teamGraphOptions = {
-  title: "Team Score Progression",
+  title: "Score Progression",
   legend: {
     position: "none"
   },
@@ -129,9 +129,8 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   .done (data) ->
     apiCall "GET", "/api/time", {}
     .done (timedata) ->
-
       if data.status == 1
-          if data.data.length > 0
+          if data.data.length > 0 and data.data[0].length > 0
 
             graphData = [
               ["Time", "Score", {role: "tooltip"}]
@@ -145,6 +144,6 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
             chart = new google.visualization.SteppedAreaChart(div)
             chart.draw(packagedData, teamGraphOptions)
           else
-            $(container_selector).hide()
+            $(selector).html("<p>You have not solved any enabled problems.</p>")
         else
           $(container_selector).hide()
