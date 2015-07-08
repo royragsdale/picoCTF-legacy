@@ -21,7 +21,7 @@ def get_unlocked_problems_hook():
 @require_login
 @block_before_competition(WebError("The competition has not begun yet!"))
 def get_solved_problems_hook():
-    return WebSuccess(api.problem.get_solved_problems(api.user.get_user()['tid']))
+    return WebSuccess(data=api.problem.get_solved_problems(api.user.get_user()['tid']))
 
 @blueprint.route('/submit', methods=['POST'])
 @api_wrapper
