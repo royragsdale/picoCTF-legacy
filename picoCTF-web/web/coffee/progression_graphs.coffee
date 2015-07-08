@@ -130,6 +130,7 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
             datasets: datasets
 
           parent = $(div).parent()
+          parent.children().not("canvas:first").remove()
           $(div).attr('width', parent.width())
           $(div).attr('height', parent.height())
 
