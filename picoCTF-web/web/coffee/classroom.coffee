@@ -2,8 +2,6 @@ renderGroupInformation = _.template($("#group-info-template").remove().text())
 
 renderTeamSelection = _.template($("#team-selection-template").remove().text())
 
-google.load 'visualization', '1.0', {'packages':['corechart']}
-
 @groupListCache = []
 
 addHoverLabel = (target, container, message) ->    
@@ -25,13 +23,10 @@ teamSelectionHandler = (e) ->
   tid = $(e.target).data("tid")
   apiCall "GET", "/api/stats/team/solved_problems", {tid: tid}
   .done (data) ->
-    if data.status == 1
-      drawTeamSolvedVisualization data.data, tid
-    else
-      elementString = "##{tid}>.panel-body>div>.team-visualizer"
-      $(elementString).empty()
-      $(elementString).append("<img id='graph-placeholder-#{tid}' class='faded-chart' src='img/classroom_graph.png'>")
-      addHoverLabel $("#graph-placeholder-#{tid}"), $(elementString), "Once the competition starts, you'll be able to check out the progress of the team here."
+    elementString = "##{tid}>.panel-body>div>.team-visualizer"
+    $(elementString).empty()
+    $(elementString).append("<img id='graph-placeholder-#{tid}' class='faded-chart' src='img/classroom_graph.png'>")
+    addHoverLabel $("#graph-placeholder-#{tid}"), $(elementString), "Once the competition starts, you'll be able to check out the progress of the team here."
 
 # JB: I think this function can be removed
 loadTeamSelection = (gid) ->
@@ -43,45 +38,6 @@ loadTeamSelection = (gid) ->
       teamSelectionHandler e
 
     return
-
-drawTeamSolvedVisualization = (teamData, tid) ->
-  members = _.keys(teamData.members)
-  users = ["users"].concat members, "Unsolved", {role: 'annotation'}
-  graphData = [users]
-
-  _.each teamData.problems, (problems, category) ->
-    categoryData = [category]
-    solvedSet = []
-
-    _.each teamData.members, (solved, member) ->
-      userSolved = _.intersection solved, problems
-      categoryData.push userSolved.length
-
-      solvedSet = _.union solvedSet, userSolved
-
-    #Number of unsolved problems
-    categoryData.push _.difference(problems, solvedSet).length
-    categoryData.push ''
-
-    graphData.push categoryData
-
-  packagedData = google.visualization.arrayToDataTable graphData
-
-  options = {
-    height: 400,
-    legend: {position: 'top', maxLines: 3},
-    bar: {groupWidth: '75%'},
-    isStacked: true,
-    colors: ["#2FA4F0", "#B9F9D0", "#2E5CC0", "#8BADE0", "#E6BF70", "#CECFF0", "#30A0B0"]
-    series: {},
-    title: "Problem Overview"
-  }
-
-  options.series[members.length] = {color: "black", visibleInLegend: false}
-
-  visualElementString = "##{tid}>.panel-body>div>.team-visualizer"
-  chart = new google.visualization.ColumnChart _.first($(visualElementString))
-  chart.draw packagedData, options
 
 createGroupSetup = () ->
     formDialogContents = _.template($("#new-group-template").html())({})
