@@ -393,7 +393,7 @@ def submit_key(tid, pid, key, uid=None, ip=None):
     if submission["correct"]:
         api.cache.invalidate_memoization(api.stats.get_score, {"kwargs.tid":tid}, {"kwargs.uid":uid})
         api.cache.invalidate_memoization(get_unlocked_pids, {"args":tid})
-        api.cache.invalidate_memoization(get_solved_pids, {"kwargs.tid":tid}, {"kwargs.uid":uid})
+        api.cache.invalidate_memoization(get_solved_problems, {"kwargs.tid":tid}, {"kwargs.uid":uid})
 
         api.cache.invalidate_memoization(api.stats.get_score_progression, {"kwargs.tid":tid}, {"kwargs.uid":uid})
 
@@ -619,20 +619,6 @@ def get_all_problems(category=None, show_disabled=False):
     return list(db.problems.find(match, {"_id":0}).sort('score', pymongo.ASCENDING))
 
 @api.cache.memoize()
-def get_solved_pids(tid=None, uid=None, category=None):
-    """
-    Gets the solved pids for a given team or user.
-
-    Args:
-        tid: The team id
-        category: Optional parameter to restrict which problems are returned
-    Returns:
-        List of solved problem ids
-    """
-
-    pids = list(set([sub['pid'] for sub in get_submissions(tid=tid, uid=uid, category=category, correctness=True)]))
-    return [pid for pid in pids if not get_problem(pid=pid, show_disabled=True)["disabled"]]
-
 def get_solved_problems(tid=None, uid=None, category=None):
     """
     Gets the solved problems for a given team or user.
@@ -644,7 +630,30 @@ def get_solved_problems(tid=None, uid=None, category=None):
         List of solved problem dictionaries
     """
 
-    return [get_problem(pid=pid) for pid in get_solved_pids(tid=tid, uid=uid, category=category)]
+    submissions = get_submissions(tid=tid, uid=uid, category=category, correctness=True)
+
+    pids = []
+    result = []
+    for submission in submissions:
+        if submission["pid"] not in pids:
+            problem = unlocked_filter(get_problem(pid=submission["pid"]), True)
+            problem["solve_time"] = submission["timestamp"]
+            result.append(problem)
+
+    return result
+
+def get_solved_pids(tid=None, uid=None, category=None):
+    """
+    Gets the solved pids for a given team or user.
+
+    Args:
+        tid: The team id
+        category: Optional parameter to restrict which problems are returned
+    Returns:
+        List of solved problem ids
+    """
+
+    return [problem["pid"] for problem in get_solved_problems(tid=tid, uid=uid, category=category)]
 
 def is_problem_unlocked(problem, solved):
     """
