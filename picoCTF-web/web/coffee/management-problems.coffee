@@ -275,31 +275,35 @@ Problem = React.createClass
     <ProblemSubmissionDoughnut valid={@props.submissions.valid} invalid={@props.submissions.invalid} visible={@state.expanded}/>
     else <p>No solve attempts.</p>
 
-    <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
-      expanded={@state.expanded} onSelect={@handleExpand}>
-      <Row>
-        <Col md={4}>
-          <h4>Score: {@props.score}</h4>
-          {submissionDisplay}
-        </Col>
-        <Col md={8}>
-          <h4>
-            {@props.author}
-            {if @props.organization then " @ "+@props.organization}
-          </h4>
-          <hr/>
-          <CollapsibleInformation title="Description">
-            <p className="problem-description">{@props.description}</p>
-          </CollapsibleInformation>
-          <CollapsibleInformation title="Hints">
-            <ProblemHintTable hints={@props.hints}/>
-          </CollapsibleInformation>
-          <CollapsibleInformation title="Instance Flags">
-            <ProblemFlagTable instances={@props.instances}/>
-          </CollapsibleInformation>
-        </Col>
-      </Row>
-    </Panel>
+    if @state.expanded
+      <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
+        expanded={@state.expanded} onSelect={@handleExpand}>
+        <Row>
+          <Col md={4}>
+            <h4>Score: {@props.score}</h4>
+            {submissionDisplay}
+          </Col>
+          <Col md={8}>
+            <h4>
+              {@props.author}
+              {if @props.organization then " @ "+@props.organization}
+            </h4>
+            <hr/>
+            <CollapsibleInformation title="Description">
+              <p className="problem-description">{@props.description}</p>
+            </CollapsibleInformation>
+            <CollapsibleInformation title="Hints">
+              <ProblemHintTable hints={@props.hints}/>
+            </CollapsibleInformation>
+            <CollapsibleInformation title="Instance Flags">
+              <ProblemFlagTable instances={@props.instances}/>
+            </CollapsibleInformation>
+          </Col>
+        </Row>
+      </Panel>
+    else
+      <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
+        expanded={@state.expanded} onSelect={@handleExpand}/>
 
 ProblemList = React.createClass
   propTypes:
