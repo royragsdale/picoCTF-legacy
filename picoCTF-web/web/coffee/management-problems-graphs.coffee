@@ -1,5 +1,5 @@
 ProblemSubmissionDoughnut = React.createClass
-  componentDidUpdate: ->
+  componentDidMount: ->
     if @props.visible
       ctx = @getDOMNode().getContext "2d"
       data = [

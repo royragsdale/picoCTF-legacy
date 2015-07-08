@@ -272,7 +272,8 @@ Problem = React.createClass
     panelStyle = if @props.disabled then "default" else "default"
 
     submissionDisplay = if @props.submissions and @props.submissions.valid + @props.submissions.invalid >= 1 then \
-    <ProblemSubmissionDoughnut valid={@props.submissions.valid} invalid={@props.submissions.invalid} visible={@state.expanded}/>
+    <ProblemSubmissionDoughnut valid={@props.submissions.valid}
+      invalid={@props.submissions.invalid} visible={@state.expanded}/>
     else <p>No solve attempts.</p>
 
     if @state.expanded
