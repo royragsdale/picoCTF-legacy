@@ -111,21 +111,25 @@ ProblemInfo = React.createClass
       "Reverse Engineering": "leaf"
       "Forensics": "lamp"
 
-    <Panel key={categories} header="Progress Overview">
+    panelHeader =
+    <div>
+      Progress Overview
+      <div className="pull-right">Score: {@state.team.score}</div>
+    </div>
+
+    <Panel key={categories} header={panelHeader}>
       {categories.map (category, i) ->
         currentlySolved = if solvedProblemsByCategory[category] then solvedProblemsByCategory[category].length else 0
         <Row key={i}>
-          <Col xs={8}>
+          <Col xs={8} className="progress-container">
             <ProgressBar
-              now={currentlySolved} min={-1} bsStyle={styles[i % styles.length]}
+              now={currentlySolved} bsStyle={styles[i % styles.length]}
               max={allProblemsByCategory[category].length}
               label="%(now)s / %(max)s"/>
           </Col>
-          <Col xs={4}>
-            {category}
-            <div className="pull-right">
-              <Glyphicon glyph={if glyphs[category] then glyphs[category] else "lock"}/>
-            </div>
+          <Col xs={4} className="progress-label">
+            <Glyphicon glyph={if glyphs[category] then glyphs[category] else "lock"}/>
+            <div className="pull-right">{category}</div>
           </Col>
         </Row>}
     </Panel>
