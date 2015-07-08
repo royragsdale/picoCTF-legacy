@@ -14,10 +14,10 @@ startup_functions:
 <div class="container">
   <div class="row">
     <div class="col-md-6">
-      <div id="team-info"></div>
+      <div id="user-info"></div>
       <div class="panel panel-default" id="team-progression-graph-container" >
           <div class="panel-heading">
-             <h3 class="panel-title">Team Score Progression</h3>
+             <h3 class="panel-title">Score Progression</h3>
           </div>
           <div class="panel-body team-panel-body">
              <div id="team-progression-graph"></div>
@@ -78,7 +78,7 @@ startup_functions:
 <script type="text/template" id="team-info-template">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h3 class="panel-title">Team: <strong><%- data.team_name %> <div class="pull-right"><%- data.competition_active ? data.score : '' %></strong></h3>
+      <h3 class="panel-title clearfix"><div class="pull-right"><%- data.competition_active ? "Score: "+data.score : '' %></strong></h3>
     </div>
     <div class="panel-body">
       <p>Your Team Passphrase is <strong><%- data.password %></strong>.</p>
