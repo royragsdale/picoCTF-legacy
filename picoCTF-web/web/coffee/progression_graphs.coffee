@@ -150,10 +150,11 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   div = divFromSelector selector
   apiCall "GET", "/api/time", {}
   .done (timedata) ->
+    console.log data.data
     if data.status == 1
-      if data.data.length > 0 and data.data[0].length > 0
+      if data.data.length > 0
 
-        dataPoints = progressionDataToPoints data.data, numDataPoints, timedata.data
+        dataPoints = progressionDataToPoints [data.data], numDataPoints, timedata.data
 
         datasets = [
             label: data.data.name

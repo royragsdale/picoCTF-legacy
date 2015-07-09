@@ -4,41 +4,6 @@ renderTeamSelection = _.template($("#team-selection-template").remove().text())
 
 @groupListCache = []
 
-addHoverLabel = (target, container, message) ->
-    $(target).load () ->
-      gridLabel = $("<div>").text(message).width(target.width())
-      container.append(gridLabel)
-      gridLabel.css("top", (target.height()/2-gridLabel.height()/2 + target.position().top) + "px").addClass("hover-label")
-      gridLabel.css("left", target.css("left"))
-      gridLabelBottom = $("<div>").addClass("fuzzy-top").width(target.width())
-      gridLabelBottom.css("left", target.css("left"))
-      gridLabelBottom.css("top", (gridLabel.position().top - 15) + "px").height(15)
-      container.append(gridLabelBottom)
-      gridLabelTop = $("<div>").addClass("fuzzy-bottom").width(target.width())
-      gridLabelTop.css("left", target.css("left")).height(15)
-      gridLabelTop.css("top", (gridLabel.position().top + gridLabel.outerHeight()) + "px").height(15)
-      container.append(gridLabelTop)
-
-teamSelectionHandler = (e) ->
-  tid = $(e.target).data("tid")
-  apiCall "GET", "/api/stats/team/solved_problems", {tid: tid}
-  .done (data) ->
-    elementString = "##{tid}>.panel-body>div>.team-visualizer"
-    $(elementString).empty()
-    $(elementString).append("<img id='graph-placeholder-#{tid}' class='faded-chart' src='img/classroom_graph.png'>")
-    addHoverLabel $("#graph-placeholder-#{tid}"), $(elementString), "Once the competition starts, you'll be able to check out the progress of the team here."
-
-# JB: I think this function can be removed
-loadTeamSelection = (gid) ->
-  apiCall "GET", "/api/group/member_information", {gid: gid}
-  .done (data) ->
-    ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
-    $("#team-selection").html renderTeamSelection({teams: data.data})
-    $(".team-visualization-enabler").on "click", (e) ->
-      teamSelectionHandler e
-
-    return
-
 createGroupSetup = () ->
     formDialogContents = _.template($("#new-group-template").html())({})
     formDialog formDialogContents, "Create a New Class", "OK", "new-group-name", () ->
@@ -56,14 +21,23 @@ loadGroupManagement = (groups, showFirstTab, callback) ->
   $("#class-tabs").on 'shown.bs.tab', 'a[data-toggle="tab"]', (e) ->
     tabBody = $(this).attr("href")
     groupName = $(this).data("group-name")
+
     apiCall "GET", "/api/group/member_information", {gid: $(this).data("gid")}
     .done (teamData) ->
         ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
         for group in groups
           if group.name == groupName
+            console.log teamData.data, teamData.data.length
             $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
-            $(".team-visualization-enabler").on "click", (e) ->
-                teamSelectionHandler e
+        $(".team-visualization-enabler").on "click", (e) ->
+          tid = $(e.target).data("tid")
+          console.log tid, teamData.data
+          for team in teamData.data
+            console.log team
+            if tid == team.tid
+              preparedData = {status: 1, data: team.progression}
+              window.renderTeamProgressionGraph("#visualizer-"+tid, preparedData)
+
   if showFirstTab
     $('#class-tabs a:first').tab('show')
 
