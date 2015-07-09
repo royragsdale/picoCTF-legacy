@@ -33,7 +33,7 @@ submitProblem = (e) ->
       loadProblems()
       setTimeout( ->
         $("div[data-target='#" + input.data("pid") + "']").click()
-      , 100)
+      , 500)
     else
       ga('send', 'event', 'Problem', 'Wrong', 'Basic')
     apiNotify data
