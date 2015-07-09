@@ -239,7 +239,9 @@ Problem = React.createClass
   getInitialState: ->
     expanded: false
 
-  onStateToggle: ->
+  onStateToggle: (e) ->
+    console.log e
+    e.preventDefault()
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
     .done @props.onProblemChange
 
@@ -349,6 +351,34 @@ ProblemDependencyView = React.createClass
       </ListGroup>
     </Panel>
 
+ProblemListModifiers = React.createClass
+
+  onMassChange: (enabled) ->
+    change = if enabled then "enable" else "disable"
+    changeNumber = @props.problems.length
+    window.confirmDialog "Are you sure you want to #{change} these #{changeNumber} problems?", "Mass Problem State Change",
+    "Yes", "No", (() ->
+      calls = _.map @props.problems, (problem) ->
+        apiCall "POST", "/api/admin/problems/availability", {pid: problem.pid, state: !enabled}
+      ($.when.apply this, calls)
+        .done (() ->
+          if _.all(_.map arguments, (call) -> (_.first call).status == 1)
+            apiNotify {status: 1, message: "All problems have been successfully changed."}
+          else
+            apiNotify {status: 0, message: "There was an error changing some of the problems."}
+          @props.onProblemChange()
+        ).bind this
+      ).bind this, () -> false
+
+  render: ->
+    <Panel>
+      <ButtonGroup className="pull-right">
+        <Button onClick={@onMassChange.bind null, true}>Enable All Problems</Button>
+        <Button onClick={@onMassChange.bind null, false}>Disable All Problems</Button>
+      </ButtonGroup>
+    </Panel>
+
+
 ProblemTab = React.createClass
   propTypes:
     problems: React.PropTypes.array.isRequired
@@ -412,6 +442,15 @@ ProblemTab = React.createClass
         </Row>
       </Col>
       <Col xs={9} md={9}>
-        <ProblemList problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
+        <Row>
+          <Col xs={12}>
+            <ProblemListModifiers problems={filteredProblems} onProblemChange={@props.onProblemChange}/>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={12}>
+            <ProblemList problems={filteredProblems} submissions={@props.submissions} onProblemChange={@props.onProblemChange}/>
+          </Col>
+        </Row>
       </Col>
     </Row>
