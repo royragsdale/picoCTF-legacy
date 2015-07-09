@@ -244,8 +244,8 @@ Problem = React.createClass
     .done @props.onProblemChange
 
   handleExpand: (e) ->
-    e.preventDefault()
-    @setState {expanded: !@state.expanded}
+    if !$(e.target).hasClass "btn"
+      @setState {expanded: !@state.expanded}
 
   render: ->
 
