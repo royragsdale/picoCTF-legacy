@@ -60,7 +60,6 @@ startup_functions:
         <tr>
           <th></th>
           <th>Team Name</th>
-          <th>Affiliation</th>
           <th>Score</th>
         </tr>
       </thead>
@@ -69,7 +68,6 @@ startup_functions:
           <tr>
             <td><%= i+1 %>.</td>
             <td><p><%- team.name %></p></td>
-            <td><p><%- team.school %></p></td>
             <td><strong><p><%= team.score %></p></strong></td>
           </tr>
         <% }); %>

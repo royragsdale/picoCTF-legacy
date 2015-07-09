@@ -159,6 +159,9 @@ def get_team_information(tid=None):
     team_info["score"] = api.stats.get_score(tid=tid)
     team_info["members"] = [member["username"] for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()
+    team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
+    team_info["progression"] = api.stats.get_score_progression(tid=tid)
+    team_info["flagged_submissions"] = [sub for sub in api.stats.check_invalid_instance_submissions() if sub['tid'] == tid]
     team_info["max_team_size"] = max_team_users
 
     if api.config.get_settings()["achievements"]["enable_achievements"]:
