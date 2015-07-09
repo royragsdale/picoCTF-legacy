@@ -146,36 +146,37 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
     apiCall "GET", "/api/stats/top_teams/score_progression", {}
     .done drawgraph
 
-@drawTeamProgressionGraph = (selector, container_selector) ->
+@renderTeamProgressionGraph = (selector, data) ->
   div = divFromSelector selector
+  apiCall "GET", "/api/time", {}
+  .done (timedata) ->
+    if data.status == 1
+      if data.data.length > 0 and data.data[0].length > 0
+
+        dataPoints = progressionDataToPoints data.data, numDataPoints, timedata.data
+
+        datasets = [
+            label: data.data.name
+            data: dataPoints
+            pointColor: strokeColors[0]
+            strokeColor: strokeColors[0]
+            fillColor: fillColors[0]
+        ]
+
+        data =
+          labels: ("" for i in [1...numDataPoints])
+          datasets: datasets
+
+        parent = $(div).parent()
+        $(div).attr('width', parent.width())
+        $(div).attr('height', parent.height())
+
+        chart = new Chart(div.getContext("2d")).Line data, teamChartSettings
+
+      else
+          $(selector).html("<p>You have not solved any enabled problems.</p>")
+
+@drawTeamProgressionGraph = (selector, container_selector) ->
   apiCall "GET", "/api/stats/team/score_progression", {}
   .done (data) ->
-    apiCall "GET", "/api/time", {}
-    .done (timedata) ->
-      if data.status == 1
-          if data.data.length > 0 and data.data[0].length > 0
-
-            dataPoints = progressionDataToPoints data.data, numDataPoints, timedata.data
-
-            datasets = [
-                label: data.data.name
-                data: dataPoints
-                pointColor: strokeColors[0]
-                strokeColor: strokeColors[0]
-                fillColor: fillColors[0]
-            ]
-
-            data =
-              labels: ("" for i in [1...numDataPoints])
-              datasets: datasets
-
-            parent = $(div).parent()
-            $(div).attr('width', parent.width())
-            $(div).attr('height', parent.height())
-
-            chart = new Chart(div.getContext("2d")).Line data, teamChartSettings
-
-          else
-            $(selector).html("<p>You have not solved any enabled problems.</p>")
-        else
-          $(container_selector).hide()
+    renderTeamProgressionGraph selector, data
