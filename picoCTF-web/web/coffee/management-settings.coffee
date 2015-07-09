@@ -39,7 +39,7 @@ BooleanEntry = React.createClass
         <h4 className="pull-right">{@props.name}</h4>
       </Col>
       <Col md={8}>
-        <h4><Label onClick=@props.onChange>{if @props.value then "Enabled" else "Disabled"}</Label></h4>
+        <Button bsSize="xsmall" onClick=@props.onChange>{if @props.value then "Enabled" else "Disabled"}</Button>
       </Col>
     </Row>
 
@@ -66,7 +66,9 @@ TimeEntry = React.createClass
         <h4 className="pull-right">{@props.name}</h4>
       </Col>
       <Col md={8}>
-        <div ref="datetimepicker"></div>
+        <Panel>
+          <div ref="datetimepicker"></div>
+        </Panel>
       </Col>
     </Row>
 
@@ -177,17 +179,14 @@ EmailTab = React.createClass
     ).bind(this)
 
   render: ->
-    if @state.enable_email
-      rest =
-        <div>
-          <FormEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl />
-          <FormEntry name="Username" value={@state.email_username} type="text" onChange=@updateUsername />
-          <FormEntry name="Password" value={@state.email_password} type="password" onChange=@updatePassword />
-          <FormEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr />
-          <FormEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName />
-        </div>
-    else
-      rest = ""
+    rest =
+      <div>
+        <FormEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl />
+        <FormEntry name="Username" value={@state.email_username} type="text" onChange=@updateUsername />
+        <FormEntry name="Password" value={@state.email_password} type="password" onChange=@updatePassword />
+        <FormEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr />
+        <FormEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName />
+      </div>
 
     <Well>
       <BooleanEntry name="Email" value={@state.enable_email} onChange=@toggleEnabled />
