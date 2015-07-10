@@ -127,15 +127,16 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
             labels: ("" for i in [1...numDataPoints])
             datasets: datasets
 
-          parent = $(div).parent()
-          parent.children().not("canvas:first").remove()
-          $(div).attr('width', parent.width())
-          $(div).attr('height', parent.height())
+          $(div).empty()
+          canvas = $("<canvas>").appendTo(div)
 
-          chart = new Chart(div.getContext("2d")).Line data, scoreboardChartSettings
+          canvas.attr('width', $(div).width())
+          canvas.attr('height', $(div).height())
+
+          chart = new Chart(_.first(canvas).getContext("2d")).Line data, scoreboardChartSettings
 
           legend = chart.generateLegend()
-          parent.append(legend)
+          $(div).append(legend)
 
   if gid != undefined
     apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
@@ -148,7 +149,6 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   div = divFromSelector selector
   apiCall "GET", "/api/time", {}
   .done (timedata) ->
-    console.log data.data
     if data.status == 1
       if data.data.length > 0
 
@@ -166,11 +166,13 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
           labels: ("" for i in [1...numDataPoints])
           datasets: datasets
 
-        parent = $(div).parent()
-        $(div).attr('width', parent.width())
-        $(div).attr('height', parent.height())
+        $(div).empty()
+        canvas = $("<canvas>").appendTo(div)
 
-        chart = new Chart(div.getContext("2d")).Line data, teamChartSettings
+        canvas.attr('width', $(div).width())
+        canvas.attr('height', $(div).height())
+
+        chart = new Chart(_.first(canvas).getContext("2d")).Line data, teamChartSettings
 
       else
           $(selector).html("<p>You have not solved any enabled problems.</p>")
