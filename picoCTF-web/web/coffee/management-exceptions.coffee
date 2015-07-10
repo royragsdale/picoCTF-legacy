@@ -8,19 +8,10 @@ Col = ReactBootstrap.Col
 Badge = ReactBootstrap.Badge
 
 ExceptionTab = React.createClass
-  getInitialState: ->
-    {exceptions: []}
-
-  componentDidMount: ->
-    apiCall "GET", "/api/admin/exceptions", {limit: 20}
-    .done ((api) ->
-      @setState {exceptions: api.data}
-     ).bind this
 
   onDelete: (exception) ->
-    #Should call out and "hide" the exception. Currently just temporarily removes it.
-    newExceptions = _.reject @state.exceptions, (item) -> item == exception
-    @setState {exceptions: newExceptions}
+    apiCall "POST", "/api/admin/exceptions/dismiss", {trace: exception.trace}
+    .done @props.onExceptionModification()
 
   createRequestInfo: (request) ->
     if request
@@ -77,8 +68,8 @@ ExceptionTab = React.createClass
     </Panel>
 
   render: ->
-    if @state.exceptions.length > 0
-      groupedExceptions = _.groupBy @state.exceptions, (exception) -> exception.trace
+    if @props.exceptions.length > 0
+      groupedExceptions = _.groupBy @props.exceptions, (exception) -> exception.trace
 
       uniqueExceptions = _.map groupedExceptions, (exceptions, commonTrace) ->
         exception = _.first(exceptions)
@@ -86,10 +77,10 @@ ExceptionTab = React.createClass
         return exception
 
       exceptionList = uniqueExceptions.map @createExceptionItem
-      exceptionDisplay = <Accordion defaultActiveKey={0}> {exceptionList} </Accordion>
+      exceptionDisplay = <Accordion defaultActiveKey={0}>{exceptionList}</Accordion>
 
       <div>
-        <h3>Displaying the {@state.exceptions.length} most recent exceptions.</h3>
+        <h3>Displaying the {@props.exceptions.length} most recent exceptions.</h3>
         {exceptionDisplay}
       </div>
     else
