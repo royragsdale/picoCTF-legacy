@@ -346,6 +346,10 @@ ProblemDependencyView = React.createClass
     ).bind this
 
     <Panel header="Problem Dependencies">
+      <p>
+        { "By default, all problems are unlocked. You can enable or disable the problem unlock dependencies
+        for your problem bundles below." }
+      </p>
       <ListGroup fill>
         {bundleDisplay}
       </ListGroup>
