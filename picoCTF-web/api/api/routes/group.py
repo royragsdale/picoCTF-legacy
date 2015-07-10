@@ -28,6 +28,7 @@ def get_group_list_hook():
 
 @blueprint.route('/member_information', methods=['GET'])
 @api_wrapper
+@require_teacher
 def get_memeber_information_hook(gid=None):
     gid = request.args.get("gid")
     if not api.group.is_owner_of_group(gid):
