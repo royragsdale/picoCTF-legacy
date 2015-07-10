@@ -34,7 +34,6 @@ ManagementTabbedArea = React.createClass
   onExceptionModification: ->
     apiCall "GET", "/api/admin/exceptions", {limit: 50}
     .done ((api) ->
-      console.log api.data
       @setState React.addons.update @state,
         exceptions: $set: api.data
     ).bind this
@@ -54,7 +53,6 @@ ManagementTabbedArea = React.createClass
         $set: tab
 
   render: ->
-      console.log @state
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
         <TabPane eventKey='problems' tab='Manage Problems'>
           <ProblemTab problems={@state.problems} onProblemChange={@onProblemChange}
