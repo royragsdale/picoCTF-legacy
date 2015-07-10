@@ -10,6 +10,7 @@ ManagementTabbedArea = React.createClass
     bundles: []
     problems: []
     submissions: []
+    exceptions: []
     tabKey: tab
 
   onProblemChange: ->
@@ -30,12 +31,21 @@ ManagementTabbedArea = React.createClass
     ).bind this
 
 
+  onExceptionModification: ->
+    apiCall "GET", "/api/admin/exceptions", {limit: 50}
+    .done ((api) ->
+      @setState React.addons.update @state,
+        exceptions: $set: api.data
+    ).bind this
+
   componentDidMount: ->
     # Formatting hack
     $("#main-content>.container").addClass("container-fluid")
     $("#main-content>.container").removeClass("container")
 
+  componentWillMount: ->
     @onProblemChange()
+    @onExceptionModification()
 
   onTabSelect: (tab) ->
     @setState React.addons.update @state,
@@ -49,7 +59,8 @@ ManagementTabbedArea = React.createClass
             bundles={@state.bundles} submissions={@state.submissions}/>
         </TabPane>
         <TabPane eventKey='exceptions' tab='Exceptions'>
-          <ExceptionTab/>
+          <ExceptionTab onExceptionModification={@onExceptionModification}
+            exceptions={@state.exceptions}/>
         </TabPane>
         <TabPane eventKey='shell-servers' tab='Shell Server'>
           <ShellServerTab/>

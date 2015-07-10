@@ -134,7 +134,8 @@ class ExceptionHandler(logging.StreamHandler):
         information.update({
             "event": "exception",
             "time": datetime.now(),
-            "trace": record.msg
+            "trace": record.msg,
+            "visible": True
         })
 
         api.common.get_conn().exceptions.insert(information)

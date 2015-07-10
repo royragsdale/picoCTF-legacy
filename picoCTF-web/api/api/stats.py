@@ -529,6 +529,7 @@ def check_invalid_instance_submissions(gid=None):
                 if not api.problem.grade_problem(submission['pid'], submission['key'], tid=submission['tid'])['correct']:
                     if group is None or submission['tid'] in group['members']:
                         submission['username'] = api.user.get_user(uid=submission['uid'])['username']
+                        submission["problem_name"] = problem["name"]
                         shared_key_submisssions.append(submission)
 
     return shared_key_submisssions
