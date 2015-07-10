@@ -29,12 +29,10 @@ scoreboardChartSettings =
   bezierCurve: false
   legendTemplate : "<div class=\"row\">
                       <% for (var i=0; i<datasets.length; i++){%>
-                        <div class=\"col-md-1 col-sm-1 col-lg-1\">
-                          <span style=\"color:<%=datasets[i].strokeColor%>\" class=\"glyphicon glyphicon-user\" aria-hidden=\"true\"></span>
-                          <%if(datasets[i].label){%>
-                            <%=datasets[i].label%>
-                          <%}%>
-                        </div>
+                        <span style=\"color:<%=datasets[i].strokeColor%>\" class=\"pad glyphicon glyphicon-user\" aria-hidden=\"true\"></span>
+                        <%if(datasets[i].label){%>
+                          <%=datasets[i].label%>
+                        <%}%>
                       <%}%>
                     </div>"
 

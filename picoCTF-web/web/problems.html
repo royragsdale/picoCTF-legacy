@@ -39,7 +39,7 @@ startup_functions:
     reviewId: problem.pid + "review",
     hintId: problem.pid + "hint",
     solveClassName: problem.solved ? "disabled" : "active",
-    reviewClassName: problem.solved ? "active" : ""
+    reviewClassName: problem.solved && document.competition_status.enable_feedback ? "active" : ""
     };
     %>
 
