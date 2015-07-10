@@ -49,5 +49,16 @@ def get_api_exceptions(result_limit=50, sort_direction=pymongo.DESCENDING):
 
     db = api.common.get_conn()
 
-    results = db.exceptions.find().sort([("time", sort_direction)]).limit(result_limit)
+    results = db.exceptions.find({"visible": True}).sort([("time", sort_direction)]).limit(result_limit)
     return list(results)
+
+def dismiss_api_exceptions(trace):
+    """
+    Remove exceptions from the management tab.
+
+    Args:
+        trace: the exception trace
+    """
+
+    db = api.common.get_conn()
+    db.exceptions.remove({"trace": trace})

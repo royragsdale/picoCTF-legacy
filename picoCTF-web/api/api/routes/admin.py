@@ -40,6 +40,17 @@ def get_exceptions_hook():
     except (ValueError, TypeError):
         return WebError("limit is not a valid integer.")
 
+@blueprint.route('/exceptions/dismiss', methods=['POST'])
+@api_wrapper
+@require_admin
+def dismiss_exceptions_hook():
+    trace = request.form.get("trace", None)
+    if trace:
+        api.admin.dismiss_api_exceptions(trace)
+        return WebSuccess(data="Successfuly changed exception visibility.")
+    else:
+        return WebError(message="You must supply a trace to hide.")
+
 @blueprint.route("/problems/submissions", methods=["GET"])
 @api_wrapper
 @require_admin
