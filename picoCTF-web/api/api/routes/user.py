@@ -95,4 +95,8 @@ def status_hook():
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else ""
     }
 
+    if api.auth.is_logged_in():
+        tid = api.user.get_team()["tid"]
+        status["score"] = api.stats.get_score(tid=tid)
+
     return WebSuccess(data=status)
