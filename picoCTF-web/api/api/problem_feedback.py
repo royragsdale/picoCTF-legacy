@@ -11,12 +11,8 @@ from api.common import validate, check, safe_fail, InternalException, SevereInte
 from api.annotations import log_action
 
 feedback_schema = Schema({
-    Required("metrics"): check(
-        ("metrics must include difficulty, enjoyment, and educational-value", [
-            lambda metrics: "difficulty" in metrics,
-            lambda metrics: "enjoyment" in metrics,
-            lambda metrics: "educational-value" in metrics
-        ])
+    Required("liked"): check(
+        ("liked must be a boolean", [lambda x: type(x) == bool])
     ),
     "comment": check(
         ("The comment must be no more than 500 characters", [str, Length(max=500)])
@@ -88,13 +84,17 @@ def add_problem_feedback(pid, uid, feedback):
 
     validate(feedback_schema, feedback)
 
-    db.problem_feedback.insert({
-        "pid": pid,
-        "uid": uid,
-        "tid": team["tid"],
-        "solved": solved,
-        "timestamp": datetime.utcnow(),
-        "feedback": feedback
-    })
+    # update feedback if already present
+    if get_problem_feedback(pid=pid, uid=uid) != []:
+        db.problem_feedback.update({"pid": pid, "uid":uid}, {"$set": {"timestamp": datetime.utcnow(), "feedback": feedback}})
+    else:
+        db.problem_feedback.insert({
+            "pid": pid,
+            "uid": uid,
+            "tid": team["tid"],
+            "solved": solved,
+            "timestamp": datetime.utcnow(),
+            "feedback": feedback
+        })
 
-    api.achievement.process_achievements("review", {"uid": uid, "tid": team['tid'], "pid": pid})
+        api.achievement.process_achievements("review", {"uid": uid, "tid": team['tid'], "pid": pid})

@@ -76,7 +76,8 @@ def problem_feedback_hook():
 @require_login
 @block_before_competition(WebError("The competition has not begun yet!"))
 def problem_reviews_hook():
-    return WebSuccess(data=api.problem_feedback.get_reviewed_pids())
+    uid = api.user.get_user()['uid']
+    return WebSuccess(data=api.problem_feedback.get_problem_feedback(uid=uid))
 
 @blueprint.route("/hint", methods=['GET'])
 @api_wrapper

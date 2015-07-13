@@ -16,7 +16,6 @@ startup_functions:
         <%= renderProblem({
         problem: problem,
         reviewData: reviewData,
-        renderProblemReview: renderProblemReview,
         renderProblemSubmit: renderProblemSubmit,
         sanitizeMetricName: sanitizeMetricName
         }) %>
@@ -26,7 +25,20 @@ startup_functions:
 
 <script type="text/template" id="problem-template">
     <%
-    var alreadyReviewed = $.inArray(problem.pid, reviewData) !== -1;
+    var alreadyReviewed = false;
+    var review = null;
+
+    for (var i = 0; i < reviewData.length; i++)
+      if (reviewData[i].pid == problem.pid){
+        alreadyReviewed = true;
+        review = reviewData[i].feedback;
+      }
+
+
+    var thumbs = {
+      upClass: alreadyReviewed && review.liked ? "active" : "",
+      downClass: alreadyReviewed && !review.liked ? "active" : ""
+    };
     var panel = {
     className: problem.solved ? "solved" : "",
     collapseClass: problem.solved ? "" : "in",
@@ -38,8 +50,7 @@ startup_functions:
     solveId: problem.pid + "solve",
     reviewId: problem.pid + "review",
     hintId: problem.pid + "hint",
-    solveClassName: problem.solved ? "disabled" : "active",
-    reviewClassName: problem.solved && document.competition_status.enable_feedback ? "active" : ""
+    solveClassName: "active",
     };
     %>
 
@@ -59,15 +70,11 @@ startup_functions:
                       </li>
                       <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
                       </li>
-                      <% if (document.competition_status.enable_feedback) { %>
-                        <li class="<%= pill.reviewClassName %>"><a href="#<%= pill.reviewId %>" data-toggle="tab">Review</a>
-                        </li>
-                      <% } %>
                   </ul>
                   <div class="tab-content">
                       <div class="tab-pane <%= pill.solveClassName %>" id="<%= pill.solveId %>">
                           <div class="panel-body">
-                              <%= renderProblemSubmit({problem: problem}) %>
+                              <%= renderProblemSubmit({problem: problem, thumbs: thumbs}) %>
                           </div>
                       </div>
                       <div class="tab-pane" id="<%= pill.hintId %>">
@@ -77,15 +84,6 @@ startup_functions:
                                   <li class="list-group-item"><%= problem.hints[i] %></li>
                                 <% } %>
                               </ul>
-                          </div>
-                      </div>
-                      <div class="tab-pane <%= pill.reviewClassName %>" id="<%= pill.reviewId %>">
-                          <div class="panel-body">
-                              <%= renderProblemReview({
-                              problem: problem,
-                              alreadyReviewed: alreadyReviewed,
-                              sanitizeMetricName: sanitizeMetricName
-                              }) %>
                           </div>
                       </div>
                   </div>
@@ -116,11 +114,17 @@ startup_functions:
     </p>
     <div class="row">
         <form class="problem-submit">
-            <div class="input-group input-group-sm">
-        <span class="input-group-btn">
-          <button class="btn btn-primary" type="submit">Submit!</button>
-        </span>
-                <input type="text" data-pid="<%- problem.pid %>" class="form-control">
+            <div class="col-md-11 col-sm-11 col-lg-11">
+              <div class="input-group input-group-sm">
+                <span class="input-group-btn">
+                  <button class="btn btn-primary" type="submit">Submit!</button>
+                </span>
+                <input type="text" data-pid="<%- problem.pid %>" class="form-control"/>
+              </div>
+            </div>
+            <div class="col-md-1 col-sm-1 col-lg-1">
+                <span id="<%- problem.pid %>-thumbsup" data-pid="<%- problem.pid %>" data-setting="up" style="font-size:1.7em;" class="rating-button glyphicon glyphicon-thumbs-up pull-left <%- thumbs.upClass %>"></span>
+                <span id="<%- problem.pid %>-thumbsdown" data-pid="<%- problem.pid %>" data-setting="down" style="font-size:1.7em;" class="rating-button glyphicon glyphicon-thumbs-down pull-right <%- thumbs.downClass %>"></span>
             </div>
         </form>
     </div>
@@ -138,77 +142,6 @@ startup_functions:
             </td>
         </tr>
     </table>
-</script>
-
-<script type="text/template" id="problem-review-template">
-    <form class="form-horizontal problem-review-form" data-pid="<%= problem.pid %>">
-        <% if(alreadyReviewed) { %>
-        <div class="row">
-            <p><span class="label label-default">You have already reviewed this problem. Feel free to provide additional feedback.</span>
-            </p>
-        </div>
-        <% } %>
-        <div class="form-group" style="width: 615px; margin-left: auto; margin-right: auto">
-            <% _.each(window.ratingMetrics, function(metric) { %>
-            <div class="row">
-                <div class="col-md-12" style="text-align: center">
-                    <h4><%- window.ratingQuestion[metric] %></h4>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12" style="text-align: center; margin: auto">
-                    <center>
-                        <div>
-                            <div class="radio-bar"></div>
-                            <% _.each(window.ratingChoices[metric], function(choice, index, list) { %>
-                                <div class="feedback-radio">
-                                    <input type="radio" style="position: relative; z-index: 2;"
-                                           name="rating-<%= sanitizeMetricName(metric) %>"
-                                           value="<%= index %>"
-                                        <% if(index == 2) { %>
-                                           checked="checked"
-                                        <% } %>
-                                           >
-                                </div>
-                            <% }) %>
-                        </div>
-                        <div>
-                            <% _.each(window.ratingChoices[metric], function(choice) { %>
-                                <div class="feedback-label"><%- choice %></div>
-                            <% }) %>
-                        </div>
-                    </center>
-                </div>
-            </div>
-            <% }) %>
-            <div class="row" style="margin-top: 15px">
-                <div class="col-md-12">
-                    <h4>How long did this problem take you?</h4>
-
-                    <div class="time-slider" id="slider-<%= problem.pid %>"
-                         name="time-slider"
-                         data-label-target="slider-label-<%= problem.pid %>"></div>
-                    <div style="text-align: center">
-                        <h5 id="slider-label-<%= problem.pid %>"></h5>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <h4>Any other thoughts?</h4>
-                    <textarea name="feedback" class="form-control" placeholder="Leave a comment here!"></textarea>
-                </div>
-            </div>
-            <div class="row" style="margin-top: 15px">
-                <div class="col-md-12">
-                     <span class="input-group-btn">
-                        <button class="btn btn-default feedback-button" type="submit">Send Feedback</button>
-                    </span>
-                </div>
-            </div>
-
-        </div>
-    </form>
 </script>
 
 <div class="container">

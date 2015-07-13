@@ -234,6 +234,31 @@ ProblemHintTable = React.createClass
       </tbody>
     </Table>
 
+ProblemReview = React.createClass
+  render: ->
+    upvotes = 0
+    downvotes = 0
+    for review in @props.reviews
+      if review.feedback.liked
+        upvotes++
+      else
+        downvotes++
+
+    style = {
+      fontSize:"2.5em"
+    }
+
+    <Row>
+      <Col sm={4} md={4} lg={4}>
+        <Glyphicon glyph="thumbs-up" className="active pad" style={style}/>
+        <Badge>{upvotes}</Badge>
+      </Col>
+      <Col sm={6} md={6} lg={6}>
+        <Glyphicon glyph="thumbs-down" className="active pad" style={style}/>
+        <Badge>{downvotes}</Badge>
+      </Col>
+    </Row>
+
 Problem = React.createClass
 
   getInitialState: ->
@@ -258,7 +283,7 @@ Problem = React.createClass
 
     problemHeader =
     <div>
-      {@props.category} - {@props.name}
+      {@props.category} - {@props.name} ({@props.score})
       <div className="pull-right">
         {statusButton}
       </div>
@@ -283,7 +308,7 @@ Problem = React.createClass
         expanded={@state.expanded} onSelect={@handleExpand}>
         <Row>
           <Col md={4}>
-            <h4>Score: {@props.score}</h4>
+            <ProblemReview reviews=@props.reviews />
             {submissionDisplay}
           </Col>
           <Col md={8}>
