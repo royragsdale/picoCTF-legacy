@@ -50,16 +50,17 @@ addProblemReview = (e) ->
     liked: target.data("setting") == "up"
   }
 
-  selector = "#"+pid+"-thumbs"+(if feedback.liked then "down" else "up")
-  $(selector).removeClass("active")
-
-  target.addClass("active")
 
   postData = {feedback: JSON.stringify(feedback), pid: pid}
 
   apiCall "POST", "/api/problems/feedback", postData
   .done (data) ->
     apiNotify data
+    if data['status'] is 1
+      selector = "#"+pid+"-thumbs"+(if feedback.liked then "down" else "up")
+      $(selector).removeClass("active")
+      target.addClass("active")
+
     ga('send', 'event', 'Problem', 'Review', 'Basic')
     apiCall "GET", "/api/achievements"
     .done (data) ->
