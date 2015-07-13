@@ -30,7 +30,6 @@ ManagementTabbedArea = React.createClass
         submissions: $set: api.data
     ).bind this
 
-
   onExceptionModification: ->
     apiCall "GET", "/api/admin/exceptions", {limit: 50}
     .done ((api) ->
@@ -51,6 +50,14 @@ ManagementTabbedArea = React.createClass
     @setState React.addons.update @state,
       tabKey:
         $set: tab
+
+    window.location.hash = "#"+tab
+
+    if tab == "problems"
+      @onProblemChange()
+
+    if tab == "exceptions"
+      @onExceptionModification()
 
   render: ->
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
