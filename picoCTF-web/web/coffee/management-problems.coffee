@@ -246,6 +246,7 @@ Problem = React.createClass
     .done @props.onProblemChange
 
   handleExpand: (e) ->
+    e.preventDefault()
     if !$(e.target).hasClass "btn"
       @setState {expanded: !@state.expanded}
 
@@ -260,6 +261,7 @@ Problem = React.createClass
     <div>
       {@props.category} - {@props.name}
       <div className="pull-right">
+        <Glyphicon className="pad" color="green" glyph="ok"/>
         {statusButton}
       </div>
     </div>
@@ -333,7 +335,7 @@ ProblemDependencyView = React.createClass
 
   render: ->
     bundleDisplay = @props.bundles.map ((bundle, i) ->
-      switchText = if bundle.dependencies_enabled then "Disable" else "Enable"
+      switchText = if bundle.dependencies_enabled then "Unlock Problems" else "Lock Problems"
       <ListGroupItem key={i} className="clearfix">
         <div>{bundle.name}
           <div className="pull-right">
