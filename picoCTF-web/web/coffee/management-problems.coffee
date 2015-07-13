@@ -240,14 +240,15 @@ Problem = React.createClass
     expanded: false
 
   onStateToggle: (e) ->
-    console.log e
     e.preventDefault()
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
     .done @props.onProblemChange
 
   handleExpand: (e) ->
     e.preventDefault()
-    if !$(e.target).hasClass "btn"
+
+    #This is awkward.
+    if $(e.target).parent().hasClass "do-expand"
       @setState {expanded: !@state.expanded}
 
   render: ->
@@ -259,7 +260,7 @@ Problem = React.createClass
 
     problemHeader =
     <div>
-      {@props.category} - {@props.name}
+      <span className="do-expand">{@props.category} - {@props.name}</span>
       <div className="pull-right">
         {statusButton}
       </div>
