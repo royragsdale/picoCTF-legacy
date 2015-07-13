@@ -253,15 +253,14 @@ Problem = React.createClass
   render: ->
 
     statusButton =
-    <Button bsSize="xsmall" onClick={@onStateToggle}>
-      {if @props.disabled then "Enable" else "Disable"}
+    <Button bsSize="xsmall" bsStyle={if @props.disabled then "info" else "warning"} onClick={@onStateToggle}>
+      {if @props.disabled then "Enable" else "Disable"} <Glyphicon glyph={if @props.disabled then "ok" else "minus"}/>
     </Button>
 
     problemHeader =
     <div>
       {@props.category} - {@props.name}
       <div className="pull-right">
-        <Glyphicon className="pad" color="green" glyph="ok"/>
         {statusButton}
       </div>
     </div>
