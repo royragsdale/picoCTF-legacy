@@ -1,5 +1,4 @@
 apiOffline =
-  About: "/about"
   News: "/news"
 
 teacherLoggedIn =
@@ -7,48 +6,24 @@ teacherLoggedIn =
   Shell: "/shell"
   Scoreboard: "/scoreboard"
   Classroom: "/classroom"
-  About:
-    About: "/about"
-    News: "/news"
-  Account:
-    Manage: "/account"
-    Logout: "#"
+  News: "/news"
 
 teacherLoggedInNoCompetition =
   Classroom: "/classroom"
-  About: "/about"
   News: "/news"
-  Account:
-    Manage: "/account"
-    Logout: "#"
 
 userLoggedIn =
   Problems: "/problems"
   Shell: "/shell"
-  Profile: "/profile"
   Scoreboard: "/scoreboard"
-  About:
-    About: "/about"
-    News: "/news"
-  Account:
-    Manage: "/account"
-    Logout: "#"
+  News: "/news"
 
 userLoggedInNoCompetition =
-  Profile: "/profile"
   Scoreboard: "/scoreboard"
-  About:
-    About: "/about"
-    News: "/news"
-  Account:
-    Manage: "/account"
-    Logout: "#"
-
-
-userNotLoggedIn =
-  About: "/about"
   News: "/news"
-  Login: "/login"
+
+
+userNotLoggedIn = {}
 
 adminLoggedIn =
   Management: "/management"
@@ -63,6 +38,7 @@ loadNavbar = (renderNavbarLinks, renderNestedNavbarLinks) ->
   apiCall "GET", "/api/user/status", {}
   .done (data) ->
     navbarLayout.links = userNotLoggedIn
+    navbarLayout.status = data.data
     navbarLayout.topLevel = true
     if data["status"] == 1
       if not data.data["logged_in"]

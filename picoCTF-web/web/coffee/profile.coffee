@@ -105,16 +105,16 @@ ProblemInfo = React.createClass
     styles = ["success", "info", "primary", "warning", "danger"]
 
     glyphs =
-      "Cryptography": "lock"
-      "Web Exploitation": "bitcoin"
-      "Binary Exploitation": "fire"
-      "Reverse Engineering": "leaf"
-      "Forensics": "lamp"
+      "Cryptography": "/img/lock.svg"
+      "Web Exploitation": "/img/browser.svg"
+      "Binary Exploitation": "/img/binary.svg"
+      "Reverse Engineering": "/img/reversecog.svg"
+      "Forensics": "/img/search.svg"
+      "Tutorial": "/img/laptop.svg"
 
     panelHeader =
     <div>
       Progress Overview
-      <div className="pull-right">Score: {@state.team.score}</div>
     </div>
 
     <Panel key={categories} header={panelHeader}>
@@ -128,7 +128,7 @@ ProblemInfo = React.createClass
               label="%(now)s / %(max)s"/>
           </Col>
           <Col xs={4} className="progress-label">
-            <Glyphicon glyph={if glyphs[category] then glyphs[category] else "lock"}/>
+            <img className="category-icon" src={if glyphs[category] then glyphs[category] else "/img/laptop.svg"}/>
             <div className="pull-right">{category}</div>
           </Col>
         </Row>}
