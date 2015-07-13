@@ -66,7 +66,7 @@ def problem_feedback_hook():
         return WebError("Please supply a pid and feedback.")
 
     if not api.config.get_settings()["enable_feedback"]:
-        return WebError("Problem feedback is not enabled")
+        return WebError("Problem feedback is not currently being accepted.")
 
     api.problem_feedback.add_problem_feedback(pid, api.auth.get_uid(), feedback)
     return WebSuccess("Your feedback has been accepted.")
@@ -76,7 +76,8 @@ def problem_feedback_hook():
 @require_login
 @block_before_competition(WebError("The competition has not begun yet!"))
 def problem_reviews_hook():
-    return WebSuccess(data=api.problem_feedback.get_reviewed_pids())
+    uid = api.user.get_user()['uid']
+    return WebSuccess(data=api.problem_feedback.get_problem_feedback(uid=uid))
 
 @blueprint.route("/hint", methods=['GET'])
 @api_wrapper

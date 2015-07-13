@@ -234,6 +234,35 @@ ProblemHintTable = React.createClass
       </tbody>
     </Table>
 
+ProblemReview = React.createClass
+  render: ->
+    upvotes = 0
+    downvotes = 0
+    for review in @props.reviews
+      if review.feedback.liked
+        upvotes++
+      else
+        downvotes++
+
+    style = {
+      fontSize:"2.0em"
+    }
+
+    <Row>
+      <Col sm={6} md={6} lg={6}>
+        <div className="pull-right">
+          <Glyphicon glyph="thumbs-up" className="active pad" style={style}/>
+          <Badge>{upvotes}</Badge>
+        </div>
+      </Col>
+      <Col sm={6} md={6} lg={6}>
+        <div className="pull-left">
+          <Glyphicon glyph="thumbs-down" className="active pad" style={style}/>
+          <Badge>{downvotes}</Badge>
+        </div>
+      </Col>
+    </Row>
+
 Problem = React.createClass
 
   getInitialState: ->
@@ -258,7 +287,7 @@ Problem = React.createClass
 
     problemHeader =
     <div>
-      {@props.category} - {@props.name}
+      {@props.category} - {@props.name} ({@props.score})
       <div className="pull-right">
         {statusButton}
       </div>
@@ -274,17 +303,23 @@ Problem = React.createClass
     panelStyle = if @props.disabled then "default" else "default"
 
     submissionDisplay = if @props.submissions and @props.submissions.valid + @props.submissions.invalid >= 1 then \
-    <ProblemSubmissionDoughnut valid={@props.submissions.valid}
-      invalid={@props.submissions.invalid} visible={@state.expanded}/>
+    <div>
+      <h4 className="text-center"> Submissions </h4>
+      <ProblemSubmissionDoughnut valid={@props.submissions.valid}
+      invalid={@props.submissions.invalid} visible={@state.expanded} className="text-center"/>
+    </div>
     else <p>No solve attempts.</p>
+
+    reviewDisplay =
+      <ProblemReview reviews={@props.reviews} />
 
     if @state.expanded
       <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
         expanded={@state.expanded} onSelect={@handleExpand}>
         <Row>
           <Col md={4}>
-            <h4>Score: {@props.score}</h4>
             {submissionDisplay}
+            {reviewDisplay}
           </Col>
           <Col md={8}>
             <h4>

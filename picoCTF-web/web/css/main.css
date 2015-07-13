@@ -332,3 +332,11 @@ img.logo-landscape {
     text-align:center;
     z-index: 2;
 }
+
+.glyphicon-thumbs-up.active {
+    color:green;
+}
+
+.glyphicon-thumbs-down.active {
+    color:red;
+}

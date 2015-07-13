@@ -13,10 +13,16 @@ blueprint = Blueprint("admin_api", __name__)
 @api_wrapper
 @require_admin
 def get_problem_data_hook():
+    problems =  api.problem.get_all_problems(show_disabled=True)
+
+    for problem in problems:
+        problem["reviews"] = api.problem_feedback.get_problem_feedback(pid=problem["pid"])
+
     data = {
-        "problems": api.problem.get_all_problems(show_disabled=True),
+        "problems": problems,
         "bundles": api.problem.get_all_bundles()
     }
+
     return WebSuccess(data=data)
 
 @blueprint.route('/users', methods=['GET'])

@@ -1,7 +1,6 @@
 renderProblemList = _.template($("#problem-list-template").remove().text())
 renderProblem = _.template($("#problem-template").remove().text())
 renderProblemSubmit = _.template($("#problem-submit-template").remove().text())
-renderProblemReview = _.template($("#problem-review-template").remove().text())
 renderAchievementMessage = _.template($("#achievement-message-template").remove().text())
 
 @ratingMetrics = ["Difficulty", "Enjoyment", "Educational Value"]
@@ -44,33 +43,24 @@ submitProblem = (e) ->
         constructAchievementCallbackChain new_achievements
 
 addProblemReview = (e) ->
-  e.preventDefault()
+  target = $(e.target)
 
+  pid = target.data("pid")
   feedback = {
-    metrics: {}
-    comment: ""
+    liked: target.data("setting") == "up"
   }
 
-  serialized = $(e.target).serializeObject()
-
-  _.each serialized, (value, key) ->
-    match = key.match(/^rating-(.+)/)
-    if match and match.length == 2
-      feedback.metrics[match[1]] = parseInt(value)
-    else
-      feedback.comment = value
-
-  pid = $(e.target).data("pid")
-  sliderName = "#slider-" + pid
-  feedback.timeSpent = $(sliderName).slider("option", "value");
-  feedback.source = 'basic'
 
   postData = {feedback: JSON.stringify(feedback), pid: pid}
 
   apiCall "POST", "/api/problems/feedback", postData
   .done (data) ->
-    loadProblems()
     apiNotify data
+    if data['status'] is 1
+      selector = "#"+pid+"-thumbs"+(if feedback.liked then "down" else "up")
+      $(selector).removeClass("active")
+      target.addClass("active")
+
     ga('send', 'event', 'Problem', 'Review', 'Basic')
     apiCall "GET", "/api/achievements"
     .done (data) ->
@@ -96,7 +86,6 @@ loadProblems = ->
             reviewData: reviewData.data,
             renderProblem: renderProblem,
             renderProblemSubmit: renderProblemSubmit,
-            renderProblemReview: renderProblemReview,
             sanitizeMetricName: sanitizeMetricName
           })
 
@@ -118,7 +107,7 @@ loadProblems = ->
           $(".problem-hint").hide()
           $(".problem-submit").on "submit", submitProblem
 
-          $(".problem-review-form").on "submit", addProblemReview
+          $(".rating-button").on "click", addProblemReview
 
 addScoreToTitle = (selector) ->
         apiCall "GET", "/api/team/score", {}
