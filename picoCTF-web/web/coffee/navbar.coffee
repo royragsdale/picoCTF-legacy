@@ -7,26 +7,20 @@ teacherLoggedIn =
   Scoreboard: "/scoreboard"
   Classroom: "/classroom"
   News: "/news"
-  Account: "/account"
 
 teacherLoggedInNoCompetition =
   Classroom: "/classroom"
   News: "/news"
-  Account: "/account"
 
 userLoggedIn =
   Problems: "/problems"
   Shell: "/shell"
-  Profile: "/profile"
   Scoreboard: "/scoreboard"
   News: "/news"
-  Account: "/account"
 
 userLoggedInNoCompetition =
-  Profile: "/profile"
   Scoreboard: "/scoreboard"
   News: "/news"
-  Account: "/account"
 
 
 userNotLoggedIn = {}

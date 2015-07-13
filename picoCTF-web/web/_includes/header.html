@@ -24,8 +24,19 @@
         <div class="col-md-9 pull-right">
             <ul class="nav navbar-nav navbar-right" id="navbar-links">
                 <% if(status.logged_in) { %>
-                    <li><a href="/profile" id="navbar-item-profile"><%- status.username %> (Score: <%- status.score %>)</a></li>
-                    <li><a href="#" id="navbar-item-logout"">Logout</a></li>
+                <li>
+                    <a href="/account" id="navbar-item-account">
+                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> <%- status.username %>
+                    </a>
+                </li>
+                <li>
+                    <a href="/profile" id="navbar-item-profile">
+                        <span class="glyphicon glyphicon-flash" aria-hidden="true"></span> <%- status.score %>
+                    </a>
+                </li>
+                <li>
+                    <a hrefA="#" id="navbar-item-logout"">Logout</a>
+                </li>
                 <% } %>
             </ul>
         </div>
