@@ -245,17 +245,21 @@ ProblemReview = React.createClass
         downvotes++
 
     style = {
-      fontSize:"2.5em"
+      fontSize:"2.0em"
     }
 
     <Row>
-      <Col sm={4} md={4} lg={4}>
-        <Glyphicon glyph="thumbs-up" className="active pad" style={style}/>
-        <Badge>{upvotes}</Badge>
+      <Col sm={6} md={6} lg={6}>
+        <div className="pull-right">
+          <Glyphicon glyph="thumbs-up" className="active pad" style={style}/>
+          <Badge>{upvotes}</Badge>
+        </div>
       </Col>
       <Col sm={6} md={6} lg={6}>
-        <Glyphicon glyph="thumbs-down" className="active pad" style={style}/>
-        <Badge>{downvotes}</Badge>
+        <div className="pull-left">
+          <Glyphicon glyph="thumbs-down" className="active pad" style={style}/>
+          <Badge>{downvotes}</Badge>
+        </div>
       </Col>
     </Row>
 
@@ -299,17 +303,23 @@ Problem = React.createClass
     panelStyle = if @props.disabled then "default" else "default"
 
     submissionDisplay = if @props.submissions and @props.submissions.valid + @props.submissions.invalid >= 1 then \
-    <ProblemSubmissionDoughnut valid={@props.submissions.valid}
-      invalid={@props.submissions.invalid} visible={@state.expanded}/>
+    <div>
+      <h4 className="text-center"> Submissions </h4>
+      <ProblemSubmissionDoughnut valid={@props.submissions.valid}
+      invalid={@props.submissions.invalid} visible={@state.expanded} className="text-center"/>
+    </div>
     else <p>No solve attempts.</p>
+
+    reviewDisplay =
+      <ProblemReview reviews={@props.reviews} />
 
     if @state.expanded
       <Panel bsStyle={panelStyle} header={problemHeader} footer={problemFooter} collapsible
         expanded={@state.expanded} onSelect={@handleExpand}>
         <Row>
           <Col md={4}>
-            <ProblemReview reviews=@props.reviews />
             {submissionDisplay}
+            {reviewDisplay}
           </Col>
           <Col md={8}>
             <h4>
