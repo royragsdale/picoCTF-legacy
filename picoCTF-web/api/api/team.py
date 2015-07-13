@@ -123,7 +123,7 @@ def get_team_members(tid=None, name=None, show_disabled=True):
 
     tid = get_team(name=name, tid=tid)["tid"]
 
-    users = list(db.users.find({"tid": tid}, {"_id": 0, "uid": 1, "username": 1, "disabled": 1}))
+    users = list(db.users.find({"tid": tid}, {"_id": 0, "uid": 1, "username": 1, "firstname": 1, "lastname": 1, "disabled": 1}))
     return [user for user in users if show_disabled or not user.get("disabled", False)]
 
 def get_team_uids(tid=None, name=None, show_disabled=True):
@@ -157,7 +157,10 @@ def get_team_information(tid=None):
         tid = team_info["tid"]
 
     team_info["score"] = api.stats.get_score(tid=tid)
-    team_info["members"] = [member["username"] for member in get_team_members(tid=tid, show_disabled=False)]
+    team_info["members"] = [{
+        "username": member["username"], "firstname": member["firstname"],
+        "lastname": member["lastname"]
+    } for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()
     team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
     team_info["progression"] = api.stats.get_score_progression(tid=tid)
