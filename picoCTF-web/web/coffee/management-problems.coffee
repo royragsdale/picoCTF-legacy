@@ -254,7 +254,7 @@ Problem = React.createClass
   render: ->
 
     statusButton =
-    <Button bsSize="xsmall" bsStyle={if @props.disabled then "info" else "warning"} onClick={@onStateToggle}>
+    <Button bsSize="xsmall" bsStyle={if @props.disabled then "default" else "default"} onClick={@onStateToggle}>
       {if @props.disabled then "Enable" else "Disable"} <Glyphicon glyph={if @props.disabled then "ok" else "minus"}/>
     </Button>
 
