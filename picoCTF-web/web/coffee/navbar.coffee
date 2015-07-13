@@ -48,7 +48,6 @@ userLoggedInNoCompetition =
 userNotLoggedIn =
   About: "/about"
   News: "/news"
-  Scoreboard: "/scoreboard"
   Login: "/login"
 
 adminLoggedIn =

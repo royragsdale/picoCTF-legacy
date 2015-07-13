@@ -16,12 +16,13 @@ startup_functions:
             <div class="row">
                 <div class="col-md-12">
                     <p>
-                        You have created a teacher account, which allows you to manage multiple teams grouped together in classes.
-                        On this page, you can create new class groups, check which teams are in which class groups, and see the list of members on each team.
+                        You are logged into an administrator account, which allows you to manage multiple students grouped together in classes.
+                        On this page, you can create new class groups, check which users are in which class groups, and see more detailed information about
+                        each of your students.
                     </p>
                     <p>
-                        Note that you cannot automatically add teams to a class. Instead, you provide your username and the name of the class to your students, who
-                        join the class on their account on the "Team" page.
+                        Note that you cannot automatically add users to a class. Instead, you provide your username and the name of the class to your students, who
+                        join the class on their account on the "Profile" page.
                     </p>
                 </div>
             </div>
@@ -47,7 +48,7 @@ startup_functions:
                         <div class="panel-body">
                           <div class="col-md-8">
                             <h4>Overall Progression</h4>
-                            <canvas id="visualizer-<%- team.tid %>" class="team-visualizer"/>
+                            <div id="visualizer-<%- team.tid %>" class="team-visualizer"></div>
                             <% if(team.flagged_submissions.length > 0) { %>
                             <div class="panel panel-warning">
                                 <div class="panel-heading">Suspicious Submissions</div>

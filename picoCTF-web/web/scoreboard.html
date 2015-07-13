@@ -37,7 +37,7 @@ startup_functions:
     <% } else { %>
       <% _.each(data.groups, function(group, index) { %>
         <div class="row">
-          <canvas id="<%= group.gid %>-progression" width="auto"> </canvas>
+          <div id="<%= group.gid %>-progression" class="progression-graph"></div>
         </div>
         <% if (index == 0) { %>
           <div id="<%= group.gid %>" class="tab-pane fade in active">
