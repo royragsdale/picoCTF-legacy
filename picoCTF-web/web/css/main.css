@@ -2,6 +2,11 @@
     padding: 0px !important;
 }
 
+.category-icon {
+    width: 24px;
+    height: 24px;
+}
+
 .progress-container {
     padding-right: 0px !important;
 }
