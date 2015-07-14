@@ -1,4 +1,3 @@
-Label = ReactBootstrap.Label
 Input = ReactBootstrap.Input
 Button = ReactBootstrap.Button
 ButtonToolbar = ReactBootstrap.ButtonToolbar
@@ -6,8 +5,6 @@ Grid = ReactBootstrap.Grid
 Row = ReactBootstrap.Row
 Col = ReactBootstrap.Col
 Well = ReactBootstrap.Well
-ListGroupItem = ReactBootstrap.ListGroupItem
-ListGroup = ReactBootstrap.ListGroup
 Accordion = ReactBootstrap.Accordion
 
 ServerForm = React.createClass
@@ -69,17 +66,12 @@ ServerForm = React.createClass
     copy.password = e.target.value
     @setState {shellServer: copy}
 
-  createFormEntry: (name, type, value, onChange) ->
-    <Row>
-      <Col md={4}>
-        <h4 className="pull-right">{name}</h4>
-      </Col>
-      <Col md={8}>
-        <Input className="form-control" type={type} value={value} onChange={onChange} />
-      </Col>
-    </Row>
-
   render: ->
+    hostDescription = "The host name of your shell server"
+    portDescription = "The port that SSH is running on"
+    usernameDescription = "The username to connect as - Be sure that this user has sudo privileges!"
+    passwordDescription = "The password to use for authentication - Be sure that this is password is only used once"
+
     if @state.new
       buttons =
         <ButtonToolbar className="pull-right">
@@ -95,10 +87,10 @@ ServerForm = React.createClass
         </ButtonToolbar>
 
     <div>
-      {@createFormEntry "Host", "text", @state.shellServer.host, @updateHost}
-      {@createFormEntry "Port", "text", @state.shellServer.port, @updatePort}
-      {@createFormEntry "Username", "text", @state.shellServer.username, @updateUsername}
-      {@createFormEntry "Password", "password", @state.shellServer.password, @updatePassword}
+      <TextEntry name="Host" type="text" value={@state.shellServer.host} onChange=@updateHost description={hostDescription} />
+      <TextEntry name="Port" type="text" value={@state.shellServer.port} onChange=@updatePort description={portDescription} />
+      <TextEntry name="Username" type="text" value={@state.shellServer.username} onChange=@updateUsername description={usernameDescription} />
+      <TextEntry name="Password" type="password" value={@state.shellServer.password} onChange=@updatePassword description={passwordDescription} />
       {buttons}
     </div>
 
@@ -156,7 +148,10 @@ ProblemLoaderTab = React.createClass
   render: ->
     publishArea =
     <div className="form-group">
-      <h4>Paste your published JSON here:</h4>
+      <h4>
+        <Hint text="This should be the output of running 'shell_manager publish' on your shell server."/>
+        Paste your published JSON here:
+      </h4>
       <Input className="form-control" type='textarea' rows="10"
         value={@state.publishedJSON} onChange={@handleChange}/>
     </div>

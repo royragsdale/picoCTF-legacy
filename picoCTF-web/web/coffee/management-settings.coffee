@@ -1,7 +1,4 @@
 Well = ReactBootstrap.Well
-Label = ReactBootstrap.Label
-Badge = ReactBootstrap.Badge
-Input = ReactBootstrap.Input
 ButtonGroup = ReactBootstrap.ButtonGroup
 Button = ReactBootstrap.Button
 Grid = ReactBootstrap.Grid
@@ -9,68 +6,6 @@ Row = ReactBootstrap.Row
 Col = ReactBootstrap.Col
 
 update = React.addons.update
-
-FormEntry = React.createClass
-  propTypes:
-    name: React.PropTypes.string.isRequired
-    value: React.PropTypes.string.isRequired
-    type: React.PropTypes.string.isRequired
-    onChange: React.PropTypes.func.isRequired
-
-  render: ->
-    <Row>
-      <Col md={4}>
-        <h4 className="pull-right">{@props.name}</h4>
-      </Col>
-      <Col md={8}>
-        <Input className="form-control" type={@props.type} value={@props.value} onChange={@props.onChange} />
-      </Col>
-    </Row>
-
-BooleanEntry = React.createClass
-  propTypes:
-    name: React.PropTypes.string.isRequired
-    value: React.PropTypes.bool.isRequired
-    onChange: React.PropTypes.func.isRequired
-
-  render: ->
-    <Row>
-      <Col md={4}>
-        <h4 className="pull-right">{@props.name}</h4>
-      </Col>
-      <Col md={8}>
-        <Button bsSize="xsmall" onClick=@props.onChange>{if @props.value then "Enabled" else "Disabled"}</Button>
-      </Col>
-    </Row>
-
-TimeEntry = React.createClass
-  propTypes:
-    name: React.PropTypes.string.isRequired
-    value: React.PropTypes.number.isRequired
-    onChange: React.PropTypes.func.isRequired
-
-  componentDidMount: ->
-    date = new Date(@props.value)
-    node = React.findDOMNode(@refs.datetimepicker)
-    $(node).datetimepicker
-      defaultDate: date
-      inline: true,
-      sideBySide: true
-    .on "dp.change", ((e) ->
-      @props.onChange e.date.toDate().getTime()
-    ).bind(this)
-
-  render: ->
-    <Row>
-      <Col md={4}>
-        <h4 className="pull-right">{@props.name}</h4>
-      </Col>
-      <Col md={8}>
-        <Panel>
-          <div ref="datetimepicker"></div>
-        </Panel>
-      </Col>
-    </Row>
 
 GeneralTab = React.createClass
   propTypes:
@@ -105,10 +40,16 @@ GeneralTab = React.createClass
     ).bind(this)
 
   render: ->
+    feedbackDescription = "Users will be able to review problems when this feature is enabled. The ratings will be available to you
+      on the Problem tab."
+
+    startTimeDescription = "Before the competition has started, users will be able to register without viewing the problems."
+    endTimeDescription = "After the competition has ended, users will no longer be able to submit keys to the challenges."
+
     <Well>
-      <BooleanEntry name="Problem Feedback" value={@state.enable_feedback} onChange=@toggleFeedbackEnabled />
-      <TimeEntry name="Start Time" value={@state.start_time["$date"]} onChange=@updateStartTime />
-      <TimeEntry name="End Time" value={@state.end_time["$date"]} onChange=@updateEndTime />
+      <BooleanEntry name="Receive Problem Feedback" value={@state.enable_feedback} onChange=@toggleFeedbackEnabled description={feedbackDescription}/>
+      <TimeEntry name="Competition Start Time" value={@state.start_time["$date"]} onChange=@updateStartTime description={startTimeDescription}/>
+      <TimeEntry name="Competition End Time" value={@state.end_time["$date"]} onChange=@updateEndTime description={endTimeDescription}/>
 
       <Row>
         <div className="text-center">
@@ -179,18 +120,20 @@ EmailTab = React.createClass
     ).bind(this)
 
   render: ->
-    rest =
-      <div>
-        <FormEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl />
-        <FormEntry name="Username" value={@state.email_username} type="text" onChange=@updateUsername />
-        <FormEntry name="Password" value={@state.email_password} type="password" onChange=@updatePassword />
-        <FormEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr />
-        <FormEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName />
-      </div>
+    emailDescription = "Emails must be sent in order for users to reset their passwords."
+    SMTPDescription = "The URL of the STMP server you are using"
+    usernameDescription = "The username of the email account"
+    passwordDescription = "The password of the email account"
+    fromAddressDescription = "The address that the emails should be sent from"
+    fromNameDescription = "The name to use for sending emails"
 
     <Well>
-      <BooleanEntry name="Email" value={@state.enable_email} onChange=@toggleEnabled />
-      {rest}
+      <BooleanEntry name="Send Emails" value={@state.enable_email} onChange=@toggleEnabled description={emailDescription}/>
+      <TextEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl description={SMTPDescription} />
+      <TextEntry name="Email Username" value={@state.email_username} type="text" onChange=@updateUsername description={usernameDescription}/>
+      <TextEntry name="Email Password" value={@state.email_password} type="password" onChange=@updatePassword description={passwordDescription}/>
+      <TextEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr description={fromAddressDescription}/>
+      <TextEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName description={fromNameDescription}/>
       <Row>
         <div className="text-center">
           <ButtonToolbar>
