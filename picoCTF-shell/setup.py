@@ -11,10 +11,14 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
+import os
 import sys
 
 if 'bdist_wheel' in sys.argv:
     raise RuntimeError("This setup.py does not support wheels")
+
+parent_dir = path.dirname(path.abspath(__file__))
+os.chmod(path.join(parent_dir, "config.py"), 0o640)
 
 here = path.abspath(path.dirname(__file__))
 
