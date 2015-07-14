@@ -38,7 +38,7 @@ Every problem must contain a problem.json. This file provides metadata about the
 | score | Int | Yes | Points gained for solving the problem. |
 | name | String | Yes | The title of the problem on the competition page. |
 | description | String Template | Yes | Description for the problem. jinja2 template. |
-| categories | List[String] | Yes |Related categories to the problem. |
+| category | String | Yes | Category of the problem. |
 | version | String | No | Version string for the problem. Defaults to "1.0.0". |
 | tags | List[String] | No | Minor descriptors for the problem. |
 | hints | List[String] | No | Additional help to the problem. |
@@ -46,7 +46,5 @@ Every problem must contain a problem.json. This file provides metadata about the
 | pkg\_architecture | String | No | Compatible [architectures](https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Architecture). Defaults to "all". |
 | pkg\_description | String | No | Description for the deb package. Defaults to `desc`. |
 | pkg\_name | String | No | Optional name for the problem package. Defaults to `name`. Check here for the [naming policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Source). |
-| pkg\_dependencies | String[List] | No | List of package dependencies. Defaults to none. |
-
-
-
+| pkg\_dependencies | List[String] | No | List of package dependencies. Defaults to none. |
+| pip\_requirements | List[String] | No | List of pip requirements for the challenge. Defaults to none. Can alternatively include a `requirements.txt` in your problem directory. |
