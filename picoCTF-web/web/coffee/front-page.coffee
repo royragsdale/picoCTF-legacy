@@ -12,13 +12,18 @@ LoginForm = React.createClass
     userGlyph = <Glyphicon glyph="user"/>
     lockGlyph = <Glyphicon glyph="lock"/>
 
-    formButton = if @props.status == "Login" then <Button>Login</Button> else \
-    <span>Go back to <a onClick={@props.setPage.bind null, "Login"}>Login</a>.</span>
+    formButton = if @props.status == "Login" then \
+    <div>
+      <Button>Login</Button> <a className="pull-right pad">Need to reset your password?</a>
+    </div> else \
+    <span className="pad">Go back to <a onClick={@props.setPage.bind null, "Login"}>Login</a>.</span>
 
     <Panel className="form-test">
       <Input type="text" valueLink={@props.username} addonBefore={userGlyph} label="Username"/>
       <Input type="text" valueLink={@props.password} addonBefore={lockGlyph} label="Password"/>
-      {formButton}
+      <div>
+        {formButton}
+      </div>
     </Panel>
 
 RegistrationForm = React.createClass
