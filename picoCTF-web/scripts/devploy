@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOT=/home/vagrant/
+ROOT=/vagrant/ctf-infrastructure
 
 # Transpile the CoffeeScript files
 echo "Transpiling Coffeescript"
@@ -18,11 +18,6 @@ echo "Generating web with Jekyll"
 cd $ROOT/web
 sudo jekyll build
 
-echo "Copying files to server"
-#sudo cp -r $ROOT/web/* /srv/http/ctf/
-mkdir -p $ROOT/problem_static
-sudo cp -r $ROOT/problem_static /srv/http/ctf/problem-static
-
 # Make sure everything is in UNIX format.
 sudo dos2unix -q /srv/http/ctf/*.html
 
@@ -34,7 +29,13 @@ sudo service nginx start
 echo "Clearing the API cache"
 $ROOT/api/api_manager.py database clear cache
 
+START_CMD="python3 run.py"
+
+if [ $1=="production" ]; then
+    START_CMD="./gunicorn_start.sh"
+fi
+
 #Start Cyberstakes API
 echo "Starting the Cyberstakes API"
 tmux kill-session -t cyberstakesapi 2> /dev/null
-tmux new-session -s cyberstakesapi -d "cd /home/vagrant/api && python3 run.py"
+tmux new-session -s cyberstakesapi -d "cd /home/vagrant/api && python3 "$START_CMD
