@@ -58,6 +58,8 @@ def add_server(params):
             port
             username
             password
+    Returns:
+       The sid.
     """
 
     db = api.common.get_conn()
@@ -69,6 +71,8 @@ def add_server(params):
 
     params["sid"] = api.common.token()
     db.shell_servers.insert(params)
+
+    return params["sid"]
 
 def update_server(sid, params):
     """
