@@ -14,8 +14,9 @@ def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None
     or compiler sources. If a makefile is specified, the binary name must also be
     provided. If a flag_file is not provided, it will default to flag.txt. If the
     given flag file does not exist, it will be created. If share_source is set to
-    true, all files specified in sources will be copied. If remote is set to true,
-    the challenge will be assigned a port and be wrapped in a fork-accept loop.
+    true, all files specified in sources will be copied to the deployment
+    directory. If remote is set to true, the challenge will be assigned a port and
+    be wrapped in a server.
 
     Keyword Args:
         makefile: The name of the makefile. Defualts to None.
