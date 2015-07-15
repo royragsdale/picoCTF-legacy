@@ -6,6 +6,9 @@ DEPLOY_SECRET = "qwertyuiop"
 # the externally accessable address of this server
 HOSTNAME = "127.0.0.1"
 
+# the url of the web server
+WEB_SERVER = "http://127.0.0.1"
+
 # the default username for files to be owned by
 DEFAULT_USER = "hacksports"
 
