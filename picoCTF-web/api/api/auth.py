@@ -62,7 +62,7 @@ def login(username, password):
         else:
             raise WebException("Login Error")
     else:
-        raise WebException("Incorrect Password")
+        raise WebException("Incorrect password")
 
 @log_action
 def logout():
