@@ -30,7 +30,7 @@ import api.routes.achievements
 
 log = api.logger.use(__name__)
 
-session_cookie_domain = "127.0.0.1"
+session_cookie_domain = None
 session_cookie_path = "/"
 session_cookie_name = "flask"
 
