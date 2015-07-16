@@ -302,7 +302,7 @@ def install_user_service(home_directory, user, service_file):
 
     # enable automatic starting of user services
     execute("loginctl enable-linger {}".format(user))
-    execute("systemctl restart user@{}.service".format(userpw.pw_uid), timeout=5)
+    execute("systemctl restart user@{}.service".format(userpw.pw_uid), timeout=60)
 
     # set environment variable so "su -l problem_user" will correctly populate it
     # this is due to a known issue with su -l
