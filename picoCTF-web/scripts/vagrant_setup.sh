@@ -13,27 +13,25 @@ apt-get -y install git
 apt-get -y install libzmq-dev
 apt-get -y install nodejs-legacy
 apt-get -y install npm
-apt-get -y install libclosure-compiler-java
-apt-get -y install ruby-dev
 apt-get -y install dos2unix
 apt-get -y install tmux
-apt-get -y install openjdk-7-jdk
+apt-get -y install jekyll
 
 npm install -g coffee-script
 npm install -g react-tools
 npm install -g jsxhint
 npm install -g coffee-react
 
-pip3 install -r /home/vagrant/api/requirements.txt
 
-# Jekyll
-gem install jekyll
+ROOT=/home/vagrant
+
+pip3 install -r $ROOT/api/requirements.txt
 
 # Configure Environment
-echo 'PATH=$PATH:/home/vagrant/scripts' >> /etc/profile
+echo 'PATH=$PATH:$ROOT/scripts' >> /etc/profile
 
 # Configure Nginx
-cp /vagrant/config/ctf.nginx /etc/nginx/sites-enabled/ctf
+cp $ROOT/config/ctf.nginx /etc/nginx/sites-enabled/ctf
 rm /etc/nginx/sites-enabled/default
 mkdir -p /srv/http/ctf
 service nginx restart

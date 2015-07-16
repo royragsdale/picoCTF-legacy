@@ -38,4 +38,4 @@ fi
 #Start Cyberstakes API
 echo "Starting the Cyberstakes API"
 tmux kill-session -t cyberstakesapi 2> /dev/null
-tmux new-session -s cyberstakesapi -d "cd /home/vagrant/api && python3 "$START_CMD
+tmux new-session -s cyberstakesapi -d "cd $ROOT/api && $START_CMD"
