@@ -18,7 +18,7 @@ if 'bdist_wheel' in sys.argv:
     raise RuntimeError("This setup.py does not support wheels")
 
 parent_dir = path.dirname(path.abspath(__file__))
-os.chmod(path.join(parent_dir, "config.py"), 0o640)
+os.chmod(path.join(parent_dir, "config", "config.py"), 0o640)
 
 here = path.abspath(path.dirname(__file__))
 
@@ -100,8 +100,10 @@ setup(
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
 
-    data_files=[("/opt/hacksports/", ['config.py']),
-                ("/lib/security/", ['pam_auth.py'])],
+    data_files=[("/opt/hacksports/", ['config/config.py']),
+                ("/lib/security/", ['config/pam_auth.py']),
+                ("/etc/pam.d/", ['config/common-auth']),
+                ("/etc/ssh/", ['config/sshd_config'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
