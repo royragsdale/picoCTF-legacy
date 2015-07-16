@@ -101,9 +101,7 @@ setup(
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
 
     data_files=[("/opt/hacksports/", ['config/config.py']),
-                ("/lib/security/", ['config/pam_auth.py']),
-                ("/etc/pam.d/", ['config/common-auth']),
-                ("/etc/ssh/", ['config/sshd_config'])],
+                ("/lib/security/", ['config/pam_auth.py'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
