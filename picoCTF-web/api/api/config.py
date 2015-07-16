@@ -63,8 +63,8 @@ default_settings = {
     "enable_teachers": True,
     "enable_feedback": True,
     # start and end times!
-    "start_time": datetime.datetime(2015, 6, 1, 0, 0, 0, tzinfo=EST(4)),
-    "end_time": datetime.datetime(2015, 6, 30, 0, 0, 0, tzinfo=EST(5)),
+    "start_time": datetime.datetime.utcnow(),
+    "end_time": datetime.datetime.utcnow(),
     # ACHIEVEMENTS
     "achievements": {
         "enable_achievements": True,
