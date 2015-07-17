@@ -39,7 +39,9 @@ LoginForm = React.createClass
           <Input type="password" valueLink={@props.password} addonBefore={lockGlyph} label="Password"/>
           <Row>
             <Col md={6}>
-              {if @props.status == "Register" then <div/> else <ButtonInput type="submit">Login</ButtonInput>}
+              {if @props.status == "Register" then \
+                <span className="pad">Go back to <a onClick={@props.setPage.bind null, "Login"}>Login</a>.</span>
+              else <ButtonInput type="submit">Login</ButtonInput>}
             </Col>
             <Col md={6}>
               <a className="pad" onClick={@props.setPage.bind null, "Reset"}>Need to reset your password?</a>
@@ -115,6 +117,9 @@ AuthPanel = React.createClass
   setPage: (page) ->
     @setState update @state,
         page: $set: page
+
+  componentDidMount: ->
+    $("input").prop 'required', true
 
   render: ->
     links =
