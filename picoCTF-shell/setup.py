@@ -101,7 +101,11 @@ setup(
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
 
     data_files=[("/opt/hacksports/", ['config/config.py']),
-                ("/lib/security/", ['config/pam_auth.py'])],
+                ("/lib/security/", ['config/pam_auth.py']),
+                ("/etc/nginx/sites-enabled/", ['config/shell-nginx']),
+                ("/opt/hacksports/shellinabox/", ['config/ShellInABox.js',
+                                                  'config/shellinabox_cron',
+                                                  'config/deploy_shellinabox.sh'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
