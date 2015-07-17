@@ -15,7 +15,7 @@ ServerForm = React.createClass
 
   getInitialState: ->
     if @props.new
-      server = {"host":"", "port":"22", "username":"", "password":""}
+      server = {"host":"", "port":22, "username":"", "password":"", "protocol": "HTTP"}
     else
       server = @props.server
 
@@ -53,7 +53,7 @@ ServerForm = React.createClass
 
   updatePort: (e) ->
     copy = @state.shellServer
-    copy.port = e.target.value
+    copy.port = parseInt(e.target.value)
     @setState {shellServer: copy}
 
   updateUsername: (e) ->
@@ -66,11 +66,17 @@ ServerForm = React.createClass
     copy.password = e.target.value
     @setState {shellServer: copy}
 
+  updateProtocol: (value) ->
+    copy = @state.shellServer
+    copy.protocol = value
+    @setState {shellServer: copy}
+
   render: ->
     hostDescription = "The host name of your shell server"
     portDescription = "The port that SSH is running on"
     usernameDescription = "The username to connect as - Be sure that this user has sudo privileges!"
     passwordDescription = "The password to use for authentication - Be sure that this is password is only used once"
+    protocolDescription = "The web protocol to access the problem files and shell server. This is most often just HTTP."
 
     if @state.new
       buttons =
@@ -88,9 +94,10 @@ ServerForm = React.createClass
 
     <div>
       <TextEntry name="Host" type="text" value={@state.shellServer.host} onChange=@updateHost description={hostDescription} />
-      <TextEntry name="Port" type="text" value={@state.shellServer.port} onChange=@updatePort description={portDescription} />
+      <TextEntry name="SSH Port" type="number" value={@state.shellServer.port.toString()} onChange=@updatePort description={portDescription} />
       <TextEntry name="Username" type="text" value={@state.shellServer.username} onChange=@updateUsername description={usernameDescription} />
       <TextEntry name="Password" type="password" value={@state.shellServer.password} onChange=@updatePassword description={passwordDescription} />
+      <OptionEntry name="Web Protocol" value={@state.shellServer.protocol} options={["HTTP", "HTTPS"]} onChange=@updateProtocol description={protocolDescription} />
       {buttons}
     </div>
 

@@ -100,3 +100,10 @@ def status_hook():
         status["score"] = api.stats.get_score(tid=tid)
 
     return WebSuccess(data=status)
+
+@blueprint.route('/shell_servers', methods=['GET'])
+@api_wrapper
+@require_login
+def shell_servers_hook():
+    servers = [{"host":server['host'], "protocol":server['protocol']} for server in api.shell_servers.get_servers()]
+    return WebSuccess(data=servers)

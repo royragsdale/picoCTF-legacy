@@ -14,7 +14,9 @@ server_schema = Schema({
     Required("username"): check(
         ("Username must be a string", [str])),
     Required("password"): check(
-        ("Username must be a string", [str]))
+        ("Username must be a string", [str])),
+    Required("protocol"): check(
+        ("Protocol must be either HTTP or HTTPS", [lambda x: x in ['HTTP', 'HTTPS']]))
 }, extra=True)
 
 def get_connection(host, port, username, password):

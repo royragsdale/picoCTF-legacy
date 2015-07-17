@@ -7,23 +7,29 @@ startup_functions:
  - redirectIfNotLoggedIn()
 ---
 
-<script type="text/template" id="shell-account-credentials-template">
-  <div class="well">
-    <p class="text-center">
-      Username: <%- account.username %> Password: <%- account.password %> | ssh <%- account.username %>@<%- account.hostname %> -p <%- account.port %>
-    </p>
-  </div>
-  <div class="alert alert-info text-center">
-    The password will not be displayed as you type it in.
-  </div>
+<script type="text/template" id="shell-servers-template">
+    <% _.each(servers, function(server){ %>
+      <% var url = server.protocol.toLowerCase() + "://" + server.host + "/shell/"; %>
+      <div class="well">
+        <h3 class="text-center"><%- server.host %></h3>
+        <iframe src="<%- url %>" width="100%" height="600px"></iframe>
+      </div>
+    <% }); %>
 </script>
 
 <div class="container">
   <div class="row">
-    <div id="shell-account-credentials"></div>
+    <div class="well">
+      <p class="text-center">
+        Your account credentials are the same for the website and shell server.
+      </p>
+    </div>
+  <div class="alert alert-info text-center">
+    The password will not be displayed as you type it in.
+  </div>
   </div>
   <div class="row">
-    <iframe src="https://shell.cyberstakesonline.com" width="100%" height="600px"></iframe>
+    <div id="shell-servers"></div>
   </div>
 </div>
 
