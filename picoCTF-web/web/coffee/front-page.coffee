@@ -20,7 +20,7 @@ LoginForm = React.createClass
       <Panel className="form-test">
         <form onSubmit={@props.onPasswordReset}>
           <p><i>A password reset link will be sent the user{q}s email.</i></p>
-          <Input type="text" valueLink={@props.username} addonBefore={userGlyph} placeholder="Username"/>
+          <Input type="text" valueLink={@props.username} addonBefore={userGlyph} placeholder="Username" required="visible"/>
           <div style={{height: "70px"}}/>
           <Row>
             <Col md={6}>
@@ -95,11 +95,11 @@ AuthPanel = React.createClass
     apiCall "POST", "/api/user/reset_password", {username: @state.username}
     .done ((resp) ->
       apiNotify resp
-      @setPage "Login"
+      if resp.status == 1
+        @setPage "Login"
     ).bind this
 
   onLogin: (e) ->
-    console.log "test"
     e.preventDefault()
     apiCall "POST", "/api/user/login", {username: @state.username, password: @state.password}
     .done (resp) ->
