@@ -5,6 +5,7 @@ pre_scripts:
  - js/libs/popover.js
  - js/libs/tooltip.js
 post_scripts:
+ - js/dependencies.js
  - js/progression_graphs.js
  - js/profile.js
 startup_functions:
@@ -50,10 +51,15 @@ startup_functions:
           <% _.each(data, function(group) { %>
             <tr>
               <td>
+              <% if (!document.competition_status.teacher){ %>
                 <span data-group-name="<%- group.name %>" data-group-owner="<%- group.owner %>" class="glyphicon glyphicon-remove leave-group-span"></span>
+              <% } %>
               </td>
               <td>
-                <p><%- group.name %> (<%- group.owner %>)</p>
+                <span><%- group.name %> (<%- group.owner %>)</span>
+                <% if (document.competition_status.username == group.owner) { %>
+                  <span class="pull-right"> You own this class. </span>
+                <% } %>
               </td>
             </tr>
           <% }); %>
@@ -61,20 +67,27 @@ startup_functions:
       </table>
     <% } %>
 
-    <div class="panel-body team-panel-body">
-      <form role="form" class="form-inline" id="group-request-form" type="submit">
-        <div class="form-group">
-            <label class="sr-only" for="group-name-input">Class Name</label>
-            <input type="text" class="form-control class-class-name" id="group-name-input" placeholder="Class Name">
-        </div>
-        <div class="form-group">
-            <label class="sr-only" for="group-owner-input">Teacher</label>
-            <input type="text" class="form-control class-teacher-username" id="group-owner-input" placeholder="Teacher Username">
-        </div>
-        <button class="btn btn-primary" id="join-group">Join</button>
+    <% if (document.competition_status.teacher) { %>
+      <div class="panel-body team-panel-body">
+        <p> Go to <a href="/classroom">the classroom page</a> to create more classrooms or manage
+            your existing ones. </p>
       </div>
-    </form>
-  </div>
+    <% } else { %>
+      <div class="panel-body team-panel-body">
+        <form role="form" class="form-inline" id="group-request-form" type="submit">
+          <div class="form-group">
+              <label class="sr-only" for="group-name-input">Class Name</label>
+              <input type="text" class="form-control class-class-name" id="group-name-input" placeholder="Class Name">
+          </div>
+          <div class="form-group">
+              <label class="sr-only" for="group-owner-input">Teacher</label>
+              <input type="text" class="form-control class-teacher-username" id="group-owner-input" placeholder="Teacher Username">
+          </div>
+            <button class="btn btn-primary" id="join-group">Join</button>
+          </div>
+        </form>
+      </div>
+    <% } %>
 </script>
 
 <script type="text/template" id="team-info-template">
