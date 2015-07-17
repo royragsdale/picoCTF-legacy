@@ -43,10 +43,10 @@ def disable_account_hook():
     api.user.disable_account_request(api.common.flat_multi(request.form), check_current=True)
     return WebSuccess("Your have successfully disabled your account!")
 
-@blueprint.route('/reset_password', methods=['GET'])
+@blueprint.route('/reset_password', methods=['POST'])
 @api_wrapper
 def reset_password_hook():
-    username = request.args.get("username", None)
+    username = request.form.get("username", None)
 
     api.utilities.request_password_reset(username)
     return WebSuccess("A password reset link has been sent to the email address provided during registration.")
