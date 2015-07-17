@@ -121,6 +121,9 @@ AuthPanel = React.createClass
   componentDidMount: ->
     $("input").prop 'required', true
 
+  componentDidUpdate: ->
+    $("input").prop 'required', true
+
   render: ->
     links =
     username: @linkState "username"
