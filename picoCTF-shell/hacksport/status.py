@@ -138,12 +138,13 @@ def status(args, config):
 
         pprint("* [{}] {} ({})".format(len(problem["instances"]), problem['name'], path))
 
-        for instance in problem["instances"]:
-            pprint("   - Instance ID: {}".format(instance["iid"]))
-            pprint("       flag: {}".format(instance["flag"]))
-            pprint("       port: {}".format(instance["port"]))
-            pprint("       service: {}".format("active" if instance["service"] else "failed"))
-            pprint("       connection: {}".format("online" if instance["connection"] else "offline"))
+        if args.all:
+            for instance in problem["instances"]:
+                pprint("   - Instance ID: {}".format(instance["iid"]))
+                pprint("       flag: {}".format(instance["flag"]))
+                pprint("       port: {}".format(instance["port"]))
+                pprint("       service: {}".format("active" if instance["service"] else "failed"))
+                pprint("       connection: {}".format("online" if instance["connection"] else "offline"))
 
     def print_bundle(bundle, path, prefix=""):
         def pprint(string):
