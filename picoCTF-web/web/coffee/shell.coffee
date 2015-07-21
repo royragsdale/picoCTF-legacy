@@ -1,8 +1,7 @@
-renderShellAccountCredentials = _.template($("#shell-account-credentials-template").remove().text())
+renderShellServers = _.template($("#shell-servers-template").remove().text())
 
-#
-#$ ->
-#  apiCall "GET", "/api/user/shell", {}
-#  .done (data) ->
-#    if data.data
-#      $("#shell-account-credentials").html renderShellAccountCredentials({account: data.data})
+$ ->
+  apiCall "GET", "/api/user/shell_servers", {}
+  .done (data) ->
+    if data.data
+      $("#shell-servers").html renderShellServers({servers: data.data})

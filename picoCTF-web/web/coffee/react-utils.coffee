@@ -18,7 +18,7 @@ Hint = React.createClass
 FormEntry = React.createClass
   propTypes:
     name: React.PropTypes.string.isRequired
-    entry: React.PropTypes.func.isRequired
+    entry: React.PropTypes.object.isRequired
     description: React.PropTypes.string
 
   render: ->
@@ -80,3 +80,27 @@ TimeEntry = React.createClass
   render: ->
     timepicker = <Panel> <div ref="datetimepicker"></div> </Panel>
     <FormEntry entry={timepicker} {...@props} />
+
+OptionEntry = React.createClass
+  propTypes:
+    name: React.PropTypes.string.isRequired
+    value: React.PropTypes.string.isRequired
+    options: React.PropTypes.array.isRequired
+    onChange: React.PropTypes.func.isRequired
+
+  render: ->
+    buttons = _.map @props.options, ((option) ->
+      onClick = ((e) ->
+        @props.onChange option
+      ).bind(this)
+
+      buttonClass = if option == @props.value then "active" else ""
+      <Button onClick={onClick} className={buttonClass}>{option}</Button>
+    ).bind(this)
+
+    buttonGroup =
+      <ButtonGroup>
+        {buttons}
+      </ButtonGroup>
+
+    <FormEntry entry={buttonGroup} {...@props} />
