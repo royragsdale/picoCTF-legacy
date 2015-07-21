@@ -63,6 +63,7 @@ def main():
     clean_parser.set_defaults(func=clean)
 
     status_parser = subparsers.add_parser("status", help="List the installed problems and bundles and any instances associated with them.")
+    status_parser.add_argument("-a", "--all", action="store_true", help="Show information about all problem instanes.")
     status_parser.add_argument("-p", "--problem", type=str, default=None, help="Display status information for a given problem.")
     status_parser.add_argument("-b", "--bundle", type=str, default=None, help="Display status information for a given bundle.")
     status_parser.add_argument("-j", "--json", action="store_true", default=None, help="Display status information in json format")
