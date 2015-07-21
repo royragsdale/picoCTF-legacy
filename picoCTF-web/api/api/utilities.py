@@ -55,7 +55,7 @@ def send_email(recipient, subject, body):
         s.sendmail(settings["from_addr"], recipient, msg.as_string())
         s.quit()
     else:
-        print("Emailing is disabled, not sending.")
+        raise WebException("Sending Emails is disabled by your adminstrator. Please contact them.")
 
 def send_email_to_list(recipients, subject, body):
     """
