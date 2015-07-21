@@ -5,6 +5,7 @@ Button = ReactBootstrap.Button
 Panel = ReactBootstrap.Panel
 Glyphicon = ReactBootstrap.Glyphicon
 ButtonInput = ReactBootstrap.ButtonInput
+ButtonGroup = ReactBootstrap.ButtonGroup
 
 update = React.addons.update
 
@@ -17,7 +18,7 @@ LoginForm = React.createClass
 
     q = "'" #My syntax highlighting can't handle literal quotes in jsx. :(
     if @props.status == "Reset"
-      <Panel className="form-test">
+      <Panel>
         <form onSubmit={@props.onPasswordReset}>
           <p><i>A password reset link will be sent the user{q}s email.</i></p>
           <Input type="text" valueLink={@props.username} addonBefore={userGlyph} placeholder="Username" required="visible"/>
@@ -33,33 +34,8 @@ LoginForm = React.createClass
         </form>
       </Panel>
     else
-      <Panel className="form-test">
-        <form onSubmit={@props.onLogin}>
-          <Input type="text" valueLink={@props.username} addonBefore={userGlyph} label="Username"/>
-          <Input type="password" valueLink={@props.password} addonBefore={lockGlyph} label="Password"/>
-          <Row>
-            <Col md={6}>
-              {if @props.status == "Register" then \
-                <span className="pad">Go back to <a onClick={@props.setPage.bind null, "Login"}>Login</a>.</span>
-              else <ButtonInput type="submit">Login</ButtonInput>}
-            </Col>
-            <Col md={6}>
-              <a className="pad" onClick={@props.setPage.bind null, "Reset"}>Need to reset your password?</a>
-            </Col>
-          </Row>
-        </form>
-      </Panel>
-
-RegistrationForm = React.createClass
-  render: ->
-    if @props.status == "Login" or @props.status == "Reset"
-      <Panel className="form-test">
-        <h3>Welcome to CyberStakes Live!</h3>
-        <h4>Please Login or <a onClick={@props.setPage.bind null, "Register"}>Register</a>.</h4>
-      </Panel>
-    else if @props.status == "Register"
-      <Panel className="form-test">
-        <form onSubmit={@props.onRegistration}>
+      registrationForm = if @props.status == "Register" then \
+        <span>
           <Row>
             <Col md={6}>
               <Input type="text" valueLink={@props.firstname} label="Firstname"/>
@@ -70,10 +46,30 @@ RegistrationForm = React.createClass
           </Row>
           <Row>
             <Col md={12}>
-              <Input type="text" valueLink={@props.email} label="E-Mail"/>
+              <Input type="email" valueLink={@props.email} label="E-mail"/>
             </Col>
           </Row>
-          <ButtonInput type="submit" onClick={@props.onRegistration}>Register</ButtonInput>
+          <ButtonInput type="submit">Register</ButtonInput>
+        </span> else <span/>
+
+      <Panel>
+        <form key={@props.status} onSubmit={if @props.status == "Login" then @props.onLogin else @props.onRegistration}>
+          <Input type="text" valueLink={@props.username} addonBefore={userGlyph} label="Username"/>
+          <Input type="password" valueLink={@props.password} addonBefore={lockGlyph} label="Password"/>
+          <Row>
+            <Col md={6}>
+              {if @props.status == "Register" then \
+                <span className="pad">Go back to <a onClick={@props.setPage.bind null, "Login"}>Login</a>.</span>
+              else <span>
+                <Button type="submit">Login</Button>
+                <Button onClick={@props.setPage.bind null, "Register"}>Register</Button>
+              </span>}
+            </Col>
+            <Col md={6}>
+              <a className="pad" onClick={@props.setPage.bind null, "Reset"}>Need to reset your password?</a>
+            </Col>
+          </Row>
+          {registrationForm}
         </form>
       </Panel>
 
@@ -84,6 +80,7 @@ AuthPanel = React.createClass
 
   onRegistration: (e) ->
     e.preventDefault()
+    console.log @state
     apiCall "POST", "/api/user/create_simple", @state
     .done (resp) ->
       switch resp.status
@@ -133,13 +130,9 @@ AuthPanel = React.createClass
     email: @linkState "email"
 
     <div>
-      <Col md={6}>
-        <LoginForm setPage={@setPage} status={@state.page}
+      <Col md={6} mdOffset={3}>
+        <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
           onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
-      </Col>
-      <Col md={6}>
-        <RegistrationForm setPage={@setPage} status={@state.page}
-          onRegistration={@onRegistration} {...links}/>
       </Col>
     </div>
 
