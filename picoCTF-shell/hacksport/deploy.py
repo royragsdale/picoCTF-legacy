@@ -3,6 +3,7 @@ Problem deployment.
 """
 
 PROBLEM_FILES_DIR = "problem_files"
+STATIC_FILE_ROOT = "static"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -360,7 +361,7 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
         problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
         problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
 
-        destination_path = join(sanitize_name(problem_object["name"]), problem_hash, source_name)
+        destination_path = join(STATIC_FILE_ROOT, problem_hash, source_name)
 
         link_template = "<a href='{}'>{}</a>"
 
