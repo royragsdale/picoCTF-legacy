@@ -1,0 +1,14 @@
+server {
+      listen 443 ssl;
+      server_name _;
+      root   /usr/share/nginx/html;
+
+      location / {
+          default_type text/html;
+      }
+
+      location /shell {
+          # make sure this port is consistent with shellinabox.conf
+          proxy_pass http://localhost:4242;
+      }
+}
