@@ -552,8 +552,10 @@ def deploy_problems(args, config):
     if os.path.isfile(lock_file):
         raise Exception("Cannot deploy while other deployment in progress. If you believe this is an error, "
                          "run 'shell_manager clean'")
-    with open(lock_file, "w") as f:
-        f.write("1")
+
+    if not args.dry:
+        with open(lock_file, "w") as f:
+            f.write("1")
 
     for path in problems:
         if os.path.isdir(path):
@@ -565,4 +567,5 @@ def deploy_problems(args, config):
         else:
             raise Exception("Problem path {} cannot be found".format(path))
 
-    os.remove(lock_file)
+    if not args.dry:
+        os.remove(lock_file)
