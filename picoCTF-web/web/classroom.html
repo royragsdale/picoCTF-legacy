@@ -36,90 +36,93 @@ startup_functions:
 <script type="text/template" id="team-selection-template">
       <div class="row" style="margin-top: 10px">
         <div class="col-md-12">
-            <% if(teams.length > 0 ) { %>
-            <% _.each(_.sortBy(teams, "team_name"), function(team) {
-              member = team.members[0]; %>
-              <div class="row">
-                <div class="col-md-12">
-                    <div class="problem panel panel-default">
-                      <div class="panel-heading team-visualization-enabler" expanded data-tid="<%= team.tid %>" data-toggle="collapse" data-target="#<%= team.tid %>">
-                          <%- team.team_name %> (<%- member.firstname %> <%- member.lastname %>) <div class="pull-right"><%- team.competition_active ? team.score : '' %></div>
-                      </div>
-                      <div class="panel-collapse collapse" id="<%= team.tid %>">
-                        <div class="panel-body">
-                          <div class="col-md-8">
-                            <h4>Overall Progression</h4>
-                            <div id="visualizer-<%- team.tid %>" class="team-visualizer"></div>
-                            <% if(team.flagged_submissions.length > 0) { %>
-                            <div class="panel panel-warning">
-                                <div class="panel-heading">Suspicious Submissions</div>
-                                <div class="panel-body">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Problem</th>
-                                                <th>Flag</th>
-                                                <th>Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% _.each(team.flagged_submissions, function(submission) { %>
-                                            <tr>
-                                                <td><%- submission.problem_name %></td>
-                                                <td><%- submission.key %></td>
-                                                <td><%- new Date(submission.timestamp["$date"]) %></td>
-                                            </tr>
-                                            <% }) %>
-                                        </tbody>
-                                    </table>
-                                  </div>
-                              </div>
-                            <% } %>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="team-information">
-                                <h4>Solved Problems:</h4>
-                                <%
-                                sortedProblems = _.sortBy(team.solved_problems, function(problem) { return -1*problem.solve_time["$date"];})
-                                if(team.solved_problems.length > 0) {
-                                %>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Problem</th>
-                                            <th>Score</th>
-                                            <th>Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                      <% _.each(sortedProblems, function(problem) { %>
-                                      <tr>
-                                          <td><%- problem.name %></td>
-                                          <td><%- problem.score %></td>
-                                          <td><%- new Date(problem.solve_time["$date"]) %></td>
-                                      </tr>
-                                      <% }) %>
-                                    </tbody>
+          <div style="margin-left: 5px">
+              <p>Students can join this class by visiting the "Team" page, and entering the following under "Class Membership":</p>
+              <div><p><strong>Class Name</strong>: <%- groupName %><br/>
+                   <strong>Teacher Username</strong>: <%- owner %></p></div>
+              <p>Followed by pressing the "Join" button.</p>
+              <p> Student can also join by following this link: </p>
+              <span>
+                <code>
+                  <%= document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+groupName+"&teacher="+owner %>
+                </code>
+              </span>
+          </div>
+          <% _.each(_.sortBy(teams, "team_name"), function(team) {
+            member = team.members[0]; %>
+            <div class="row">
+              <div class="col-md-12">
+                  <div class="problem panel panel-default">
+                    <div class="panel-heading team-visualization-enabler" expanded data-tid="<%= team.tid %>" data-toggle="collapse" data-target="#<%= team.tid %>">
+                        <%- team.team_name %> (<%- member.firstname %> <%- member.lastname %>) <div class="pull-right"><%- team.competition_active ? team.score : '' %></div>
+                    </div>
+                    <div class="panel-collapse collapse" id="<%= team.tid %>">
+                      <div class="panel-body">
+                        <div class="col-md-8">
+                          <h4>Overall Progression</h4>
+                          <div id="visualizer-<%- team.tid %>" class="team-visualizer"></div>
+                          <% if(team.flagged_submissions.length > 0) { %>
+                          <div class="panel panel-warning">
+                              <div class="panel-heading">Suspicious Submissions</div>
+                              <div class="panel-body">
+                                  <table class="table">
+                                      <thead>
+                                          <tr>
+                                              <th>Problem</th>
+                                              <th>Flag</th>
+                                              <th>Date</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          <% _.each(team.flagged_submissions, function(submission) { %>
+                                          <tr>
+                                              <td><%- submission.problem_name %></td>
+                                              <td><%- submission.key %></td>
+                                              <td><%- new Date(submission.timestamp["$date"]) %></td>
+                                          </tr>
+                                          <% }) %>
+                                      </tbody>
                                   </table>
-                                <% } else { %>
-                                  <p>User has not solved any problems.</p>
-                                <% } %>
+                                </div>
                             </div>
+                          <% } %>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="team-information">
+                              <h4>Solved Problems:</h4>
+                              <%
+                              sortedProblems = _.sortBy(team.solved_problems, function(problem) { return -1*problem.solve_time["$date"];})
+                              if(team.solved_problems.length > 0) {
+                              %>
+                              <table class="table">
+                                  <thead>
+                                      <tr>
+                                          <th>Problem</th>
+                                          <th>Score</th>
+                                          <th>Date</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                    <% _.each(sortedProblems, function(problem) { %>
+                                    <tr>
+                                        <td><%- problem.name %></td>
+                                        <td><%- problem.score %></td>
+                                        <td><%- new Date(problem.solve_time["$date"]) %></td>
+                                    </tr>
+                                    <% }) %>
+                                  </tbody>
+                                </table>
+                              <% } else { %>
+                                <p>User has not solved any problems.</p>
+                              <% } %>
                           </div>
                         </div>
                       </div>
-                   </div>
-                </div>
+                    </div>
+                 </div>
               </div>
-            <% }) %>
-          <% } else { %>
-            <div style="margin-left: 5px">
-                <p>This class currently has no teams. Students can join this class by visiting the "Team" page, and entering the following under "Class Membership":</p>
-                <div><p><strong>Class Name</strong>: <%- groupName %><br/>
-                     <strong>Teacher Username</strong>: <%- owner %></p></div>
-                <p>Followed by pressing the "Join" button. Only one student from each team needs to join for a team to be added to a class.</p>
             </div>
-          <% } %>
+          <% }) %>
         </div>
       </div>
 </script>
