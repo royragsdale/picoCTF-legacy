@@ -2,7 +2,7 @@
 API functions relating to user management and registration.
 """
 
-import bcrypt, re, urllib.parse, urllib.request, flask, json
+import bcrypt, re, urllib.parse, urllib.request, flask, json, string
 
 import api
 
@@ -12,6 +12,9 @@ from api.annotations import log_action
 from voluptuous import Required, Length, Schema
 
 _check_email_format = lambda email: re.match(r".+@.+\..{2,}", email) is not None
+
+def _check_username(username):
+    return all([c in string.digits + string.ascii_lowercase for c in username.lower()])
 
 user_schema = Schema({
     Required('email'): check(
@@ -29,6 +32,7 @@ user_schema = Schema({
     ),
     Required('username'): check(
         ("Usernames must be between 3 and 20 characters.", [str, Length(min=3, max=20)]),
+        ("Usernames must be alphanumeric.", [_check_username]),
         ("This username already exists.", [
             lambda name: safe_fail(get_user, name=name) is None])
     ),
