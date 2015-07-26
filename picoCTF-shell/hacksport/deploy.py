@@ -558,7 +558,7 @@ def deploy_problems(args, config):
             f.write("1")
 
     for path in problems:
-        if os.path.isdir(path):
+        if args.dry and os.path.isdir(path):
             deploy_problem(path, instances=args.num_instances, test=args.dry,
                             deployment_directory=args.deployment_directory)
         elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
