@@ -199,6 +199,8 @@ def update_problem(pid, updated_problem):
 
         problem["instances"] = [instance for iid,instance in instances.items()]
 
+    updated_problem.pop("instances")
+
     problem.update(updated_problem)
 
     # pass validation by removing/readding pid
