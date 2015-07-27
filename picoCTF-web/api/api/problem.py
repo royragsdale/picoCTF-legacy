@@ -37,14 +37,14 @@ problem_schema = Schema({
         ("Category must be a string.", [str])),
     Required("instances"): check(
         ("The instances must be a list.", [list])),
+    Required("hints"): check(
+        ("Hints must be a list.", [list])),
     "description": check(
         ("The problem description must be a string.", [str])),
     "version": check(
         ("A version must be a string.", [str])),
     "tags": check(
         ("Tags must be described as a list.", [list])),
-    "hints": check(
-        ("Hints must be a list.", [list])),
     "organization": check(
         ("Organization must be string.", [str])),
     "pkg_architecture": check(
