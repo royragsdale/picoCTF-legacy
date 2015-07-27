@@ -72,7 +72,7 @@ def publish(args, config):
 
     for _, bundle in bundles.items():
         for problem in output["problems"]:
-            if problem["name"] in bundle["problems"]:
+            if problem["sanitized_name"] in bundle["problems"]:
                 output["bundles"].append(bundle)
                 break
 
