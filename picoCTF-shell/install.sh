@@ -12,6 +12,9 @@ apt-get remove -y --force-yes python3-pip
 
 bash -c 'pip3 install --upgrade --verbose .'
 
+# disable apache if it's running
+systemctl disable apache2
+
 # remove default config and restart nginx
 rm /etc/nginx/sites-enabled/default
 sudo service nginx restart
