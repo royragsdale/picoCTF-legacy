@@ -123,7 +123,7 @@ ProblemClassifierList = React.createClass
     bundleData = _.map @props.bundles, (bundle) ->
       name: bundle.name
       size: _.intersection(bundle.problems, problemNames).length
-      classifier: (problem) -> problem.sanitized_name in problemNames
+      classifier: (problem) -> problem.sanitized_name in bundle.problems
 
     <PanelGroup className="problem-classifier" collapsible>
       <ProblemClassifier name="State" data={problemStateData} {...@props}/>
