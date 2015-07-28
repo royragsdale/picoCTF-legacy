@@ -198,8 +198,7 @@ def update_problem(pid, updated_problem):
             instances[instance["iid"]] = instance
 
         problem["instances"] = [instance for iid,instance in instances.items()]
-
-    updated_problem.pop("instances")
+        updated_problem.pop("instances")
 
     problem.update(updated_problem)
 
