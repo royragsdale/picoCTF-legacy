@@ -4,7 +4,8 @@ server {
       root   /usr/share/nginx/html;
 
       location / {
-          default_type text/html;
+          types        { }
+          default_type application/octet-stream;
       }
 
       location /shell {
