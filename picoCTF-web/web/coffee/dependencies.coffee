@@ -14,7 +14,7 @@
       when 1
         if not data.data["logged_in"]
           ga('send', 'event', 'Redirect', 'NotLoggedIn')
-          window.location.href = "/login"
+          window.location.href = "/"
 
 @redirectIfLoggedIn = ->
   apiCall "GET", "/api/user/status", {}
@@ -109,7 +109,7 @@ getStyle = (data) ->
         document.location.href = "/"
       when 0
         ga('send', 'event', 'Authentication', 'LogOut', 'Failure::'+data.message)
-        document.location.href = "/login"
+        document.location.href = "/"
 
 $.fn.apiNotify = (data, configuration) ->
   configuration["className"] = getStyle data

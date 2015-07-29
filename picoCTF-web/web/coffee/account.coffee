@@ -16,7 +16,7 @@ resetPassword = (e) ->
   apiCall "POST", "/api/user/confirm_password_reset", form
   .done (data) ->
     ga('send', 'event', 'Authentication', 'ResetPassword', 'Success')
-    apiNotify data, "/login"
+    apiNotify data, "/"
 
 disableAccount = (e) ->
   e.preventDefault()
