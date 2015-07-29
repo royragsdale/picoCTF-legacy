@@ -47,4 +47,4 @@ sysctl -p
 # set hostname
 hostname shell
 echo "shell" > /etc/hostname
-echo -e "127.0.0.1\tshell" > /etc/hosts
+echo -e "127.0.0.1\tshell" >> /etc/hosts
