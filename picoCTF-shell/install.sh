@@ -10,7 +10,7 @@ pip3 install --upgrade pip
 
 apt-get remove -y --force-yes python3-pip
 
-bash -c 'pip3 install --upgrade --verbose .'
+bash -c 'pip3 install --upgrade .'
 
 # remove default config and restart nginx
 rm /etc/nginx/sites-enabled/default
