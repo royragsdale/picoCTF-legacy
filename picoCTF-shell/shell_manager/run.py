@@ -74,7 +74,11 @@ def main():
 
     args = parser.parse_args()
 
-    config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
+    try:
+        config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
+    except PermissionError as e:
+        print("You must run shell_manager with sudo.")
+        exit(1)
 
     #Call the default function
     if "func" in args:

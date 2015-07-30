@@ -1,10 +1,11 @@
 server {
-      listen 443 ssl;
+      listen 80;
       server_name _;
       root   /usr/share/nginx/html;
 
       location / {
-          default_type text/html;
+          types        { }
+          default_type application/octet-stream;
       }
 
       location /shell {

@@ -53,6 +53,7 @@ import os
 import json
 import shutil
 import functools
+import traceback
 
 def challenge_meta(attributes):
     """
@@ -555,17 +556,24 @@ def deploy_problems(args, config):
     if os.path.isfile(lock_file):
         raise Exception("Cannot deploy while other deployment in progress. If you believe this is an error, "
                          "run 'shell_manager clean'")
-    with open(lock_file, "w") as f:
-        f.write("1")
 
-    for path in problems:
-        if os.path.isdir(path):
-            deploy_problem(path, instances=args.num_instances, test=args.dry,
-                            deployment_directory=args.deployment_directory)
-        elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
-            deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=args.num_instances,
-                            test=args.dry, deployment_directory=args.deployment_directory)
-        else:
-            raise Exception("Problem path {} cannot be found".format(path))
+    if not args.dry:
+        with open(lock_file, "w") as f:
+            f.write("1")
 
-    os.remove(lock_file)
+    try:
+        for path in problems:
+            if args.dry and os.path.isdir(path):
+                deploy_problem(path, instances=args.num_instances, test=args.dry,
+                                deployment_directory=args.deployment_directory)
+            elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
+                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=args.num_instances,
+                                test=args.dry, deployment_directory=args.deployment_directory)
+            else:
+                raise Exception("Problem path {} cannot be found".format(path))
+
+    except Exception as e:
+        traceback.print_exc()
+    finally:
+        if not args.dry:
+            os.remove(lock_file)
