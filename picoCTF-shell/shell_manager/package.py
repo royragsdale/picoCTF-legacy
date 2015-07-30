@@ -131,7 +131,7 @@ def problem_builder(args, config):
 
     # note that this chmod does not work correct if on a vagrant shared folder,
     # so we need to package the problems elsewhere
-    chmod(dirname(paths["data"]), 0o750)
+    chmod(paths["data"], 0o750)
 
     problem_to_control(problem, paths["debian"])
 
