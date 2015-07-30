@@ -355,7 +355,7 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
 
     web_accessible_files = []
 
-    def url_for(web_accessible_files, source_name, display=None):
+    def url_for(web_accessible_files, source_name, display=None, raw=False):
         source_path = join(copypath, source_name)
 
         problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
@@ -369,7 +369,10 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
         uri_prefix = "//"
         uri = join(uri_prefix, deploy_config.HOSTNAME, destination_path)
 
-        return link_template.format(uri, source_name if display is None else display)
+        if not raw:
+            return link_template.format(uri, source_name if display is None else display)
+
+        return uri
 
     problem.url_for = functools.partial(url_for, web_accessible_files)
 
