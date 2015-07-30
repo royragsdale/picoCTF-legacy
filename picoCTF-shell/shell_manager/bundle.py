@@ -58,10 +58,11 @@ def get_bundle_root(bundle_name, absolute=False):
 
     bundle_root = join(BUNDLE_ROOT, sanitize_name(bundle_name))
 
+    assert bundle_root.startswith(os.sep)
     if absolute:
-        return join(os.sep, bundle_root)
+        return bundle_root
 
-    return bundle_root
+    return bundle_root[len(os.sep):]
 
 def get_bundle(bundle_path):
     """
