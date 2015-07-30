@@ -15,11 +15,12 @@ COMPETITORS_GROUP = "competitors"
 
 config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
 SERVER = config.WEB_SERVER
+TIMEOUT=5
 
 pamh = None
 
 def run_login(user, password):
-    r = requests.post(SERVER+"/api/user/login", data={"username": user, "password": password})
+    r = requests.post(SERVER+"/api/user/login", data={"username": user, "password": password}, timeout=TIMEOUT)
     return str(json.loads(r.text)['message'])
 
 def display(string):
