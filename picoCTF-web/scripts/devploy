@@ -30,8 +30,8 @@ echo "Clearing the API cache"
 $ROOT/api/api_manager.py database clear cache
 
 START_CMD="python3 run.py"
-
-if [ $1=="production" ]; then
+echo $1
+if [[ $1 = "production" ]]; then
     START_CMD="./gunicorn_start.sh"
 fi
 
