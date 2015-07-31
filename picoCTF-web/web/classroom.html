@@ -85,7 +85,6 @@ startup_functions:
                 var averageByCategory = _.mapObject(_.reduce(teamAverages, function(total, categories) {
                 _.each(categories, function(score, name) {
                 if(!_.has(total, name)) {
-                            console.log
                             total[name] = [];
                         }
                         total[name].push(score)

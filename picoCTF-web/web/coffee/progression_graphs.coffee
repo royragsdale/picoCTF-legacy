@@ -145,8 +145,6 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
     .done drawgraph
 
 @renderTeamRadarGraph = (selector, tid) ->
-  console.log("RADAR", tid, window.generateRadarData(tid));
-  window.again = _.bind(window.renderTeamRadarGraph, null, selector, tid);
   div = divFromSelector selector
   $(div).empty()
   canvas = $("<canvas>").appendTo(div)
