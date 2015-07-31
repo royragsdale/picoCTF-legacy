@@ -75,7 +75,11 @@ startup_functions:
                     return runningTotal + score;
                 }) / sortedScores.length, 1/2).toFixed(2);
 
-                var categoryData = _.map(sortedTeams, function(team) { return _.groupBy(team.solved_problems, "category")});
+
+                var categoryData = _.map(sortedTeams, function(team) {
+                    var relevantProblems = _.filter(team.solved_problems, function(problem) { return !problem.disabled; });
+                    return _.groupBy(relevantProblems, "category")
+                });
                 var teamAverages = _.map(categoryData, function(teamProblems) {
                     return _.mapObject(teamProblems, function(problems) {
                         var problemScores = _.map(problems, function(problem) { return problem.score; });
