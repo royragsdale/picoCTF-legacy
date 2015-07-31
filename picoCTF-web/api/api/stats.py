@@ -203,20 +203,20 @@ def get_score_progression(tid=None, uid=None, category=None):
         A list of dictionaries containing score and time
     """
 
-    correct_submissions = api.problem.get_submissions(uid=uid, tid=tid, category=category, correctness=True)
+    solved = api.problem.get_solved_problems(tid=tid, uid=uid, categroy=category)
 
     result = []
     score = 0
 
     problems_counted = set()
 
-    for submission in sorted(correct_submissions, key=lambda sub: sub["timestamp"]):
-        if submission['pid'] not in problems_counted:
-            score += api.problem.get_problem(pid=submission["pid"])["score"]
-            problems_counted.add(submission['pid'])
+    for problem in sorted(solved, key=lambda prob: prob["solve_time"]):
+        if problem['pid'] not in problems_counted:
+            score += problem["score"]
+            problems_counted.add(problem['pid'])
         result.append({
             "score": score,
-            "time": int(submission["timestamp"].timestamp())
+            "time": int(problem["solve_time"].timestamp())
         })
 
     return result
