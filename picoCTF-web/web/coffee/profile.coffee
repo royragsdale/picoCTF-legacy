@@ -142,7 +142,8 @@ $ ->
   window.drawTeamProgressionGraph("#team-progression-graph", "#team-progression-graph-container")
 
   if window.location.hash.startsWith("#joinclass")
-    group = window.location.hash.split('class=')[1].split("&")[0]
-    teacher = window.location.hash.split('&teacher=')[1]
+    hash = decodeURI(window.location.hash)
+    group = hash.split('class=')[1].split("&")[0]
+    teacher = hash.split('&teacher=')[1]
     join_group group, teacher
     window.location.hash = ""
