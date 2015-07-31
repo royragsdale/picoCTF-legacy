@@ -35,18 +35,121 @@ startup_functions:
 
 <script type="text/template" id="team-selection-template">
       <div class="row" style="margin-top: 10px">
-        <div class="col-md-12">
-          <div style="margin-left: 5px">
-              <p>Students can join this class by visiting the "Team" page, and entering the following under "Class Membership":</p>
-              <div><p><strong>Class Name</strong>: <%- groupName %><br/>
-                   <strong>Teacher Username</strong>: <%- owner %></p></div>
-              <p>Followed by pressing the "Join" button.</p>
-              <p> Student can also join by following this link: </p>
-              <span>
-                <code>
-                  <%= document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+groupName+"&teacher="+owner %>
-                </code>
-              </span>
+          <div class="col-md-12">
+            <div class="col-md-6">
+              <div class="panel panel-default">
+                <div class="panel-body">
+                    <div style="margin-left: 5px">
+                        <p>Students can join this class by visiting the "Profile" page, and entering the following under "Class Membership":</p>
+                        <div><p><strong>Class Name</strong>: <%- groupName %><br/>
+                            <strong>Teacher Username</strong>: <%- owner %></p></div>
+                        <p> Student can also join by following this link: </p>
+                        <span>
+                            <code>
+                            <%= document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+groupName+"&teacher="+owner %>
+                            </code>
+                        </span>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+                <%
+
+                function average(data) {
+                    return (_.reduce(data, function(avg, score){ return avg + score; })/data.length).toFixed(2);
+                }
+
+                window.teams = teams;
+                var sortedTeams = _.sortBy(teams, "score");
+                var sortedScores = _.map(sortedTeams, function(team) { return team.score; });
+                var minScore = sortedScores[0];
+                var maxScore = sortedScores[sortedTeams.length - 1];
+                var averageScore = parseInt(average(sortedScores));
+
+                var stdDeviation = Math.pow(
+                _.reduce(_.map(sortedScores, function(score) {
+                    return Math.pow(score - averageScore, 2)
+                }), function(runningTotal, score) {
+                    return runningTotal + score;
+                }) / sortedScores.length, 1/2).toFixed(2);
+
+                var categoryData = _.map(sortedTeams, function(team) { return _.groupBy(team.solved_problems, "category")});
+                var teamAverages = _.map(categoryData, function(teamProblems) {
+                    return _.mapObject(teamProblems, function(problems) {
+                        var problemScores = _.map(problems, function(problem) { return problem.score; });
+                        return _.reduce(problemScores, function(totalScore, score) { return totalScore + score; }, 0);
+                    })
+                });
+
+                var averageByCategory = _.mapObject(_.reduce(teamAverages, function(total, categories) {
+                _.each(categories, function(score, name) {
+                if(!_.has(total, name)) {
+                            console.log
+                            total[name] = [];
+                        }
+                        total[name].push(score)
+                    });
+                    return total;
+                }, {}), average);
+
+                var sortedKeys = _.sortBy(_.keys(averageByCategory));
+                var sortedValues = _.map(sortedKeys, function(key) { return averageByCategory[key]; });
+
+                var data = {
+                    labels: sortedKeys,
+                    datasets: [
+                        {
+                            label: "Class Averages",
+                            fillColor: "rgba(220,220,220,0.2)",
+                            strokeColor: "rgba(220,220,220,1)",
+                            pointColor: "rgba(220,220,220,1)",
+                            pointStrokeColor: "#fff",
+                            pointHighlightFill: "#fff",
+                            pointHighlightStroke: "rgba(220,220,220,1)",
+                            data: sortedValues
+                        }
+                    ]
+                };
+
+                window.generateRadarData = function(tid) {
+                    var team = _.find(window.teams, function(team) { return tid == team.tid; });
+                    var teamCategoryData = _.mapObject(_.groupBy(team.solved_problems, "category"), function(problems) {
+                        var problemScores = _.map(problems, function(problem) { return problem.score; });
+                        return _.reduce(problemScores, function(totalScore, score) { return totalScore + score; });
+                    })
+                    var teamValues = _.map(sortedKeys, function(key) {
+                        if(_.has(teamCategoryData, key)) { return teamCategoryData[key]; }
+                        else { return 0; }
+                    });
+
+                    var teamData = {
+                        label: team.team_name,
+                        fillColor: "rgba(151,187,205,0.2)",
+                        strokeColor: "rgba(151,187,205,1)",
+                        pointColor: "rgba(151,187,205,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(151,187,205,1)",
+                        data: teamValues
+                    }
+                    var averageData = $.extend(true, {}, data);
+                    averageData.datasets.push(teamData);
+                    return averageData;
+                };
+
+                %>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <h4>Overall Stats</h4>
+                        <hr/>
+                        <p>Min Score: <%= minScore %></p>
+                        <p>Max Score: <%= maxScore %></p>
+                        <p>Avg Score: <%= averageScore %></p>
+                        <p>Std Deviation: <%= stdDeviation %></p>
+                    </div>
+                </div>
+            </div>
           </div>
           <% _.each(_.sortBy(teams, "team_name"), function(team) {
             member = team.members[0]; %>
@@ -58,9 +161,11 @@ startup_functions:
                     </div>
                     <div class="panel-collapse collapse" id="<%= team.tid %>">
                       <div class="panel-body">
-                        <div class="col-md-8">
-                          <h4>Overall Progression</h4>
-                          <div id="visualizer-<%- team.tid %>" class="team-visualizer"></div>
+                          <div class="col-md-8">
+                              <h4>Category Performance</h4>
+                               <div id="radar-visualizer-<%- team.tid %>" class="radar-visualizer"/>
+                               <h4>Overall Progression</h4>
+                               <div id="visualizer-<%- team.tid %>" class="team-visualizer"></div>
                           <% if(team.flagged_submissions.length > 0) { %>
                           <div class="panel panel-warning">
                               <div class="panel-heading">Suspicious Submissions</div>

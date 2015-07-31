@@ -31,12 +31,12 @@ loadGroupManagement = (groups, showFirstTab, callback) ->
             $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
         $(".team-visualization-enabler").on "click", (e) ->
           tid = $(e.target).data("tid")
-          console.log tid, teamData.data
           for team in teamData.data
-            console.log team
             if tid == team.tid
               preparedData = {status: 1, data: team.progression}
               window.renderTeamProgressionGraph("#visualizer-"+tid, preparedData)
+              #hack
+              _.delay window.renderTeamRadarGraph, 150, "#radar-visualizer-"+tid, tid
 
   if showFirstTab
     $('#class-tabs a:first').tab('show')

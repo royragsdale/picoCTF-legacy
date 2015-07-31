@@ -127,8 +127,7 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
             labels: ("" for i in [1...numDataPoints])
             datasets: datasets
 
-          $(div).empty()
-          canvas = $("<canvas>").appendTo(div)
+          $(div).empty() canvas = $("<canvas>").appendTo(div)
 
           canvas.attr('width', $(div).width())
           canvas.attr('height', $(div).height())
@@ -144,6 +143,17 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   else
     apiCall "GET", "/api/stats/top_teams/score_progression", {}
     .done drawgraph
+
+@renderTeamRadarGraph = (selector, tid) ->
+  console.log("RADAR", tid, window.generateRadarData(tid));
+  window.again = _.bind(window.renderTeamRadarGraph, null, selector, tid);
+  div = divFromSelector selector
+  $(div).empty()
+  canvas = $("<canvas>").appendTo(div)
+  canvas.attr('width', $(div).width())
+  canvas.attr('height', 400)
+
+  chart = new Chart(_.first(canvas).getContext("2d")).Radar(window.generateRadarData(tid))
 
 @renderTeamProgressionGraph = (selector, data) ->
   div = divFromSelector selector
