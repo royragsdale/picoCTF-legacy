@@ -121,13 +121,13 @@ ProblemInfo = React.createClass
       {categories.map (category, i) ->
         currentlySolved = if solvedProblemsByCategory[category] then solvedProblemsByCategory[category].length else 0
         <Row key={i}>
-          <Col xs={8} className="progress-container">
+          <Col xs={8} sm={8} md={6} lg={8} className="progress-container">
             <ProgressBar
               now={currentlySolved} bsStyle={styles[i % styles.length]}
               max={allProblemsByCategory[category].length}
               label="%(now)s / %(max)s"/>
           </Col>
-          <Col xs={4} className="progress-label">
+          <Col xs={4} sm={4} md={6} lg={4} className="progress-label">
             <img className="category-icon" src={if glyphs[category] then glyphs[category] else "/img/laptop.svg"}/>
             <div className="pull-right">{category}</div>
           </Col>
