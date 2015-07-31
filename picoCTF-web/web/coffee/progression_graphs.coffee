@@ -127,7 +127,8 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
             labels: ("" for i in [1...numDataPoints])
             datasets: datasets
 
-          $(div).empty() canvas = $("<canvas>").appendTo(div)
+          $(div).empty()
+          canvas = $("<canvas>").appendTo(div)
 
           canvas.attr('width', $(div).width())
           canvas.attr('height', $(div).height())

@@ -9,6 +9,7 @@ startup_functions:
 ---
 
 <script type="text/javascript" src="/js/libs/Chart.min.js"></script>
+<script type="text/javascript" src="/js/libs/download.js"></script>
 
 <div class="container">
     <div class="row">
@@ -140,12 +141,23 @@ startup_functions:
                 %>
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <h4>Overall Stats</h4>
-                        <hr/>
-                        <p>Min Score: <%= minScore %></p>
-                        <p>Max Score: <%= maxScore %></p>
-                        <p>Avg Score: <%= averageScore %></p>
-                        <p>Std Deviation: <%= stdDeviation %></p>
+                        <div class="col-md-6">
+                            <h4>Overall Stats</h4>
+                            <hr/>
+                            <% if(teams.length > 0) { %>
+                            <p>Min Score: <%= minScore %></p>
+                            <p>Max Score: <%= maxScore %></p>
+                            <p>Avg Score: <%= averageScore %></p>
+                            <p>Std Deviation: <%= stdDeviation %></p>
+                            <% } else { %>
+                            <p>Will update when students join.</p>
+                            <% } %>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Exporting Data</h4>
+                            <hr/>
+                            <button type="button" class="btn btn-default" onClick=window.exportProblemCSV(teams)>Export to CSV</button>
+                        </div>
                     </div>
                 </div>
             </div>

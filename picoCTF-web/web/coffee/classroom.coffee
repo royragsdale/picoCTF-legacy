@@ -9,6 +9,28 @@ createGroupSetup = () ->
     formDialog formDialogContents, "Create a New Class", "OK", "new-group-name", () ->
         createGroup($('#new-group-name').val())
 
+@exportProblemCSV = (teams) ->
+  apiCall "GET", "/api/admin/problems"
+  .done ((resp) ->
+    if resp.status == 0
+      apiNotify resp
+    else
+      problems = _.filter resp.data.problems, (problem) -> !problem.disabled
+      data = [["Username", "First Name", "Last Name"].concat(_.map(problems, (problem) -> problem.name), ["Total"])]
+      _.each teams, ((team) ->
+        member = team.members[0]
+        teamData = [member.username, member.firstname, member.lastname]
+        teamData = teamData.concat _.map problems, ((problem) ->
+          solved = _.find team.solved_problems, (solvedProblem) -> solvedProblem.name == problem.name
+          return if solved then problem.score else 0
+        )
+        teamData = teamData.concat [team.score]
+        data.push teamData
+      )
+      csvData = (_.map data, (fields) -> fields.join ",").join "\n"
+      download(csvData, "class.csv", "text/csv")
+  )
+
 loadGroupManagement = (groups, showFirstTab, callback) ->
   $("#group-management").html renderGroupInformation({data: groups})
 
