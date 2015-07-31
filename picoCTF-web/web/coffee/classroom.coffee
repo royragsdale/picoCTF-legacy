@@ -4,12 +4,21 @@ renderTeamSelection = _.template($("#team-selection-template").remove().text())
 
 @groupListCache = []
 
+String.prototype.hashCode = ->
+	hash = 0
+	for i in [0...@length]
+ 		char = @charCodeAt i
+ 		hash = ((hash << 5) - hash) + char
+ 		hash = hash & hash
+ 	hash
+
 createGroupSetup = () ->
     formDialogContents = _.template($("#new-group-template").html())({})
     formDialog formDialogContents, "Create a New Class", "OK", "new-group-name", () ->
         createGroup($('#new-group-name').val())
 
-@exportProblemCSV = (teams) ->
+@exportProblemCSV = (groupName, teams) ->
+  console.log("memes")
   apiCall "GET", "/api/admin/problems"
   .done ((resp) ->
     if resp.status == 0
@@ -28,7 +37,7 @@ createGroupSetup = () ->
         data.push teamData
       )
       csvData = (_.map data, (fields) -> fields.join ",").join "\n"
-      download(csvData, "class.csv", "text/csv")
+      download(csvData, "#{groupName}.csv", "text/csv")
   )
 
 loadGroupManagement = (groups, showFirstTab, callback) ->
