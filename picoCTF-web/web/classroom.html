@@ -76,7 +76,11 @@ startup_functions:
                     return runningTotal + score;
                 }) / sortedScores.length, 1/2).toFixed(2);
 
-                var categoryData = _.map(sortedTeams, function(team) { return _.groupBy(team.solved_problems, "category")});
+
+                var categoryData = _.map(sortedTeams, function(team) {
+                    var relevantProblems = _.filter(team.solved_problems, function(problem) { return !problem.disabled; });
+                    return _.groupBy(relevantProblems, "category")
+                });
                 var teamAverages = _.map(categoryData, function(teamProblems) {
                     return _.mapObject(teamProblems, function(problems) {
                         var problemScores = _.map(problems, function(problem) { return problem.score; });
@@ -157,7 +161,8 @@ startup_functions:
                         <div class="col-md-6">
                             <h4>Exporting Data</h4>
                             <hr/>
-                            <button type="button" class="btn btn-default" onClick=window.exportProblemCSV(teams)>Export to CSV</button>
+                            <% window.localExportCSV = window.exportProblemCSV.bind(null, groupName, teams); %>
+                            <button type="button" class="btn btn-default" onClick=window.localExportCSV()>Export to CSV</button>
                         </div>
                     </div>
                 </div>
@@ -168,10 +173,10 @@ startup_functions:
             <div class="row">
               <div class="col-md-12">
                   <div class="problem panel panel-default">
-                    <div class="panel-heading team-visualization-enabler" expanded data-tid="<%= team.tid %>" data-toggle="collapse" data-target="#<%= team.tid %>">
+                    <div class="panel-heading team-visualization-enabler" expanded data-tid="<%= team.tid %>" data-toggle="collapse" data-target="#<%= (groupName+team.tid).hashCode() %>">
                         <%- team.team_name %> (<%- member.firstname %> <%- member.lastname %>) <div class="pull-right"><%- team.competition_active ? team.score : '' %></div>
                     </div>
-                    <div class="panel-collapse collapse" id="<%= team.tid %>">
+                    <div class="panel-collapse collapse" id="<%= (groupName+team.tid).hashCode() %>">
                       <div class="panel-body">
                           <div class="col-md-8">
                               <h4>Category Performance</h4>

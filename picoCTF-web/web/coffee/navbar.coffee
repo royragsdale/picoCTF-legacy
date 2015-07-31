@@ -23,7 +23,8 @@ userLoggedInNoCompetition =
   News: "/news"
 
 
-userNotLoggedIn = {}
+userNotLoggedIn =
+  News: "/news"
 
 adminLoggedIn =
   Management: "/management"
