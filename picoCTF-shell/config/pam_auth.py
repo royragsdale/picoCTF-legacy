@@ -62,6 +62,7 @@ def pam_sm_authenticate(pam_handle, flags, argv):
         try:
             if server_user_exists(user):
                 subprocess.check_output(["/usr/sbin/useradd", "-m", "-G", COMPETITORS_GROUP, "-s", "/bin/bash", user])
+                subprocess.check_output(["chmod", "-R", "1710", pwd.getpwnam(user).pw_dir])
                 display("Welcome {}!".format(user))
                 display("Your shell server account has been created.")
                 prompt("Please press enter and reconnect.")
