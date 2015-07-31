@@ -49,7 +49,6 @@ loadGroupManagement = (groups, showFirstTab, callback) ->
         ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
         for group in groups
           if group.name == groupName
-            console.log teamData.data, teamData.data.length
             $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
         $(".team-visualization-enabler").on "click", (e) ->
           tid = $(e.target).data("tid")
