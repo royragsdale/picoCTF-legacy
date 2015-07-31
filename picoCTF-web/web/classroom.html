@@ -211,20 +211,20 @@ startup_functions:
                               sortedProblems = _.sortBy(team.solved_problems, function(problem) { return -1*problem.solve_time["$date"];})
                               if(team.solved_problems.length > 0) {
                               %>
-                              <table class="table">
+                              <table class="table table-fixed">
                                   <thead>
                                       <tr>
-                                          <th>Problem</th>
-                                          <th>Score</th>
-                                          <th>Date</th>
+                                          <th class="col-md-4">Problem</th>
+                                          <th class="col-md-2">Score</th>
+                                          <th class="col-md-6">Date</th>
                                       </tr>
                                   </thead>
                                   <tbody>
                                     <% _.each(sortedProblems, function(problem) { %>
                                     <tr>
-                                        <td><%- problem.name %></td>
-                                        <td><%- problem.score %></td>
-                                        <td><%- new Date(problem.solve_time["$date"]) %></td>
+                                        <td class="col-md-4"><%- problem.name %></td>
+                                        <td class="col-md-2"><%- problem.score %></td>
+                                        <td class="col-md-6"><%- new Date(problem.solve_time["$date"]) %></td>
                                     </tr>
                                     <% }) %>
                                   </tbody>
