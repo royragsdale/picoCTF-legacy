@@ -44,7 +44,7 @@ startup_functions:
               <p> Student can also join by following this link: </p>
               <span>
                 <code>
-                  <%= encodeURI(document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+groupName+"&teacher="+owner) %>
+                  <%= document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+encodeURIComponent(groupName)+"&teacher="+encodeURIComponent(owner) %>
                 </code>
               </span>
           </div>
