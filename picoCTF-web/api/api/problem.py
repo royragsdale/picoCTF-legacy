@@ -639,7 +639,8 @@ def get_solved_problems(tid=None, uid=None, category=None):
         if submission["pid"] not in pids:
             problem = unlocked_filter(get_problem(pid=submission["pid"]), True)
             problem["solve_time"] = submission["timestamp"]
-            result.append(problem)
+            if not problem["disabled"]:
+                result.append(problem)
 
     return result
 
