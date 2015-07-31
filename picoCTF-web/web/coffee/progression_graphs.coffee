@@ -148,11 +148,15 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
 @renderTeamRadarGraph = (selector, tid) ->
   div = divFromSelector selector
   $(div).empty()
-  canvas = $("<canvas>").appendTo(div)
-  canvas.attr('width', $(div).width())
-  canvas.attr('height', 400)
+  radarData = window.generateRadarData(tid)
+  if radarData.labels.length > 0
+    canvas = $("<canvas>").appendTo(div)
+    canvas.attr('width', $(div).width())
+    canvas.attr('height', 400)
 
-  chart = new Chart(_.first(canvas).getContext("2d")).Radar(window.generateRadarData(tid))
+    chart = new Chart(_.first(canvas).getContext("2d")).Radar radarData
+  else
+    $("<p>Waiting for solved problems.</p>").appendTo div
 
 @renderTeamProgressionGraph = (selector, data) ->
   div = divFromSelector selector
