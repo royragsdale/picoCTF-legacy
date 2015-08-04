@@ -276,5 +276,3 @@ def main():
         args.func(args)
     else:
         parser.print_help()
-
-main()
