@@ -30,8 +30,9 @@ class TestProblems(object):
                 "sanitized_name": "base-" + str(i),
                 "score": 10,
                 "author": "haxxor",
-                "category": "",
+                "category": "Binary Exploitation",
                 "description": "Base problem " + str(i),
+                "hints": ["test", "test2"],
                 "instances": [
                     {
                         "description": "Base problem " + str(i),
@@ -57,8 +58,9 @@ class TestProblems(object):
                 "sanitized_name": "locked-" + str(i),
                 "author": "haxxor",
                 "score" : 10,
-                "category": "",
-                "description" : "",
+                "category": "Reverse Engineering",
+                "description" : "Test",
+                "hints": ["test", "test2"],
                 "instances": [
                     {
                         "description": "disabled problem " + str(i),
@@ -85,7 +87,8 @@ class TestProblems(object):
                 "sanitized_name": "level1-" + str(i),
                 "score" : 60,
                 "author": "haxxor",
-                "category": "",
+                "category": "Forensics",
+                "hints": ["test", "test"],
                 "description" : "Level1 problem " + str(i),
                 "instances": [
                     {
@@ -218,12 +221,12 @@ class TestProblems(object):
             assert result['correct'], "Correct key was not accepted"
             assert result['points'] == problem['score'], "Did not return correct score"
 
-            solved = api.problem.get_solved_problems(self.tid)
-            assert api.problem.get_problem(pid=problem['pid']) in solved
+            solved = api.problem.get_solved_pids(self.tid)
+            assert problem['pid'] in solved
 
         # test incorrect submissions
         for problem in self.base_problems[2:]:
-            result = api.problem.submit_key(self.tid, problem['pid'], self.wrong, uid=self.uid)
+            result = api.problem.submit_key(self.tid, problem['pid'], self.wrong+"asd", uid=self.uid)
             assert not result['correct'], "Incorrect key was accepted"
             assert result['points'] == problem['score'], "Did not return correct score"
 

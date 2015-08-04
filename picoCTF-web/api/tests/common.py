@@ -31,7 +31,7 @@ new_team_user = {
 }
 
 base_user = {
-    "username": "validµ",
+    "username": "valid2",
     "firstname": "Fred",
     "lastname": "Hacker",
     "password": "valid",

@@ -292,7 +292,7 @@ def create_user_request(params):
 
     validate(user_schema, params)
 
-    if api.config.enable_captcha and not _validate_captcha(params):
+    if hasattr(api.config, "enable_captcha") and api.config.enable_captcha and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
 
     if params.get("create-new-team", "false") == "true":
