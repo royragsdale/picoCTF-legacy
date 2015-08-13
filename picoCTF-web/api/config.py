@@ -101,7 +101,13 @@ default_settings = {
 
 def get_settings():
     db = api.common.get_conn()
-    return db.settings.find_one({}, {"_id":0})
+    settings = db.settings.find_one({}, {"_id":0})
+
+    if settings is None:
+        db.settings.insert(default_settings)
+        return default_settings
+
+    return settings
 
 def change_settings(changes):
     db = api.common.get_conn()
@@ -124,7 +130,3 @@ def change_settings(changes):
     check_keys(settings, changes)
 
     db.settings.update({"_id":settings["_id"]}, {"$set": changes})
-
-if get_settings() is None:
-    db = api.common.get_conn()
-    db.settings.insert(default_settings)
