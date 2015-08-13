@@ -73,21 +73,63 @@ LoginForm = React.createClass
         </form>
       </Panel>
 
+
+TeamManagementForm = React.createClass
+
+  componentDidMount: ->
+    $("input").prop 'required', true
+
+  componentDidUpdate: ->
+    $("input").prop 'required', true
+
+  render: ->
+    towerGlyph = <Glyphicon glyph="tower"/>
+    lockGlyph = <Glyphicon glyph="lock"/>
+
+    <Panel>
+      <form onSubmit={@props.onTeamJoin}>
+        <Input type="text" valueLink={@props.teamName} addonBefore={towerGlyph} label="Team Name"/>
+        <Input type="password" valueLink={@props.teamPassword} addonBefore={lockGlyph} label="Team Password"/>
+        <Col md={6}>
+          <span>
+            <Button type="submit">Join Team</Button>
+            <Button onClick={@props.onTeamRegistration}>Register Team</Button>
+          </span>
+        </Col>
+        <Col md={6}>
+          <a href="#" onClick={() -> document.location.href = "/profile"}>Play as an individual.</a>
+        </Col>
+      </form>
+    </Panel>
+        
 AuthPanel = React.createClass
   mixins: [React.addons.LinkedStateMixin]
   getInitialState: ->
     page: "Login"
+    settings: {}
+
+  componentWillMount: ->
+    apiCall "GET", "/api/team/settings"
+    .done ((req) ->
+      console.log req
+      @setState update @state,
+        settings: $set: req.data
+     ).bind this
 
   onRegistration: (e) ->
     e.preventDefault()
-    console.log @state
     apiCall "POST", "/api/user/create_simple", @state
-    .done (resp) ->
+    .done ((resp) ->
+      console.log resp
+      apiNotify resp
+      console.log @state
       switch resp.status
-        when 0
-          apiNotify resp
         when 1
-          document.location.href = "/profile"
+          if @state.settings.max_team_size > 1
+            @setPage "Team Management"
+          else
+            document.location.href = "/profile"
+    ).bind this
 
   onPasswordReset: (e) ->
     e.preventDefault()
@@ -111,6 +153,27 @@ AuthPanel = React.createClass
             else
               document.location.href = "/profile"
 
+  onTeamRegistration: (e) ->
+    e.preventDefault()
+    apiCall "POST", "/api/team/create", {team_name: @state.team_name, team_password: @state.team_password}
+    .done (resp) ->
+      switch resp.status
+        when 0
+            apiNotify resp
+        when 1
+            document.location.href = "/profile"
+
+  onTeamJoin: (e) ->
+    e.preventDefault()
+    e.preventDefault()
+    apiCall "POST", "/api/team/join", {team_name: @state.team_name, team_password: @state.team_password}
+    .done (resp) ->
+      switch resp.status
+        when 0
+            apiNotify resp
+        when 1
+            document.location.href = "/profile"
+
   setPage: (page) ->
     @setState update @state,
         page: $set: page
@@ -128,13 +191,22 @@ AuthPanel = React.createClass
     lastname: @linkState "lastname"
     firstname: @linkState "firstname"
     email: @linkState "email"
+    teamName: @linkState "team_name"
+    teamPassword: @linkState "team_password"
 
-    <div>
-      <Col md={6} mdOffset={3}>
-        <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
-          onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
-      </Col>
-    </div>
+    if @state.page == "Team Management"
+      <div>
+        <Col md={6} mdOffset={3}>
+          <TeamManagementForm onTeamJoin={@onTeamJoin} onTeamRegistration={@onTeamRegistration} {...links}/>
+        </Col>
+      </div>
+    else
+      <div>
+        <Col md={6} mdOffset={3}>
+          <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
+            onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
+        </Col>
+      </div>
 
 $ ->
   React.render <AuthPanel/>, document.getElementById("auth-box")
