@@ -60,7 +60,7 @@ existing_team_schema = Schema({
         ("There is no existing team named that.", [
             lambda name: api.team.get_team(name=name) != None]),
         ("There are too many members on that team for you to join.", [
-            lambda name: len(api.team.get_team_uids(name=name, show_disabled=False)) < api.team.max_team_users
+            lambda name: len(api.team.get_team_uids(name=name, show_disabled=False)) < api.config.get_settings()["max_team_size"]
         ])
     ),
     Required('team-password-existing'):

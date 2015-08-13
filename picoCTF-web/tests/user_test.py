@@ -14,9 +14,6 @@ from common import clear_collections, ensure_empty_collections
 from common import base_team, base_user, new_team_user
 from conftest import setup_db, teardown_db
 
-# set the max team size to be 2
-api.team.max_team_users = 2
-
 class TestUsers(object):
     """
     API Tests for user.py
@@ -24,6 +21,10 @@ class TestUsers(object):
 
     def setup_class(self):
         setup_db()
+
+        # Get the settings to ensure they are given the defaults.
+        api.config.get_settings()
+        api.config.change_settings({"max_team_size": 2})
 
     def teardown_class(self):
         teardown_db()
@@ -43,14 +44,14 @@ class TestUsers(object):
         tid = api.team.create_team(base_team.copy())
 
         uids = []
-        for i in range(api.team.max_team_users):
+        for i in range(api.config.get_settings()["max_team_size"]):
             name = "fred" + str(i)
             uids.append(api.user.create_user(
                 name, name, name,  name + "@gmail.com", name, tid
             ))
 
         with pytest.raises(InternalException):
-            name = "fred" + str(api.team.max_team_users)
+            name = "fred" + str(api.config.get_settings()["max_team_size"])
             api.user.create_user(name, name, name, name+"@gmail.com", name, tid)
 
         for i, uid in enumerate(uids):

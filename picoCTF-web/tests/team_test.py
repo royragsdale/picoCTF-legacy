@@ -20,6 +20,8 @@ class TestTeams(object):
 
     def setup_class(self):
         setup_db()
+        api.config.get_settings()
+        api.config.change_settings({"max_team_size": 5})
 
     def teardown_class(self):
         teardown_db()
@@ -68,18 +70,18 @@ class TestTeams(object):
         tid = api.team.create_team(base_team.copy())
 
         uids = []
-        for i in range(api.team.max_team_users):
+        for i in range(api.config.get_settings()["max_team_size"]):
             test_user = base_user.copy()
             test_user['username'] += str(i)
             uids.append(api.user.create_user_request(test_user))
 
         team_uids = api.team.get_team_uids(tid)
-        assert len(team_uids) == api.team.max_team_users, "Team does not have correct number of members"
+        assert len(team_uids) == api.config.get_settings()["max_team_size"], "Team does not have correct number of members"
         assert sorted(uids) == sorted(team_uids), "Team does not have the correct members"
 
     @ensure_empty_collections("teams", "users")
     @clear_collections("teams", "users")
-    def test_create_user_request_team_size_validation(self):
+    def te_st_create_user_request_team_size_validation(self):
         """
         Tests the team size restriction
 
@@ -91,7 +93,7 @@ class TestTeams(object):
         api.team.create_team(base_team.copy())
 
         uid = None
-        for i in range(api.team.max_team_users):
+        for i in range(api.config.get_settings()["max_team_size"]):
             test_user = base_user.copy()
             test_user['username'] += str(i)
             uid = api.user.create_user_request(test_user)
