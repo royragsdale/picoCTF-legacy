@@ -24,6 +24,21 @@ def get_team_score_hook():
         return WebSuccess(data={'score': score})
     return WebError("There was an error retrieving your score.")
 
+
+@blueprint.route('/create', methods=['POST'])
+@api_wrapper
+@require_login
+def create_new_team_hook():
+    api.team.create_new_team_request(api.common.flat_multi(request.form))
+    return WebSuccess("You now belong to your newly created team.")
+
+@blueprint.route('/join', methods=['POST'])
+@api_wrapper
+@require_login
+def join_team_hook():
+    api.team.join_team_request(api.common.flat_multi(request.form))
+    return WebSuccess("You have successfully joined that team!")
+
 @blueprint.route("/settings")
 @api_wrapper
 def get_team_status():
