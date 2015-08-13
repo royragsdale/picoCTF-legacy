@@ -144,8 +144,10 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
     if safe_fail(get_user, name=username) is not None:
         raise InternalException("User already exists!")
 
+    max_team_size = api.config.get_settings()["max_team_size"]
+
     updated_team = db.teams.find_and_modify(
-        query={"tid": tid, "size": {"$lt": api.team.max_team_users}},
+        query={"tid": tid, "size": {"$lt": max_team_size}},
         update={"$inc": {"size": 1}},
         new=True)
 
