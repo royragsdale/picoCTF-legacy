@@ -23,3 +23,11 @@ def get_team_score_hook():
     if score is not None:
         return WebSuccess(data={'score': score})
     return WebError("There was an error retrieving your score.")
+
+@blueprint.route("/settings")
+@api_wrapper
+def get_team_status():
+    settings = api.config.get_settings()
+    filtered_settings = {"max_team_size": settings["max_team_size"]}
+
+    return WebSuccess(data=filtered_settings)
