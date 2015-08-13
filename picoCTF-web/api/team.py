@@ -6,8 +6,6 @@ import api
 
 from api.common import safe_fail, WebException, InternalException, SevereInternalException
 
-max_team_users = 1
-
 def get_team(tid=None, name=None):
     """
     Retrieve a team based on a property (tid, name, etc.).

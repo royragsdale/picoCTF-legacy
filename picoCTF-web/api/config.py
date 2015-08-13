@@ -65,6 +65,8 @@ default_settings = {
     # start and end times!
     "start_time": datetime.datetime.utcnow(),
     "end_time": datetime.datetime.utcnow(),
+    # TEAMS
+    "max_team_size": 1,
     # ACHIEVEMENTS
     "achievements": {
         "enable_achievements": True,
