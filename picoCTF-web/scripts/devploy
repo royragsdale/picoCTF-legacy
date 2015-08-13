@@ -25,6 +25,9 @@ sudo dos2unix -q /srv/http/ctf/*.html
 echo "Restarting the server"
 sudo service nginx start
 
+echo "Installing the API"
+sudo pip3 install --upgrade $ROOT
+
 # Clear the cache
 echo "Clearing the API cache"
 $ROOT/api/api_manager.py database clear cache
