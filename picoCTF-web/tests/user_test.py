@@ -4,15 +4,41 @@ User Testing Module
 
 import pytest
 import bcrypt
-
-import api.user
-import api.common
-import api.team
+import api
 
 from api.common import safe_fail, WebException, InternalException
 from common import clear_collections, ensure_empty_collections
 from common import base_team, base_user, new_team_user
 from conftest import setup_db, teardown_db
+
+dict_filter = lambda dict, items: {k:v for k,v in dict.items() if k in items}
+
+class TestNewStyleUsers(object):
+    """
+    API Tests for the new supported registration.
+    """
+
+    def setup_class(self):
+        setup_db()
+
+        # Get the settings to ensure they are given the defaults.
+        api.config.get_settings()
+        api.config.change_settings({"max_team_size": 3})
+
+    def teardown_class(self):
+        teardown_db()
+
+    @ensure_empty_collections("users", "teams")
+    @clear_collections("users", "teams")
+    def test_simple_user_creation(self):
+        """
+        Tests the newer and simplified user creation.
+        """
+
+        user = dict_filter(base_user.copy(), ["username", "firstname", "lastname", "email"])
+        user["password"] = "test"
+        uid = api.user.create_simple_user_request(user)
+
 
 class TestUsers(object):
     """
