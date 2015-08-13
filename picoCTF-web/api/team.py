@@ -6,6 +6,22 @@ import api
 
 from api.common import safe_fail, WebException, InternalException, SevereInternalException
 
+from api.annotations import log_action
+from api.common import check, validate, safe_fail
+from voluptuous import Required, Length, Schema
+
+new_team_schema = Schema({
+    Required("team_name"): check(
+        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
+        ("A team with that name already exists.", [
+            lambda name: safe_fail(api.team.get_team, name=name) is None]),
+        ("A username with that name already exists.", [
+            lambda name: safe_fail(api.user.get_user, name=name) is None]),
+    ),
+    Required("team_password"): check(
+        ("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)]))
+})
+
 def get_team(tid=None, name=None):
     """
     Retrieve a team based on a property (tid, name, etc.).
@@ -82,6 +98,33 @@ def get_groups(tid=None, uid=None):
                        'owner': owner,
                        'score': api.stats.get_group_average_score(gid=group['gid'])})
     return groups
+
+def create_new_team_request(params, uid=None):
+    """
+    Fulfills new team requests for users who have already registered.
+
+    Args:
+        team_name: The desired name for the team. Must be unique across users and teams.
+        team_password: The team's password.
+    Returns:
+        True if successful, exception thrown elsewise. 
+    """
+
+    validate(new_team_schema, params)
+
+    user = api.user.get_user(uid=uid)
+    current_team = api.team.get_team(tid=user["tid"])
+
+    if current_team["team_name"] != user["username"]:
+        raise InternalException("You can only create one new team per user account!")
+
+    desired_tid = create_team({
+        "team_name": params["team_name"],
+        "password": params["team_password"],
+        "eligible": True
+    })
+
+    return join_team(params["team_name"], params["team_password"], user["uid"])
 
 def create_team(params):
     """
@@ -232,6 +275,3 @@ def join_team(team_name, password, uid=None):
         return True
     else:
         raise InternalException("That is not the correct password to join that team.")
-
-
-#def create_team_request()
