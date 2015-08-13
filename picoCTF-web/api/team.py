@@ -185,3 +185,53 @@ def get_all_teams(show_ineligible=False):
 
     db = api.common.get_conn()
     return list(db.teams.find(match, {"_id": 0}))
+
+def join_team(team_name, password, uid=None):
+    """
+    Allow a user who is on an individual team to join a proper team. You can not use this to freely switch between teams.
+
+    Args:
+        team_name: The name of the team to join.
+        password: The team's password.
+        uid: The user's id.
+    """
+
+    user = api.user.get_user(uid=uid)
+    current_team = api.user.get_team(uid=user["uid"])
+
+    desired_team = api.team.get_team(name=team_name)
+
+    if current_team["team_name"] != user["username"]:
+        raise InternalException("You can not switch teams once you have joined one.")
+
+    db = api.common.get_conn()
+    max_team_size = api.config.get_settings()["max_team_size"]
+
+    if password == desired_team["password"] and desired_team["size"] < max_team_size:
+        user_team_update = db.users.find_and_modify(
+            query={"uid": user["uid"], "tid": current_team["tid"]},
+            update={"$set": {"tid": desired_team["tid"]}},
+            new=True)
+
+        if not user_team_update:
+            raise InternalException("There was an issue switching your team!")
+
+        desired_team_size_update = db.teams.find_and_modify(
+            query={"tid": desired_team["tid"], "size": {"$lt": max_team_size}},
+            update={"$inc": {"size": 1}},
+            new=True)
+
+        current_team_size_update = db.teams.find_and_modify(
+            query={"tid": current_team["tid"], "size": {"$gt": 0}},
+            update={"$inc": {"size": -1}},
+            new=True)
+
+        if not desired_team_size_update or not current_team_size_update:
+            raise InternalException("There was an issue switching your team! Please contact an administrator.")
+
+        return True
+    else:
+        raise InternalException("That is not the correct password to join that team.")
+
+
+#def create_team_request()
