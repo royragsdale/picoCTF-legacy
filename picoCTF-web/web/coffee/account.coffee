@@ -75,8 +75,6 @@ TeamManagementForm = React.createClass
 
   render: ->
 
-    console.log @state
-
     towerGlyph = <Glyphicon glyph="tower"/>
     lockGlyph = <Glyphicon glyph="lock"/>
 

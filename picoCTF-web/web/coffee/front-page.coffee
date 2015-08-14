@@ -102,9 +102,6 @@ TeamManagementForm = React.createClass
 
   render: ->
 
-    console.log @linkState, "asd"
-    t = @linkState "team_name"
-    console.log @state, t
     towerGlyph = <Glyphicon glyph="tower"/>
     lockGlyph = <Glyphicon glyph="lock"/>
 
@@ -132,7 +129,6 @@ AuthPanel = React.createClass
   componentWillMount: ->
     apiCall "GET", "/api/team/settings"
     .done ((req) ->
-      console.log req
       @setState update @state,
         settings: $set: req.data
      ).bind this
@@ -141,9 +137,7 @@ AuthPanel = React.createClass
     e.preventDefault()
     apiCall "POST", "/api/user/create_simple", @state
     .done ((resp) ->
-      console.log resp
       apiNotify resp
-      console.log @state
       switch resp.status
         when 1
           if @state.settings.max_team_size > 1
