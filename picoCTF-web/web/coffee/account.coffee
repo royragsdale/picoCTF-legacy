@@ -44,7 +44,14 @@ TeamManagementForm = React.createClass
   mixins: [React.addons.LinkedStateMixin]
 
   getInitialState: ->
-    {}
+    user: {}
+
+  componentWillMount: ->
+    apiCall "GET", "/api/user/status"
+    .done ((api) ->
+      @setState update @state,
+        user: $set: api.data
+    ).bind this
 
   onTeamRegistration: (e) ->
     e.preventDefault()
@@ -68,19 +75,22 @@ TeamManagementForm = React.createClass
 
   render: ->
 
-    console.log @linkState, "asd"
-    t = @linkState "team_name"
-    console.log @state, t
+    console.log @state
+
     towerGlyph = <Glyphicon glyph="tower"/>
     lockGlyph = <Glyphicon glyph="lock"/>
 
+    shouldDisable = if @state.user and @state.user.username != @state.user.team_name then "disabled" else ""
+
     <Panel header="Team Management">
       <form onSubmit={@onTeamJoin}>
-        <Input type="text" valueLink={@linkState "team_name"} addonBefore={towerGlyph} label="Team Name" required/>
-        <Input type="password" valueLink={@linkState "team_password"} addonBefore={lockGlyph} label="Team Password" required/>
+        {if shouldDisable then <p>You can not switch or register your account to another team.</p> else <span/>}
+        <Input type="text" valueLink={@linkState "team_name"} addonBefore={towerGlyph} label="Team Name" required disabled={shouldDisable}/>
+        <Input type="password" valueLink={@linkState "team_password"} addonBefore={lockGlyph} label="Team Password" required disabled={shouldDisable}/>
         <Col md={6}>
-          <span> <Button type="submit">Join Team</Button>
-            <Button onClick={@onTeamRegistration}>Register Team</Button>
+          <span>
+            <Button type="submit" disabled={shouldDisable}>Join Team</Button>
+            <Button onClick={@onTeamRegistration} disabled={shouldDisable}>Register Team</Button>
           </span>
         </Col>
       </form>
