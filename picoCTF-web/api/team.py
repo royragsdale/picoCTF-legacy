@@ -206,7 +206,7 @@ def get_team_information(tid=None):
     team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
     team_info["progression"] = api.stats.get_score_progression(tid=tid)
     team_info["flagged_submissions"] = [sub for sub in api.stats.check_invalid_instance_submissions() if sub['tid'] == tid]
-    team_info["max_team_size"] = max_team_users
+    team_info["max_team_size"] = api.config.get_settings()["max_team_size"]
 
     if api.config.get_settings()["achievements"]["enable_achievements"]:
         team_info["achievements"] = api.achievement.get_earned_achievements(tid=tid)
