@@ -22,6 +22,14 @@ new_team_schema = Schema({
         ("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)]))
 }, extra=True)
 
+join_team_schema = Schema({
+    Required("team_name"): check(
+        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
+    ),
+    Required("team_password"): check(
+        ("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)]))
+}, extra=True)
+
 def get_team(tid=None, name=None):
     """
     Retrieve a team based on a property (tid, name, etc.).
@@ -238,7 +246,7 @@ def join_team_request(params):
         team_password
     """
 
-    validate(new_team_schema, params)
+    validate(join_team_schema, params)
 
     return join_team(params["team_name"], params["team_password"])
 
