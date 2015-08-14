@@ -45,12 +45,19 @@ TeamManagementForm = React.createClass
 
   getInitialState: ->
     user: {}
+    team: {}
 
   componentWillMount: ->
     apiCall "GET", "/api/user/status"
     .done ((api) ->
       @setState update @state,
         user: $set: api.data
+    ).bind this
+
+    apiCall "GET", "/api/team/settings"
+    .done ((api) ->
+      @setState update @state,
+        team: $set: api.data
     ).bind this
 
   onTeamRegistration: (e) ->
@@ -75,24 +82,27 @@ TeamManagementForm = React.createClass
 
   render: ->
 
-    towerGlyph = <Glyphicon glyph="tower"/>
-    lockGlyph = <Glyphicon glyph="lock"/>
+    if @state.team.max_team_size > 1
+      towerGlyph = <Glyphicon glyph="tower"/>
+      lockGlyph = <Glyphicon glyph="lock"/>
 
-    shouldDisable = if @state.user and @state.user.username != @state.user.team_name then "disabled" else ""
+      shouldDisable = if @state.user and @state.user.username != @state.user.team_name then "disabled" else ""
 
-    <Panel header="Team Management">
-      <form onSubmit={@onTeamJoin}>
-        {if shouldDisable then <p>You can not switch or register your account to another team.</p> else <span/>}
-        <Input type="text" valueLink={@linkState "team_name"} addonBefore={towerGlyph} label="Team Name" required disabled={shouldDisable}/>
-        <Input type="password" valueLink={@linkState "team_password"} addonBefore={lockGlyph} label="Team Password" required disabled={shouldDisable}/>
-        <Col md={6}>
-          <span>
-            <Button type="submit" disabled={shouldDisable}>Join Team</Button>
-            <Button onClick={@onTeamRegistration} disabled={shouldDisable}>Register Team</Button>
-          </span>
-        </Col>
-      </form>
-    </Panel>
+      <Panel header="Team Management">
+        <form onSubmit={@onTeamJoin}>
+          {if shouldDisable then <p>You can not switch or register your account to another team.</p> else <span/>}
+          <Input type="text" valueLink={@linkState "team_name"} addonBefore={towerGlyph} label="Team Name" required disabled={shouldDisable}/>
+          <Input type="password" valueLink={@linkState "team_password"} addonBefore={lockGlyph} label="Team Password" required disabled={shouldDisable}/>
+          <Col md={6}>
+            <span>
+              <Button type="submit" disabled={shouldDisable}>Join Team</Button>
+              <Button onClick={@onTeamRegistration} disabled={shouldDisable}>Register Team</Button>
+            </span>
+          </Col>
+        </form>
+      </Panel>
+    else
+      <div/>
 
 $ ->
   $("#password-update-form").on "submit", updatePassword
