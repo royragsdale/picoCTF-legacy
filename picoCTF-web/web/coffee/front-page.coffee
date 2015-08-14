@@ -75,25 +75,46 @@ LoginForm = React.createClass
 
 
 TeamManagementForm = React.createClass
+  mixins: [React.addons.LinkedStateMixin]
 
-  componentDidMount: ->
-    $("input").prop 'required', true
+  getInitialState: ->
+    {}
 
-  componentDidUpdate: ->
-    $("input").prop 'required', true
+  onTeamRegistration: (e) ->
+    e.preventDefault()
+    apiCall "POST", "/api/team/create", {team_name: @state.team_name, team_password: @state.team_password}
+    .done (resp) ->
+      switch resp.status
+        when 0
+            apiNotify resp
+        when 1
+            document.location.href = "/profile"
+
+  onTeamJoin: (e) ->
+    e.preventDefault()
+    apiCall "POST", "/api/team/join", {team_name: @state.team_name, team_password: @state.team_password}
+    .done (resp) ->
+      switch resp.status
+        when 0
+            apiNotify resp
+        when 1
+            document.location.href = "/profile"
 
   render: ->
+
+    console.log @linkState, "asd"
+    t = @linkState "team_name"
+    console.log @state, t
     towerGlyph = <Glyphicon glyph="tower"/>
     lockGlyph = <Glyphicon glyph="lock"/>
 
     <Panel>
-      <form onSubmit={@props.onTeamJoin}>
-        <Input type="text" valueLink={@props.teamName} addonBefore={towerGlyph} label="Team Name"/>
-        <Input type="password" valueLink={@props.teamPassword} addonBefore={lockGlyph} label="Team Password"/>
+      <form onSubmit={@onTeamJoin}>
+        <Input type="text" valueLink={@linkState "team_name"} addonBefore={towerGlyph} label="Team Name" required/>
+        <Input type="password" valueLink={@linkState "team_password"} addonBefore={lockGlyph} label="Team Password" required/>
         <Col md={6}>
-          <span>
-            <Button type="submit">Join Team</Button>
-            <Button onClick={@props.onTeamRegistration}>Register Team</Button>
+          <span> <Button type="submit">Join Team</Button>
+            <Button onClick={@onTeamRegistration}>Register Team</Button>
           </span>
         </Col>
         <Col md={6}>
@@ -101,7 +122,7 @@ TeamManagementForm = React.createClass
         </Col>
       </form>
     </Panel>
-        
+
 AuthPanel = React.createClass
   mixins: [React.addons.LinkedStateMixin]
   getInitialState: ->
@@ -153,27 +174,6 @@ AuthPanel = React.createClass
             else
               document.location.href = "/profile"
 
-  onTeamRegistration: (e) ->
-    e.preventDefault()
-    apiCall "POST", "/api/team/create", {team_name: @state.team_name, team_password: @state.team_password}
-    .done (resp) ->
-      switch resp.status
-        when 0
-            apiNotify resp
-        when 1
-            document.location.href = "/profile"
-
-  onTeamJoin: (e) ->
-    e.preventDefault()
-    e.preventDefault()
-    apiCall "POST", "/api/team/join", {team_name: @state.team_name, team_password: @state.team_password}
-    .done (resp) ->
-      switch resp.status
-        when 0
-            apiNotify resp
-        when 1
-            document.location.href = "/profile"
-
   setPage: (page) ->
     @setState update @state,
         page: $set: page
@@ -191,13 +191,11 @@ AuthPanel = React.createClass
     lastname: @linkState "lastname"
     firstname: @linkState "firstname"
     email: @linkState "email"
-    teamName: @linkState "team_name"
-    teamPassword: @linkState "team_password"
 
     if @state.page == "Team Management"
       <div>
         <Col md={6} mdOffset={3}>
-          <TeamManagementForm onTeamJoin={@onTeamJoin} onTeamRegistration={@onTeamRegistration} {...links}/>
+          <TeamManagementForm/>
         </Col>
       </div>
     else
