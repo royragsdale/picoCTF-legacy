@@ -76,6 +76,7 @@ ProblemInfo = React.createClass
     solvedProblems: []
     problems: []
     team: {}
+    user: {}
 
   componentWillMount: ->
     apiCall "GET", "/api/team"
@@ -96,6 +97,12 @@ ProblemInfo = React.createClass
         solvedProblems: $set: api.data
     ).bind this
 
+    apiCall "GET", "/api/user/status"
+    .done ((api) ->
+      @setState update @state,
+        user: $set: api.data
+    ).bind this
+
   render: ->
     allProblemsByCategory = _.groupBy @state.problems, "category"
     solvedProblemsByCategory = _.groupBy @state.solvedProblems, "category"
@@ -112,10 +119,14 @@ ProblemInfo = React.createClass
       "Forensics": "/img/search.svg"
       "Tutorial": "/img/laptop.svg"
 
-    panelHeader =
-    <div>
-      Progress Overview
-    </div>
+    if @state.team and @state.user.username != @state.team.team_name and @state.team.team_name.length > 0
+      panelHeader =
+      <div>
+        Progress Overview <span className="pull-right">Team: <b>{@state.team.team_name}</b></span>
+      </div>
+    else
+      panelHeader =
+      <div>Progress Overview</div>
 
     <Panel key={categories} header={panelHeader}>
       {categories.map (category, i) ->
