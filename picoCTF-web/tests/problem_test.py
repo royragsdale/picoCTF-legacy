@@ -282,11 +282,15 @@ class TestProblems(object):
     @clear_cache()
     def test_scoring(self):
         correct_total = 0
-        for pid in self.enabled_pids:
+        for i, pid in enumerate(self.enabled_pids):
             problem = api.problem.get_problem(pid=pid)
             score = api.problem.submit_key(self.tid, problem['pid'], self.correct, uid=self.uid)['points']
             correct_total += problem['score']
             assert score == problem['score'], "submit_key return wrong score"
-            s = api.stats.get_score(tid=self.tid)
+            team_total = api.stats.get_score(tid=self.tid)
+            user_total = api.stats.get_score(uid=self.uid)
+            solved_problems = api.problem.get_solved_pids(tid=self.tid)
+
+            assert len(solved_problems) == i+1, "The team has solved too many problems."
             assert api.stats.get_score(tid=self.tid) == correct_total, "Team score is calculating incorrectly!"
             assert api.stats.get_score(uid=self.uid) == correct_total, "User score is calculating incorrectly!"

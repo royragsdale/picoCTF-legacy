@@ -631,12 +631,25 @@ def get_solved_problems(tid=None, uid=None, category=None):
         List of solved problem dictionaries
     """
 
+    if uid is not None and tid is None:
+        team = api.user.get_team(uid=uid)
+    else:
+        team = api.team.get_team(tid=tid)
+
+    members = api.team.get_team_uids(tid=team["tid"])
+
     submissions = get_submissions(tid=tid, uid=uid, category=category, correctness=True)
+
+    for uid in members:
+        submissions += get_submissions(uid=uid, category=category, correctness=True)
 
     pids = []
     result = []
+
+    #Team submissions will take precedence because they appear first in the submissions list.
     for submission in submissions:
         if submission["pid"] not in pids:
+            pids.append(submission["pid"])
             problem = unlocked_filter(get_problem(pid=submission["pid"]), True)
             problem["solve_time"] = submission["timestamp"]
             if not problem["disabled"]:
