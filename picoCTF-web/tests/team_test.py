@@ -13,6 +13,32 @@ from common import clear_collections, ensure_empty_collections
 from common import base_team, base_user
 from conftest import setup_db, teardown_db
 
+dict_filter = lambda dict, items: {k:v for k,v in dict.items() if k in items}
+
+class TestNewStyleTeams(object):
+
+    @ensure_empty_collections("users", "teams")
+    @clear_collections("users", "teams")
+    def test_user_team_registration(self):
+        """
+        Tests the newer and simplified user creation.
+        """
+
+        user = dict_filter(base_user.copy(), ["username", "firstname", "lastname", "email"])
+        user["password"] = "test"
+        uid = api.user.create_simple_user_request(user)
+
+        team_data = {"team_name": "lolhax", "team_password": "s3cret"}
+        api.team.create_new_team_request(team_data, uid=uid)
+
+        team = api.user.get_team(uid=uid)
+
+        assert team["team_name"] == team_data["team_name"], "User does not belong to the new team."
+        assert api.team.get_team(name=user["username"])["size"] == 0 and api.team.get_team(name=team_data["team_name"])["size"] == 1, \
+            "Size calculations are incorrect for new registered team."
+
+
+
 class TestTeams(object):
     """
     API Tests for team.py
