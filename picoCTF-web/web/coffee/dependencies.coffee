@@ -5,7 +5,7 @@
   $.ajax {url: url, type: type, data: data, cache: false}
   .fail (jqXHR, text) ->
     ga('send', 'event', 'Error', 'APIOffline', url)
-    $.notify "The Cyberstakes server is currently down. We will work to fix this error right away.", "error"
+    $.notify "The server is currently down. We will work to fix this error right away.", "error"
 
 @redirectIfNotLoggedIn = ->
   apiCall "GET", "/api/user/status", {}

@@ -28,7 +28,7 @@ api.common.allowed_ports = [8080]
 
 """ MONGO """
 
-api.common.mongo_db_name = "cyberstakes"
+api.common.mongo_db_name = "ctf"
 api.common.mongo_addr = "127.0.0.1"
 api.common.mongo_port = 27017
 
@@ -39,7 +39,7 @@ testing_mongo_addr = "127.0.0.1"
 testing_mongo_port = 27017
 
 """ SETUP """
-competition_name = "Cyberstakes"
+competition_name = "ctf"
 competition_urls = ["127.0.0.1:8080"]
 
 

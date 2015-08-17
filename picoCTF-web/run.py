@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Cyberstakes API Startup script
+CTF API Startup script
 """
 
 import api
@@ -10,10 +10,10 @@ from api.app import app
 
 def main():
     """
-    Runtime management of the Cyberstakes API
+    Runtime management of the CTF API
     """
 
-    parser = ArgumentParser(description="Cyberstakes API configuration")
+    parser = ArgumentParser(description="CTF API configuration")
 
     parser.add_argument("-v", "--verbose", action="count", help="increase verbosity", default=0)
 

@@ -37,12 +37,12 @@ if [[ $1 = "production" ]]; then
     START_CMD="./gunicorn_start.sh"
 fi
 
-#Start Cyberstakes API
-echo "Starting the Cyberstakes API"
-tmux kill-session -t cyberstakesapi 2> /dev/null
-tmux new-session -s cyberstakesapi -d "cd $ROOT && $START_CMD"
+#Start Ctf API
+echo "Starting the Ctf API"
+tmux kill-session -t ctfapi 2> /dev/null
+tmux new-session -s ctfapi -d "cd $ROOT && $START_CMD"
 
 #Start Stats caching daemon
 echo "Starting the statistics caching daemon"
-tmux kill-session -t cyberstakesstats 2> /dev/null
-tmux new-session -s cyberstakesstats -d "daemon_manager -d $ROOT/daemons cache_stats"
+tmux kill-session -t ctfstats 2> /dev/null
+tmux new-session -s ctfstats -d "daemon_manager -d $ROOT/daemons cache_stats"

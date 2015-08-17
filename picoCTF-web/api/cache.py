@@ -1,5 +1,5 @@
 """
-Caching Library for Cyberstakes API
+Caching Library
 """
 
 from functools import wraps
