@@ -18,7 +18,6 @@ createGroupSetup = () ->
         createGroup($('#new-group-name').val())
 
 @exportProblemCSV = (groupName, teams) ->
-  console.log("memes")
   apiCall "GET", "/api/admin/problems"
   .done ((resp) ->
     if resp.status == 0

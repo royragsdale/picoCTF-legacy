@@ -34,7 +34,9 @@ user_schema = Schema({
         ("Usernames must be between 3 and 20 characters.", [str, Length(min=3, max=20)]),
         ("Usernames must be alphanumeric.", [_check_username]),
         ("This username already exists.", [
-            lambda name: safe_fail(get_user, name=name) is None])
+            lambda name: safe_fail(get_user, name=name) is None]),
+        ("This username conflicts with an existing team.", [
+            lambda name: safe_fail(api.team.get_team, name=name) is None])
     ),
     Required('password'):
         check(("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)])
@@ -58,7 +60,7 @@ existing_team_schema = Schema({
         ("There is no existing team named that.", [
             lambda name: api.team.get_team(name=name) != None]),
         ("There are too many members on that team for you to join.", [
-            lambda name: len(api.team.get_team_uids(name=name, show_disabled=False)) < api.team.max_team_users
+            lambda name: len(api.team.get_team_uids(name=name, show_disabled=False)) < api.config.get_settings()["max_team_size"]
         ])
     ),
     Required('team-password-existing'):
@@ -144,8 +146,10 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
     if safe_fail(get_user, name=username) is not None:
         raise InternalException("User already exists!")
 
+    max_team_size = api.config.get_settings()["max_team_size"]
+
     updated_team = db.teams.find_and_modify(
-        query={"tid": tid, "size": {"$lt": api.team.max_team_users}},
+        query={"tid": tid, "size": {"$lt": max_team_size}},
         update={"$inc": {"size": 1}},
         new=True)
 

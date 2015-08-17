@@ -6,7 +6,29 @@ import api
 
 from api.common import safe_fail, WebException, InternalException, SevereInternalException
 
-max_team_users = 1
+from api.annotations import log_action
+from api.common import check, validate, safe_fail
+from voluptuous import Required, Length, Schema
+
+new_team_schema = Schema({
+    Required("team_name"): check(
+        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
+        ("A team with that name already exists.", [
+            lambda name: safe_fail(api.team.get_team, name=name) is None]),
+        ("A username with that name already exists.", [
+            lambda name: safe_fail(api.user.get_user, name=name) is None]),
+    ),
+    Required("team_password"): check(
+        ("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)]))
+}, extra=True)
+
+join_team_schema = Schema({
+    Required("team_name"): check(
+        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
+    ),
+    Required("team_password"): check(
+        ("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)]))
+}, extra=True)
 
 def get_team(tid=None, name=None):
     """
@@ -84,6 +106,33 @@ def get_groups(tid=None, uid=None):
                        'owner': owner,
                        'score': api.stats.get_group_average_score(gid=group['gid'])})
     return groups
+
+def create_new_team_request(params, uid=None):
+    """
+    Fulfills new team requests for users who have already registered.
+
+    Args:
+        team_name: The desired name for the team. Must be unique across users and teams.
+        team_password: The team's password.
+    Returns:
+        True if successful, exception thrown elsewise. 
+    """
+
+    validate(new_team_schema, params)
+
+    user = api.user.get_user(uid=uid)
+    current_team = api.team.get_team(tid=user["tid"])
+
+    if current_team["team_name"] != user["username"]:
+        raise InternalException("You can only create one new team per user account!")
+
+    desired_tid = create_team({
+        "team_name": params["team_name"],
+        "password": params["team_password"],
+        "eligible": True
+    })
+
+    return join_team(params["team_name"], params["team_password"], user["uid"])
 
 def create_team(params):
     """
@@ -165,7 +214,7 @@ def get_team_information(tid=None):
     team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
     team_info["progression"] = api.stats.get_score_progression(tid=tid)
     team_info["flagged_submissions"] = [sub for sub in api.stats.check_invalid_instance_submissions() if sub['tid'] == tid]
-    team_info["max_team_size"] = max_team_users
+    team_info["max_team_size"] = api.config.get_settings()["max_team_size"]
 
     if api.config.get_settings()["achievements"]["enable_achievements"]:
         team_info["achievements"] = api.achievement.get_earned_achievements(tid=tid)
@@ -187,3 +236,63 @@ def get_all_teams(show_ineligible=False):
 
     db = api.common.get_conn()
     return list(db.teams.find(match, {"_id": 0}))
+
+def join_team_request(params):
+    """
+    Validate and process a join_team request.
+
+    Args:
+        team_name
+        team_password
+    """
+
+    validate(join_team_schema, params)
+
+    return join_team(params["team_name"], params["team_password"])
+
+def join_team(team_name, password, uid=None):
+    """
+    Allow a user who is on an individual team to join a proper team. You can not use this to freely switch between teams.
+
+    Args:
+        team_name: The name of the team to join.
+        password: The team's password.
+        uid: The user's id.
+    """
+
+    user = api.user.get_user(uid=uid)
+    current_team = api.user.get_team(uid=user["uid"])
+
+    desired_team = api.team.get_team(name=team_name)
+
+    if current_team["team_name"] != user["username"]:
+        raise InternalException("You can not switch teams once you have joined one.")
+
+    db = api.common.get_conn()
+    max_team_size = api.config.get_settings()["max_team_size"]
+
+    if password == desired_team["password"] and desired_team["size"] < max_team_size:
+        user_team_update = db.users.find_and_modify(
+            query={"uid": user["uid"], "tid": current_team["tid"]},
+            update={"$set": {"tid": desired_team["tid"]}},
+            new=True)
+
+        if not user_team_update:
+            raise InternalException("There was an issue switching your team!")
+
+        desired_team_size_update = db.teams.find_and_modify(
+            query={"tid": desired_team["tid"], "size": {"$lt": max_team_size}},
+            update={"$inc": {"size": 1}},
+            new=True)
+
+        current_team_size_update = db.teams.find_and_modify(
+            query={"tid": current_team["tid"], "size": {"$gt": 0}},
+            update={"$inc": {"size": -1}},
+            new=True)
+
+        if not desired_team_size_update or not current_team_size_update:
+            raise InternalException("There was an issue switching your team! Please contact an administrator.")
+
+        return True
+    else:
+        raise InternalException("That is not the correct password to join that team.")

@@ -13,6 +13,32 @@ from common import clear_collections, ensure_empty_collections
 from common import base_team, base_user
 from conftest import setup_db, teardown_db
 
+dict_filter = lambda dict, items: {k:v for k,v in dict.items() if k in items}
+
+class TestNewStyleTeams(object):
+
+    @ensure_empty_collections("users", "teams")
+    @clear_collections("users", "teams")
+    def test_user_team_registration(self):
+        """
+        Tests the newer and simplified user creation.
+        """
+
+        user = dict_filter(base_user.copy(), ["username", "firstname", "lastname", "email"])
+        user["password"] = "test"
+        uid = api.user.create_simple_user_request(user)
+
+        team_data = {"team_name": "lolhax", "team_password": "s3cret"}
+        api.team.create_new_team_request(team_data, uid=uid)
+
+        team = api.user.get_team(uid=uid)
+
+        assert team["team_name"] == team_data["team_name"], "User does not belong to the new team."
+        assert api.team.get_team(name=user["username"])["size"] == 0 and api.team.get_team(name=team_data["team_name"])["size"] == 1, \
+            "Size calculations are incorrect for new registered team."
+
+
+
 class TestTeams(object):
     """
     API Tests for team.py
@@ -20,6 +46,8 @@ class TestTeams(object):
 
     def setup_class(self):
         setup_db()
+        api.config.get_settings()
+        api.config.change_settings({"max_team_size": 5})
 
     def teardown_class(self):
         teardown_db()
@@ -68,18 +96,18 @@ class TestTeams(object):
         tid = api.team.create_team(base_team.copy())
 
         uids = []
-        for i in range(api.team.max_team_users):
+        for i in range(api.config.get_settings()["max_team_size"]):
             test_user = base_user.copy()
             test_user['username'] += str(i)
             uids.append(api.user.create_user_request(test_user))
 
         team_uids = api.team.get_team_uids(tid)
-        assert len(team_uids) == api.team.max_team_users, "Team does not have correct number of members"
+        assert len(team_uids) == api.config.get_settings()["max_team_size"], "Team does not have correct number of members"
         assert sorted(uids) == sorted(team_uids), "Team does not have the correct members"
 
     @ensure_empty_collections("teams", "users")
     @clear_collections("teams", "users")
-    def test_create_user_request_team_size_validation(self):
+    def te_st_create_user_request_team_size_validation(self):
         """
         Tests the team size restriction
 
@@ -91,7 +119,7 @@ class TestTeams(object):
         api.team.create_team(base_team.copy())
 
         uid = None
-        for i in range(api.team.max_team_users):
+        for i in range(api.config.get_settings()["max_team_size"]):
             test_user = base_user.copy()
             test_user['username'] += str(i)
             uid = api.user.create_user_request(test_user)

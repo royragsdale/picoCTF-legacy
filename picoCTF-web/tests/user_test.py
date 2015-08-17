@@ -4,18 +4,46 @@ User Testing Module
 
 import pytest
 import bcrypt
-
-import api.user
-import api.common
-import api.team
+import api
 
 from api.common import safe_fail, WebException, InternalException
 from common import clear_collections, ensure_empty_collections
 from common import base_team, base_user, new_team_user
 from conftest import setup_db, teardown_db
 
-# set the max team size to be 2
-api.team.max_team_users = 2
+dict_filter = lambda dict, items: {k:v for k,v in dict.items() if k in items}
+
+class TestNewStyleUsers(object):
+    """
+    API Tests for the new supported registration.
+    """
+
+    def setup_class(self):
+        setup_db()
+
+        # Get the settings to ensure they are given the defaults.
+        api.config.get_settings()
+        api.config.change_settings({"max_team_size": 3})
+
+    def teardown_class(self):
+        teardown_db()
+
+    @ensure_empty_collections("users", "teams")
+    @clear_collections("users", "teams")
+    def test_simple_user_creation(self):
+        """
+        Tests the newer and simplified user creation.
+        """
+
+        user = dict_filter(base_user.copy(), ["username", "firstname", "lastname", "email"])
+        user["password"] = "test"
+        uid = api.user.create_simple_user_request(user)
+
+        team = api.user.get_team(uid=uid)
+
+        assert team["team_name"] == user["username"], "Team name does not match username."
+        assert team["size"] == 1, "Individual team size is incorrect."
+
 
 class TestUsers(object):
     """
@@ -24,6 +52,10 @@ class TestUsers(object):
 
     def setup_class(self):
         setup_db()
+
+        # Get the settings to ensure they are given the defaults.
+        api.config.get_settings()
+        api.config.change_settings({"max_team_size": 2})
 
     def teardown_class(self):
         teardown_db()
@@ -43,14 +75,14 @@ class TestUsers(object):
         tid = api.team.create_team(base_team.copy())
 
         uids = []
-        for i in range(api.team.max_team_users):
+        for i in range(api.config.get_settings()["max_team_size"]):
             name = "fred" + str(i)
             uids.append(api.user.create_user(
                 name, name, name,  name + "@gmail.com", name, tid
             ))
 
         with pytest.raises(InternalException):
-            name = "fred" + str(api.team.max_team_users)
+            name = "fred" + str(api.config.get_settings()["max_team_size"])
             api.user.create_user(name, name, name, name+"@gmail.com", name, tid)
 
         for i, uid in enumerate(uids):
