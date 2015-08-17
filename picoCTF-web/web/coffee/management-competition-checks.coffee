@@ -68,16 +68,62 @@ CompetitionCheck = React.createClass
   alwaysTrue: (t, setStatus) ->
     setTimeout (setStatus.bind null, t), (Math.random() * 3000)
 
+  checkEnabledProblems: (setStatus) ->
+    apiCall "GET", "/api/admin/problems"
+    .done (result) ->
+      status = "failing"
+      for problem in result.data.problems
+        if problem.disabled == false
+          status = "passing"
+          break
+
+      setStatus status
+
+
+  checkProblemsAlive: (setStatus) ->
+    apiCall "GET", "/api/admin/shell_servers"
+    .done (api) ->
+      status = "passing"
+      servers = api.data
+
+      if servers.length is 0
+        status = "failing"
+
+      apiCalls = $.map(servers, (server) -> apiCall "GET", "/api/admin/shell_servers/check_status", {sid: server.sid})
+      ($.when).apply(this, apiCalls).done () ->
+        for result in $.map(arguments, _.first)
+          if result.status is 0
+            status = "failing"
+        setStatus status
+
+  checkDownloadsAccessible: (setStatus) ->
+    apiCall "GET", "/api/admin/problems"
+    .done (result) ->
+      status = "passing"
+      requests = []
+      for problem in result.data.problems
+        for instance in problem.instances
+          $("<p>"+instance.description+"</p>").find("a").each (i, a) ->
+            url = $(a).attr("href")
+            requests.push($.ajax({url: url, dataType: 'text', type: 'GET'}))
+
+      ($.when).apply(this, apiCalls).done () ->
+        for result in arguments
+          if result.status is 404
+            status = "failing"
+
+        setStatus status
+
+
   onStatusChange: (status) ->
     @setState update @state,
       competitionReadiness: $set: status
 
   render: ->
     sanityChecks = [
-      {name: "Just Checking 1", func: @alwaysTrue.bind null, "passing"}
-      {name: "Just Checking 2", func: @alwaysTrue.bind null, "passing"}
-      {name: "Just Checking 3", func: @alwaysTrue.bind null, "passing"}
-      
+      {name: "Check Enabled Problems", func: @checkEnabledProblems}
+      {name: "Problems Alive on Shell Server", func: @checkProblemsAlive}
+      #{name: "Problem Downloads Accessible", func: @checkDownloadsAccessible}
     ]
 
     <div>
