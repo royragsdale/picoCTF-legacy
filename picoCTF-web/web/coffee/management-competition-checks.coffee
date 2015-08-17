@@ -134,7 +134,7 @@ CompetitionCheck = React.createClass
   render: ->
     sanityChecks = [
       {name: "Check Enabled Problems", func: @checkEnabledProblems}
-      {name: "Problems Alive on Shell Server", func: @checkProblemsAlive}
+      {name: "Problems Alive on Shell Servers", func: @checkProblemsAlive}
       #{name: "Problem Downloads Accessible", func: @checkDownloadsAccessible}
     ]
 
