@@ -5,7 +5,7 @@ ManagementTabbedArea = React.createClass
   getInitialState: ->
     tab = window.location.hash.substring(1)
     if tab == ""
-      tab = "problems"
+      tab = "check"
 
     bundles: []
     problems: []
@@ -61,6 +61,9 @@ ManagementTabbedArea = React.createClass
 
   render: ->
       <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
+        <TabPane eventKey='check' tab='Competition Readiness'>
+          <CompetitionCheck/>
+        </TabPane>
         <TabPane eventKey='problems' tab='Manage Problems'>
           <ProblemTab problems={@state.problems} onProblemChange={@onProblemChange}
             bundles={@state.bundles} submissions={@state.submissions}/>
