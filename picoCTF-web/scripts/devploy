@@ -21,7 +21,7 @@ sudo jekyll build
 # Make sure everything is in UNIX format.
 sudo dos2unix -q /srv/http/ctf/*.html
 
-chmod -R +r /srv/http/ctf/
+sudo chmod -R +r /srv/http/ctf/*
 
 # Start the server
 echo "Restarting the server"
