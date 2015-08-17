@@ -138,11 +138,11 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
           legend = chart.generateLegend()
           $(div).append(legend)
 
-  if gid != undefined
-    apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
+  if gid == "public"
+    apiCall "GET", "/api/stats/top_teams/score_progression", {}
     .done drawgraph
   else
-    apiCall "GET", "/api/stats/top_teams/score_progression", {}
+    apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
     .done drawgraph
 
 @renderTeamRadarGraph = (selector, tid) ->
