@@ -54,8 +54,8 @@ LoginForm = React.createClass
 
       <Panel>
         <form key={@props.status} onSubmit={if @props.status == "Login" then @props.onLogin else @props.onRegistration}>
-          <Input type="text" valueLink={@props.username} addonBefore={userGlyph} label="Username"/>
-          <Input type="password" valueLink={@props.password} addonBefore={lockGlyph} label="Password"/>
+          <Input type="text" id="username" valueLink={@props.username} addonBefore={userGlyph} label="Username"/>
+          <Input type="password" id="password" valueLink={@props.password} addonBefore={lockGlyph} label="Password"/>
           <Row>
             <Col md={6}>
               {if @props.status == "Register" then \
