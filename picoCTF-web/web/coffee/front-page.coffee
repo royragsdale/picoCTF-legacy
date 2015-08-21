@@ -38,15 +38,15 @@ LoginForm = React.createClass
         <span>
           <Row>
             <Col md={6}>
-              <Input type="text" valueLink={@props.firstname} label="Firstname"/>
+              <Input type="text" id="first-name" valueLink={@props.firstname} label="Firstname"/>
             </Col>
             <Col md={6}>
-              <Input type="text" valueLink={@props.lastname} label="Lastname"/>
+              <Input type="text" id="last-name" valueLink={@props.lastname} label="Lastname"/>
             </Col>
           </Row>
           <Row>
             <Col md={12}>
-              <Input type="email" valueLink={@props.email} label="E-mail"/>
+              <Input type="email" id="email" valueLink={@props.email} label="E-mail"/>
             </Col>
           </Row>
           <ButtonInput type="submit">Register</ButtonInput>
@@ -62,7 +62,7 @@ LoginForm = React.createClass
                 <span className="pad">Go back to <a onClick={@props.setPage.bind null, "Login"}>Login</a>.</span>
               else <span>
                 <Button type="submit">Login</Button>
-                <Button onClick={@props.setPage.bind null, "Register"}>Register</Button>
+                <Button id="set-register" onClick={@props.setPage.bind null, "Register"}>Register</Button>
               </span>}
             </Col>
             <Col md={6}>
