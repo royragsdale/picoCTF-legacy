@@ -106,9 +106,6 @@ def status(args, config):
             "flag": instance["flag"]
         }
 
-        result = execute("sudo su -l {} bash -c 'systemctl --user is-failed {}'".format(instance["user"], instance["service"]), allow_error=True)
-        status["service"] = result.return_code == 1
-
         status["connection"] = False
         if "port" in instance:
             try:
@@ -118,6 +115,11 @@ def status(args, config):
                 status["connection"] = True
             except ConnectionRefusedError as e:
                 pass
+        result = execute("sudo su -l {} bash -c 'systemctl --user is-failed {}'".format(instance["user"], instance["service"]), allow_error=True)
+        status["service"] = result.return_code == 1
+
+        if status["port"] is not None and not status["connection"]:
+            status["service"] = False
 
         return status
 
@@ -190,15 +192,23 @@ def status(args, config):
             print_bundle(bundle, args.bundle, prefix="")
 
     else:
+        return_code = 0
         if args.json:
             result = {
                 "bundles": bundles,
                 "problems": list(map(lambda tup: get_problem_status(*tup), problems.items()))
             }
             print(json.dumps(result, indent=4))
-        else:
-            return_code = 0
+        elif args.errors_only:
+            for path, problem in problems.items():
+                problem_status = get_problem_status(path, problem)
 
+                #Determine if any problem instance is offline
+                for instance_status in problem_status["instances"]:
+                    if not instance_status["service"]:
+                        print_problem_status(problem_status, path, prefix="  ")
+                        return_code = 1
+        else:
             print("** Installed Bundles [{}] **".format(len(bundles)))
             shown_problems = []
             for path, bundle in bundles.items():
@@ -215,5 +225,5 @@ def status(args, config):
 
                 print_problem_status(problem_status, path, prefix="  ")
 
-            if return_code != 0:
-                exit(return_code)
+        if return_code != 0:
+            exit(return_code)
