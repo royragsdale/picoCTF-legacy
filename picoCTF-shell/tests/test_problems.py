@@ -1,11 +1,10 @@
 import hacksport.deploy
 from hacksport.deploy import deploy_problem
+from config import config
 
 from os.path import join, realpath, dirname
 
 PATH = dirname(realpath(__file__))
-
-config = __import__("config")
 
 class Config:
     DEPLOY_SECRET = "Af9h3mc"
