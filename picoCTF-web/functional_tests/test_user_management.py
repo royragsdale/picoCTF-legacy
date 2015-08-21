@@ -21,60 +21,62 @@ class TestFunctionalUserManagement(object):
     def setup_class(self):
         start_xvfb()
         self.driver = webdriver.Firefox()
+        self.test_user = register_test_user(self.driver)
 
     def teardown_class(self):
+        deactivate_test_user(self.driver, self.test_user)
         stop_xvfb()
 
     def find_id(self, ID):
         return find_id_with_timeout(self.driver, ID)
 
-    def test_site_liveness(self):
-        self.driver.get(BASE_URI)
-        assert "Cyberstakes" in self.driver.title, "Website does not appear to be up."
-
-    def test_registration(self):
+    def test_change_password(self):
         """
-        Tests registration functionality. Assumes that test_user does not exist.
-        Deletes cookies after confirming successful registration
+        Tests updating the test_user's password.
+        Assumes logged in
         """
 
-        self.driver.get(BASE_URI)
+        self.driver.get(BASE_URI+"account")
 
-        # make the form a registration form
-        set_register = self.find_id("set-register")
-        set_register.click()
+        current_password = self.find_id("current-password")
+        new_password = self.find_id("new-password")
+        new_password_confirmation = self.find_id("new-password-confirmation")
 
-        # grab the fields
-        username = self.find_id("username")
-        password = self.find_id("password")
-        first_name = self.find_id("first-name")
-        last_name = self.find_id("last-name")
-        email = self.find_id("email")
+        current_password.send_keys(self.test_user["password"])
+        self.test_user["password"] += str(random.randint(0, 100000000))
+        new_password.send_keys(self.test_user["password"])
+        new_password_confirmation.send_keys(self.test_user["password"])
 
-        # set the fields
-        username.send_keys(test_user["username"])
-        password.send_keys(test_user["password"])
-        first_name.send_keys(test_user["first_name"])
-        last_name.send_keys(test_user["last_name"])
-        email.send_keys(test_user["email"])
-
-        # submit the form
-        username.submit()
-
-        # wait for processing
-        time.sleep(1)
-
-        assert any([cookie['name'] == "flask" for cookie in self.driver.get_cookies()]), "Could not register user."
-        self.driver.delete_all_cookies()
+        new_password_confirmation.submit()
 
     def test_login(self):
         """
-        Tests login functionality. Assumes that test_user has been created.
+        Tests login functionality by using invalid credentials and the correct credentials in self.test_user.
         Leaves cookies set for future tests.
         """
-        login_test_user(self.driver)
 
-    def test_account_page(self):
-        """
-        TODO
-        """
+        def login_with(username_text, password_text):
+            self.driver.delete_all_cookies()
+            self.driver.get(BASE_URI)
+
+            # grab the fields
+            username = self.find_id("username")
+            password = self.find_id("password")
+
+            # set the fields
+            username.send_keys(username_text)
+            password.send_keys(password_text)
+
+            # submit the form
+            username.submit()
+
+            # wait for processing
+            time.sleep(2)
+
+        # try to login with invalid credentials
+        login_with(self.test_user["username"], "badpassword")
+        assert all([cookie['name'] != "flask" for cookie in self.driver.get_cookies()]), "Logged in with invalid credentials."
+
+        # try to login with correct credentials
+        login_with(self.test_user["username"], self.test_user["password"])
+        assert any([cookie['name'] == "flask" for cookie in self.driver.get_cookies()]), "Could not login user."
