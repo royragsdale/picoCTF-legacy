@@ -197,6 +197,8 @@ def status(args, config):
             }
             print(json.dumps(result, indent=4))
         else:
+            return_code = 0
+
             print("** Installed Bundles [{}] **".format(len(bundles)))
             shown_problems = []
             for path, bundle in bundles.items():
@@ -205,4 +207,13 @@ def status(args, config):
             print("** Installed Problems [{}] **".format(len(problems)))
             for path, problem in problems.items():
                 problem_status = get_problem_status(path, problem)
+
+                #Determine if any problem instance is offline
+                for instance_status in problem_status["instances"]:
+                    if not instance_status["service"]:
+                        return_code = 1
+
                 print_problem_status(problem_status, path, prefix="  ")
+
+            if return_code != 0:
+                exit(return_code)
