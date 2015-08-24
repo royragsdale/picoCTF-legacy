@@ -170,7 +170,7 @@ class TestFunctionalProblemWorflow(object):
         # verify that the output looks correct
 
         # enter the shellinabox iframe
-        self.driver.switch_to.frame(self.find_xpath("//iframe[1]"))
+        self.driver.switch_to.frame(self.find_xpath("//iframe[last()]"))
         scrollable = self.find_id("scrollable")
 
         # capture all terminal output
