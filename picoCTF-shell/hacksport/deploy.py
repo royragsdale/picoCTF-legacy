@@ -409,13 +409,14 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
     # template the description
     problem.description = template_string(problem.description, **get_attributes(problem))
 
-    return {"problem": problem,
-            "staging_directory": staging_directory,
-            "home_directory": home_directory,
-            "files": all_files,
-            "web_accessible_files": web_accessible_files,
-            "service_file": service_file
-            }
+    return {
+        "problem": problem,
+        "staging_directory": staging_directory,
+        "home_directory": home_directory,
+        "files": all_files,
+        "web_accessible_files": web_accessible_files,
+        "service_file": service_file
+    }
 
 def deploy_problem(problem_directory, instances=1, test=False, deployment_directory=None):
     """
@@ -442,7 +443,6 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
         instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
         instance_list.append(instance)
 
-
     deployment_json_dir = os.path.join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
     if not os.path.isdir(deployment_json_dir):
         os.makedirs(deployment_json_dir)
@@ -466,6 +466,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             print("\tFlag: {}".format(problem.flag))
             print("\tDeployment Directory: {}".format(destination_directory))
 
+            #This doesn't look great.
             try:
                 execute("killall -u {}".format(problem.user))
                 sleep(0.1)
@@ -502,7 +503,8 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             "server": problem.server,
             "description": problem.description,
             "flag": problem.flag,
-            "iid": iid
+            "iid": iid,
+            "files": problem.files
         }
 
         if isinstance(problem, Service):
