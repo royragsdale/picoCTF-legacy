@@ -51,6 +51,11 @@ def find_xpath_with_timeout(driver, XPATH, timeout=TIMEOUT):
         EC.presence_of_element_located((By.XPATH, XPATH))
     )
 
+def find_visible_id_with_timeout(driver, ID, timeout=TIMEOUT):
+    return WebDriverWait(driver, timeout).until(
+            EC.visibility_of_element_located((By.ID, ID))
+    )
+
 def register_test_user(driver):
     """
     Registers a random test user based on the base_test_user.
@@ -103,9 +108,9 @@ def deactivate_test_user(driver, test_user):
     current_password.send_keys(test_user["password"])
     current_password.submit()
 
-    time.sleep(0.5)
+    # wait for modal
+    confirm_disable = find_visible_id_with_timeout(driver, "modal-yes-button")
 
-    confirm_disable = find_id_with_timeout(driver, "modal-yes-button")
     confirm_disable.click()
 
     time.sleep(3)

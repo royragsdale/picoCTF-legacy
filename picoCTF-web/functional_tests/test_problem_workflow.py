@@ -121,10 +121,15 @@ class TestFunctionalProblemWorflow(object):
         Tests if the first shell server can be logged into and used from the shellinabox page
         """
 
+        def shell_wait_for_xpath(XPATH):
+            self.driver.switch_to.frame(self.find_xpath("//iframe[last()]"))
+            self.find_xpath(XPATH)
+            self.driver.switch_to.default_content()
+
         self.driver.get(BASE_URI+"shell")
 
         # wait for shellinabox
-        time.sleep(1.5)
+        shell_wait_for_xpath('//span[contains(text(), "shell login")]')
 
         # first connection, just enter username to create account
         actions = ActionChains(self.driver)
@@ -133,13 +138,13 @@ class TestFunctionalProblemWorflow(object):
         actions.perform()
 
         # login time
-        time.sleep(0.5)
+        shell_wait_for_xpath('//span[contains(text(), "Please press enter and reconnect.")]')
 
         # reconnect
         self.driver.get(BASE_URI+"shell")
 
         # wait for shellinabox
-        time.sleep(1.5)
+        shell_wait_for_xpath('//span[contains(text(), "shell login")]')
 
         # Our account has been created, time to log in
         actions = ActionChains(self.driver)
@@ -148,7 +153,7 @@ class TestFunctionalProblemWorflow(object):
         actions.perform()
 
         # process time
-        time.sleep(0.5)
+        shell_wait_for_xpath('//span[contains(text(), "Enter your password:")]')
 
         actions = ActionChains(self.driver)
         actions.send_keys(self.test_user["password"])
@@ -156,24 +161,13 @@ class TestFunctionalProblemWorflow(object):
         actions.perform()
 
         # login time
-        time.sleep(0.5)
+        shell_wait_for_xpath('//span[contains(text(), "{}@shell:~$")]'.format(self.test_user["username"]))
 
         # Our account has been created, time to log in
         actions = ActionChains(self.driver)
-        actions.send_keys("whoami")
+        actions.send_keys("echo -e '\x41\x42\x43'")
         actions.send_keys(Keys.ENTER)
         actions.perform()
 
-        # time for command to run
-        time.sleep(1.5)
-
-        # verify that the output looks correct
-
-        # enter the shellinabox iframe
-        self.driver.switch_to.frame(self.find_xpath("//iframe[last()]"))
-        scrollable = self.find_id("scrollable")
-
-        # capture all terminal output
-        terminal_output = "\n".join([line.get_attribute("innerHTML") for line in scrollable.find_elements(By.XPATH, './/span')])
-
-        assert "{}@shell:~$ whoami".format(self.test_user["username"]) in terminal_output, "Could not use webshell"
+        # see if command ran
+        shell_wait_for_xpath('//span[contains(text(), "ABC")]')
