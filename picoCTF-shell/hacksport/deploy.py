@@ -504,7 +504,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             "description": problem.description,
             "flag": problem.flag,
             "iid": iid,
-            "files": problem.files
+            "files": [f.to_dict() for f in problem.files]
         }
 
         if isinstance(problem, Service):
