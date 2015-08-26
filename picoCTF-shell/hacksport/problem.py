@@ -4,7 +4,8 @@ Challenge deployment and problem types.
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 from hashlib import md5
-from hacksport.operations import give_port, execute
+from hacksport.operations import execute
+from hacksport.deploy import give_port
 
 import os
 
