@@ -96,11 +96,11 @@ def get_problem_root(problem_name, absolute=False):
 
     problem_root = join(PROBLEM_ROOT, sanitize_name(problem_name))
 
-    assert problem_root.startswith(os.sep)
+    assert problem_root.startswith(sep)
     if absolute:
         return problem_root
 
-    return problem_root[len(os.sep):]
+    return problem_root[len(sep):]
 
 def get_problem(problem_path):
     """
@@ -132,11 +132,11 @@ def get_bundle_root(bundle_name, absolute=False):
 
     bundle_root = join(BUNDLE_ROOT, sanitize_name(bundle_name))
 
-    assert bundle_root.startswith(os.sep)
+    assert bundle_root.startswith(sep)
     if absolute:
         return bundle_root
 
-    return bundle_root[len(os.sep):]
+    return bundle_root[len(sep):]
 
 def get_bundle(bundle_path):
     """
