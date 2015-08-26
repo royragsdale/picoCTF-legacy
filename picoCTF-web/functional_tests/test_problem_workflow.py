@@ -66,8 +66,11 @@ class TestFunctionalProblemWorflow(object):
         except TimeoutException as e:
             assert False, "Getting Started is not a loaded problem."
 
-        # gets the parent of the title, and grabs the pid from it
-        pid = problem_title.find_element(By.XPATH, "..").get_attribute("data-target")[1:]
+        # gets the parent of the title, and grabs the #id from it
+        target = problem_title.find_element(By.XPATH, "..").get_attribute("data-target")
+
+        # remove the "#"
+        pid = target[1:]
 
         # open the hints tab
         hints_link = self.find_xpath('//a[@class="hint-tab-button"][@data-pid="{}"]'.format(pid))
