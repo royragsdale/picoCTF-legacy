@@ -23,6 +23,14 @@ class File(object):
     def __repr__(self):
         return "{}({},{})".format(self.__class__.__name__, repr(self.path), oct(self.permissions))
 
+    def to_dict(self):
+        return {
+            "path": self.path,
+            "permissions": self.permissions,
+            "user": self.user,
+            "group": self.group
+        }
+
 class ExecutableFile(File):
     """
     Wrapper for executable files that will make them setgid and owned

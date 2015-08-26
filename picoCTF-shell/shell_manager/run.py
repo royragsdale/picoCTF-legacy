@@ -67,6 +67,7 @@ def main():
     status_parser.add_argument("-p", "--problem", type=str, default=None, help="Display status information for a given problem.")
     status_parser.add_argument("-b", "--bundle", type=str, default=None, help="Display status information for a given bundle.")
     status_parser.add_argument("-j", "--json", action="store_true", default=None, help="Display status information in json format")
+    status_parser.add_argument("-e", "--errors-only", action="store_true", help="Only print problems with failing service status.")
     status_parser.set_defaults(func=status)
 
     publish_parser = subparsers.add_parser("publish", help="Generate the information needed by the web server for this deployment.")
