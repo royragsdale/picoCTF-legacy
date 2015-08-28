@@ -56,8 +56,10 @@ def api_wrapper(f):
         try:
             web_result = f(*args, **kwds)
         except WebException as error:
+            print(error)
             web_result = WebError(_get_message(error), error.data)
         except InternalException as error:
+            print(error)
             message = _get_message(error)
             if type(error) == SevereInternalException:
                 wrapper_log.critical(traceback.format_exc())

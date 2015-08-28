@@ -40,6 +40,10 @@ if [[ $1 = "production" ]]; then
     START_CMD="./gunicorn_start.sh"
 fi
 
+if [[ $1 = "stresstest" ]]; then
+    START_CMD="python3 run.py -d -k test_key"
+fi
+
 #Start Cyberstakes API
 echo "Starting the Cyberstakes API"
 tmux kill-session -t cyberstakesapi 2> /dev/null
