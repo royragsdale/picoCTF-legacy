@@ -66,8 +66,11 @@ class TestFunctionalProblemWorflow(object):
         except TimeoutException as e:
             assert False, "Getting Started is not a loaded problem."
 
-        # gets the parent of the title, and grabs the pid from it
-        pid = problem_title.find_element(By.XPATH, "..").get_attribute("data-target")[1:]
+        # gets the parent of the title, and grabs the #id from it
+        target = problem_title.find_element(By.XPATH, "..").get_attribute("data-target")
+
+        # remove the "#"
+        pid = target[1:]
 
         # open the hints tab
         hints_link = self.find_xpath('//a[@class="hint-tab-button"][@data-pid="{}"]'.format(pid))
@@ -118,13 +121,15 @@ class TestFunctionalProblemWorflow(object):
 
     def test_shell_page(self):
         """
-        Tests if the first shell server can be logged into and used from the shellinabox page
+        Tests if the shell server can be logged into and used from the shellinabox page
         """
 
         def shell_wait_for_xpath(XPATH):
-            self.driver.switch_to.frame(self.find_xpath("//iframe[last()]"))
+            active_shell_frame = self.find_xpath("//iframe[1]")
+            self.driver.switch_to.frame(active_shell_frame)
             self.find_xpath(XPATH)
             self.driver.switch_to.default_content()
+            active_shell_frame.click()
 
         self.driver.get(BASE_URI+"shell")
 

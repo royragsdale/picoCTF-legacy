@@ -33,7 +33,7 @@ sudo pip3 install --upgrade $ROOT
 
 # Clear the cache
 echo "Clearing the API cache"
-$ROOT/api/api_manager.py database clear cache
+api_manager database clear cache
 
 START_CMD="python3 run.py"
 if [[ $1 = "production" ]]; then
