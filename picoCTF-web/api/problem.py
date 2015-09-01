@@ -95,6 +95,8 @@ bundle_schema = Schema({
         ("The dependencies enabled state must be a bool.", [lambda x: type(x) == bool]))
 })
 
+DEBUG_KEY = None
+
 def get_all_categories(show_disabled=False):
     """
     Gets the set of distinct problem categories.
@@ -323,8 +325,9 @@ def grade_problem(pid, key, tid=None):
     problem = get_problem(pid=pid)
     instance = get_instance_data(pid, tid)
 
-    correct_key = instance['flag']
-    correct = correct_key in key # NOTE: is this always correct?
+    correct_key =  instance['flag'] if DEBUG_KEY is None else DEBUG_KEY
+
+    correct = correct_key in key
 
     return {
         "correct": correct,
