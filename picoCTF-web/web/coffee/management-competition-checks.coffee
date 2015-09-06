@@ -23,7 +23,15 @@ TestGroupItem = React.createClass
       when "passing"
         glyphName = "ok"
 
-    <ListGroupItem>{@props.name} <Glyphicon glyph={glyphName} className={glyphStyle}/></ListGroupItem>
+    elapsedDisplay = "..."
+    if @props.elapsed
+      elapsedDisplay = "#{parseFloat(@props.elapsed).toFixed(1)} secs"
+
+    <ListGroupItem>
+      <h4>
+        <Glyphicon glyph={glyphName} className={glyphStyle}/> {@props.name} <span className="pull-right">{elapsedDisplay}</span>
+      </h4>
+    </ListGroupItem>
 
 TestGroup = React.createClass
   getInitialState: ->
@@ -31,12 +39,14 @@ TestGroup = React.createClass
     _.map @props.tests, (test) ->
       state[test.name] = test
       state[test.name].status = "waiting"
+      state[test.name].start = Date.now()
     state
 
   updateTestState: (testName, status) ->
     updateObject = {}
     updateObject[testName] =
       status: $set: status
+      elapsed: $set: (Date.now() - @state[testName].start) / 1000.0 #seconds
     newState = update @state, updateObject
 
     totalStatus = "passing"
@@ -55,10 +65,12 @@ TestGroup = React.createClass
     ).bind this
 
   render: ->
-    <ListGroup fill>
-      {_.map @state, (test, i) ->
-        <TestGroupItem key={i} {...test}/>}
-    </ListGroup>
+    <Panel>
+      <ListGroup fill>
+        {_.map _.values(@state), (test, i) ->
+          <TestGroupItem key={i} {...test}/>}
+      </ListGroup>
+    </Panel>
 
 CompetitionCheck = React.createClass
 
@@ -127,6 +139,8 @@ CompetitionCheck = React.createClass
     ]
 
     <div>
-      <h4>Competition Status {@state.competitionReadiness}</h4>
-      <TestGroup tests={sanityChecks} onStatusChange={@onStatusChange}/>
+      <h3>Competition Status: <b>{@state.competitionReadiness}</b></h3>
+      <Col md={6} className="hard-right">
+        <TestGroup tests={sanityChecks} onStatusChange={@onStatusChange}/>
+      </Col>
     </div>
