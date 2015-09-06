@@ -46,8 +46,9 @@ startup_functions:
                             <strong>Teacher Username</strong>: <%- owner %></p></div>
                         <p> Student can also join by following this link: </p>
                         <span>
+                            <% var link = document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+encodeURIComponent(groupName)+"&teacher="+encodeURIComponent(owner); %>
                             <code>
-                            <%= document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+groupName+"&teacher="+owner %>
+                              <%= link %>
                             </code>
                         </span>
                     </div>
