@@ -1,37 +1,49 @@
-google.load 'visualization', '1.0', {'packages':['corechart']}
+numDataPoints = 720
 
 divFromSelector = (selector) ->
   _.first($(selector))
 
-topTeamsGraphOptions = {
-  title: "Top Score Progression",
-  legend: {
-    position: "top"
-  },
-  vAxis: {
-    title: "Score"
-  },
-  hAxis: {
-    ticks: []
-  },
-  pointSize: 3,
-  areaOpacity: 0.0,
-  enableInteractivity: true
-}
+strokeColors = [
+  "rgba(151,187,205,1)"
+  "rgba(230,22,22,1)",
+  "rgba(22,230,57,1)",
+  "rgba(230,22,210,1)",
+  "rgba(220,220,220,1)"
+  "rgba(204,104,0,1)",
+]
 
-teamGraphOptions = {
-  title: "Score Progression",
-  legend: {
-    position: "none"
-  },
-  vAxis: {
-    title: "Score"
-  },
-  hAxis: {
-    ticks: []
-  },
-  pointSize: 3
-}
+fillColors = [
+  "rgba(151,187,205,0.2)",
+  "rgba(230,22,22,0.2)",
+  "rgba(22,230,57,0.2)",
+  "rgba(230,22,210,0.2)",
+  "rgba(220,220,220,0.2)",
+  "rgba(204,104,0,0.2)",
+]
+
+scoreboardChartSettings =
+  pointHitDetectionRadius: 0
+  pointDotRadius: 1
+  scaleShowGridLines: false
+  pointDot: false
+  bezierCurve: false
+  legendTemplate : "<div class=\"row\">
+                      <% for (var i=0; i<datasets.length; i++){%>
+                        <div class=\"col-md-1 col-sm-1 col-lg-1\">
+                          <span style=\"color:<%=datasets[i].strokeColor%>\" class=\"glyphicon glyphicon-user\" aria-hidden=\"true\"></span>
+                          <%if(datasets[i].label){%>
+                            <%=datasets[i].label%>
+                          <%}%>
+                        </div>
+                      <%}%>
+                    </div>"
+
+teamChartSettings =
+  pointHitDetectionRadius: 0
+  pointDotRadius: 0
+  scaleShowGridLines: false
+  pointDot: false
+  bezierCurve: false
 
 timestampsToBuckets = (samples, key, min, max, seconds) ->
 
@@ -102,19 +114,29 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
         #Ensure there are submissions to work with
         if _.max(_.map(scoreData, (submissions) -> submissions.length)) > 0
 
-          dataPoints = _.zip.apply _, progressionDataToPoints scoreData, 720, timedata.data
+          dataPoints = progressionDataToPoints scoreData, numDataPoints, timedata.data
 
-          teamNameData = (team.name for team in data.data)
+          datasets = []
+          for points,i in dataPoints
+            datasets.push
+              label: data.data[i].name
+              data: points
+              pointColor: strokeColors[i % strokeColors.length]
+              strokeColor: strokeColors[i % strokeColors.length]
+              fillColor: fillColors[i % strokeColors.length]
 
-          graphData = [["Score"].concat(teamNameData)]
+          data =
+            labels: ("" for i in [1...numDataPoints])
+            datasets: datasets
 
-          _.each dataPoints, (dataPoint) ->
-            graphData.push [""].concat(dataPoint)
+          parent = $(div).parent()
+          $(div).attr('width', parent.width())
+          $(div).attr('height', parent.height())
 
-          packagedData = google.visualization.arrayToDataTable graphData
+          chart = new Chart(div.getContext("2d")).Line data, scoreboardChartSettings
 
-          chart = new google.visualization.SteppedAreaChart(div)
-          chart.draw(packagedData, topTeamsGraphOptions)
+          legend = chart.generateLegend()
+          parent.append(legend)
 
   if gid != undefined
     apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
@@ -132,17 +154,26 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
       if data.status == 1
           if data.data.length > 0 and data.data[0].length > 0
 
-            graphData = [
-              ["Time", "Score", {role: "tooltip"}]
+            dataPoints = progressionDataToPoints data.data, numDataPoints, timedata.data
+
+            datasets = [
+                label: data.data.name
+                data: dataPoints
+                pointColor: strokeColors[0]
+                strokeColor: strokeColors[0]
+                fillColor: fillColors[0]
             ]
 
-            steps = progressionDataToPoints data.data, 720, timedata.data
-            (graphData.push(["", score, score]) for score in steps)
+            data =
+              labels: ("" for i in [1...numDataPoints])
+              datasets: datasets
 
-            packagedData = google.visualization.arrayToDataTable graphData
+            parent = $(div).parent()
+            $(div).attr('width', parent.width())
+            $(div).attr('height', parent.height())
 
-            chart = new google.visualization.SteppedAreaChart(div)
-            chart.draw(packagedData, teamGraphOptions)
+            chart = new Chart(div.getContext("2d")).Line data, teamChartSettings
+
           else
             $(selector).html("<p>You have not solved any enabled problems.</p>")
         else
