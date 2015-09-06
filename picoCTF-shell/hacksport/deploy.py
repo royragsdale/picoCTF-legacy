@@ -73,13 +73,12 @@ from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user, execute
-from hacksport.utils import sanitize_name, get_attributes
 from hacksport.status import get_all_problems, get_all_problem_instances
 from shell_manager.bundle import get_bundle
 
 from shell_manager.bundle import get_bundle, get_bundle_root
 from shell_manager.problem import get_problem, get_problem_root
-from shell_manager.util import HACKSPORTS_ROOT, STAGING_ROOT, DEPLOYED_ROOT
+from shell_manager.util import HACKSPORTS_ROOT, STAGING_ROOT, DEPLOYED_ROOT, sanitize_name, get_attributes
 
 import os
 import json

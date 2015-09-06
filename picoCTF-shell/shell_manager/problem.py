@@ -9,8 +9,7 @@ from copy import deepcopy
 from os.path import join
 from re import findall
 
-from shell_manager.util import PROBLEM_ROOT
-from hacksport.utils import sanitize_name
+from shell_manager.util import PROBLEM_ROOT, sanitize_name, get_problem_root, get_problem
 
 #More in-depth validation should occur with some sort of linting step.
 PROBLEM_FIELDS = [
@@ -70,42 +69,6 @@ def set_problem_defaults(problem, additional_defaults={}):
         if field not in problem:
             #Use the associated default function
             problem[field] = setter(problem)
-
-def get_problem_root(problem_name, absolute=False):
-    """
-    Installation location for a given problem.
-
-    Args:
-        problem_name: the problem name.
-        absolute: should return an absolute path.
-
-    Returns:
-        The tentative installation location.
-    """
-
-    problem_root = join(PROBLEM_ROOT, sanitize_name(problem_name))
-
-    assert problem_root.startswith(os.sep)
-    if absolute:
-        return problem_root
-
-    return problem_root[len(os.sep):]
-
-def get_problem(problem_path):
-    """
-    Retrieve a problem spec from a given problem directory.
-
-    Args:
-        problem_path: path to the root of the problem directory.
-
-    Returns:
-        A problem object.
-    """
-
-    json_path = join(problem_path, "problem.json")
-    problem = json.loads(open(json_path, "r").read())
-
-    return problem
 
 def set_problem(problem_path, problem):
     """

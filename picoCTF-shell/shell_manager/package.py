@@ -12,10 +12,8 @@ from shutil import copy, rmtree
 
 from copy import deepcopy
 
-from shell_manager.util import full_copy, move
-from shell_manager.problem import get_problem
-
-from hacksport.utils import sanitize_name
+from shell_manager.util import full_copy, move, sanitize_name
+from shell_manager.problem import get_problem, get_problem_root
 
 DEB_DEFAULTS = {
     "Section": "ctf",

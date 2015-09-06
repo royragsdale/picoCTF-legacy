@@ -1,4 +1,3 @@
-import hacksport.utils
 import hacksport.operations
 import hacksport.deploy
 import hacksport.problem

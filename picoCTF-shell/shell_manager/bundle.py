@@ -11,9 +11,8 @@ from os.path import join, isdir, basename, dirname
 
 from shutil import rmtree, copyfile
 
-from shell_manager.problem import get_problem, get_problem_root
-from shell_manager.package import sanitize_name, DEB_DEFAULTS
-from shell_manager.util import BUNDLE_ROOT
+from shell_manager.package import DEB_DEFAULTS
+from shell_manager.util import BUNDLE_ROOT, sanitize_name, get_problem, get_problem_root, get_bundle, get_bundle_root
 
 def bundle_to_control(bundle, debian_path):
     """
@@ -42,42 +41,6 @@ def bundle_to_control(bundle, debian_path):
     control_file = open(join(debian_path, "control"), "w")
     control_file.write(contents)
     control_file.close()
-
-
-def get_bundle_root(bundle_name, absolute=False):
-    """
-    Installation location for a given bundle.
-
-    Args:
-        bundle_name: the bundle name.
-        absolute: should return an absolute path.
-
-    Returns:
-        The tentative installation location.
-    """
-
-    bundle_root = join(BUNDLE_ROOT, sanitize_name(bundle_name))
-
-    assert bundle_root.startswith(os.sep)
-    if absolute:
-        return bundle_root
-
-    return bundle_root[len(os.sep):]
-
-def get_bundle(bundle_path):
-    """
-    Retrieve a bundle spec from a given bundle directory.
-
-    Args:
-        bundle_path: path to the root of the bundle directory.
-
-    Returns:
-        A bundle object.
-    """
-
-    bundle = json.loads(open(join(bundle_path, "bundle.json"), "r").read())
-
-    return bundle
 
 def bundle_problems(args, config):
     """
