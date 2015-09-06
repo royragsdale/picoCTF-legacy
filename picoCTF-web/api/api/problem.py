@@ -27,6 +27,8 @@ submission_schema = Schema({
 problem_schema = Schema({
     Required("name"): check(
         ("The problem's display name must be a string.", [str])),
+    Required("sanitized_name"): check(
+        ("The problems's sanitized name must be a string.", [str])),
     Required("score"): check(
         ("Score must be a positive integer.", [int, Range(min=0)])),
     Required("author"): check(
@@ -72,6 +74,25 @@ instance_schema = Schema({
         ("The port must be an int", [int])),
     "server": check(
         ("The server must be a string.", [str]))
+}, extra=True)
+
+bundle_schema = Schema({
+    Required("name"): check(
+        ("The bundle name must be a string.", [str])),
+    Required("author"): check(
+        ("The bundle author must be a string.", [str])),
+    Required("categories"): check(
+        ("The bundle categories must be a list.", [list])),
+    Required("problems"): check(
+        ("The bundle problems must be a list.", [list])),
+    Required("description"): check(
+        ("The bundle description must be a string.", [str])),
+    "organization": check(
+        ("The bundle organization must be a string.", [str])),
+    "dependencies": check(
+        ("The bundle dependencies must be a dict.", [dict])),
+    "dependencies_enabled": check(
+        ("The dependencies enabled state must be a bool.", [lambda x: type(x) == bool]))
 })
 
 def get_all_categories(show_disabled=False):
@@ -91,27 +112,6 @@ def get_all_categories(show_disabled=False):
         match.update({"disabled": False})
 
     return db.problems.find(match).distinct("category")
-
-def analyze_problems():
-    """
-    Checks the sanity of inserted problems.
-    Includes weightmap verification.
-
-    Returns:
-        A list of error strings describing the problems.
-    """
-
-    unknown_weightmap_pid = "{}: Has weightmap entry '{}' which does not exist."
-
-    problems = get_all_problems()
-
-    errors = []
-
-    for problem in problems:
-        for pid in problem["weightmap"].keys():
-            if safe_fail(get_problem, pid=pid) is None:
-                errors.append(unknown_weightmap_pid.format(problem["name"], pid))
-    return errors
 
 def insert_problem(problem):
     """
@@ -142,8 +142,6 @@ def insert_problem(problem):
     # initially disable problems
     problem["disabled"] = True
     problem["pid"] = api.common.hash("{}-{}".format(problem["name"], problem["author"]))
-    problem["weightmap"] = {}
-    problem["threshold"] = 0
 
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
@@ -229,35 +227,6 @@ def search_problems(*conditions):
     db = api.common.get_conn()
 
     return list(db.problems.find({"$or": list(conditions)}, {"_id":0}))
-
-def add_problem_dependency(pid1, pid2):
-    """
-    Adds pid2 to the weightmap of pid1 and updates the threshold
-
-    Args:
-      pid1: problem that depends on pid2
-      pid2: problem that is a dependency for pid1
-
-    Returns:
-      The new weightmap for pid1
-    """
-
-    problem1 = get_problem(pid=pid1)
-    problem2 = get_problem(pid=pid2)
-
-    weightmap = problem1['weightmap']
-    threshold = problem1['threshold']
-
-    # remove prior dependency if it existed
-    threshold -= weightmap.get(problem2['pid'], 0)
-
-    # update dependency
-    weightmap[problem2['pid']] = 1
-    threshold += 1
-
-    update_problem(pid1, {"weightmap":weightmap, "threshold":threshold})
-
-    return weightmap
 
 def assign_instance_to_team(pid, tid=None):
     """
@@ -677,6 +646,31 @@ def get_solved_problems(tid=None, uid=None, category=None):
 
     return [get_problem(pid=pid) for pid in get_solved_pids(tid=tid, uid=uid, category=category)]
 
+def is_problem_unlocked(problem, solved):
+    """
+    Checks if the specified problem is unlocked.
+    A problem is unlocked if either:
+        1. It has no dependencies in any of the bundles
+        2. Its threshold is reached in all bundles that specify a dependency for it
+
+    Args:
+        problem: the problem object to check
+        solved: the list of solved problem objects
+    """
+
+    unlocked = True
+
+    for bundle in get_all_bundles():
+        if problem["sanitized_name"] in bundle["problems"]:
+            if "dependencies" in bundle and bundle["dependencies_enabled"]:
+                if problem["sanitized_name"] in bundle["dependencies"]:
+                    dependency = bundle["dependencies"][problem["sanitized_name"]]
+                    weightsum = sum(dependency['weightmap'].get(p['sanitized_name'], 0) for p in solved)
+                    if weightsum < dependency['threshold']:
+                        unlocked = False
+
+    return unlocked
+
 @api.cache.memoize()
 def get_unlocked_pids(tid, category=None):
     """
@@ -694,12 +688,8 @@ def get_unlocked_pids(tid, category=None):
 
     unlocked = []
     for problem in get_all_problems():
-        if 'weightmap' not in problem or 'threshold' not in problem:
-            unlocked.append(problem['pid'])
-        else:
-            weightsum = sum(problem['weightmap'].get(p['pid'], 0) for p in solved)
-            if weightsum >= problem['threshold']:
-                unlocked.append(problem['pid'])
+        if is_problem_unlocked(problem, solved):
+            unlocked.append(problem["pid"])
 
     for pid in unlocked:
         if pid not in team["instances"]:
@@ -787,3 +777,93 @@ def get_unlocked_problems(tid, category=None):
     """
 
     return [problem for problem in get_visible_problems(tid, category=category) if problem['unlocked']]
+
+def insert_bundle(bundle):
+    """
+    Inserts the bundle into the database after
+    validating it with the bundle_schema
+    """
+
+    db = api.common.get_conn()
+    validate(bundle_schema, bundle)
+
+    bundle["bid"] = api.common.token()
+    bundle["dependencies_enabled"] = False
+
+    db.bundles.insert(bundle)
+
+def load_published(data):
+    """
+    Load in the problems from the shell_manager publish blob.
+
+    Args:
+        data: The output of "shell_manager publish"
+    """
+
+    if "problems" not in data:
+        raise WebException("Please provide a problems list in your json.")
+
+    for problem in data["problems"]:
+        insert_problem(problem)
+
+    if "bundles" in data:
+        db = api.common.get_conn()
+        for bundle in data["bundles"]:
+            insert_bundle(bundle)
+
+    api.cache.clear_all()
+
+def get_bundle(bid):
+    """
+    Returns the bundle object corresponding to the given bid
+    """
+
+    db = api.common.get_conn()
+
+    bundle = api.bundles.find_one({"bid" : bid})
+
+    if bundle is None:
+        raise WebException("Bundle with bid {} does not exist".format(bid))
+
+    return bundle
+
+def update_bundle(bid, updates):
+    """
+    Updates the bundle object in the database with the given updates.
+    """
+
+    db = api.common.get_conn()
+
+    bundle = db.bundles.find_one({"bid" : bid}, {"_id": 0})
+    if bundle is None:
+        raise WebException("Bundle with bid {} does not exist".format(bid))
+
+    # pop the bid temporarily to check with schema
+    bid = bundle.pop("bid")
+    bundle.update(updates)
+    validate(bundle_schema, bundle)
+    bundle["bid"] = bid
+
+    db.bundles.update({"bid": bid}, {"$set": bundle})
+
+def get_all_bundles():
+    """
+    Returns all bundles from the database
+    """
+
+    db = api.common.get_conn()
+
+    return list(db.bundles.find({}, {"_id": 0}))
+
+def set_bundle_dependencies_enabled(bid, enabled):
+    """
+    Sets the dependencies_enabled field in the object in the database.
+    This will affect the unlocked problems.
+
+    Args:
+        bid: the bundle id to update
+        enabled:
+    """
+
+    update_bundle(bid, {"dependencies_enabled": enabled})
+    api.cache.clear_all()

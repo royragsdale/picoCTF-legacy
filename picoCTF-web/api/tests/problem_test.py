@@ -27,6 +27,7 @@ class TestProblems(object):
         base_problems = [
             {
                 "name": "base-" + str(i),
+                "sanitized_name": "base-" + str(i),
                 "score": 10,
                 "author": "haxxor",
                 "category": "",
@@ -53,6 +54,7 @@ class TestProblems(object):
         disabled_problems = [
             {
                 "name" : "locked-" + str(i),
+                "sanitized_name": "locked-" + str(i),
                 "author": "haxxor",
                 "score" : 10,
                 "category": "",
@@ -80,6 +82,7 @@ class TestProblems(object):
         level1_problems = [
             {
                 "name" : "level1-" + str(i),
+                "sanitized_name": "level1-" + str(i),
                 "score" : 60,
                 "author": "haxxor",
                 "category": "",
@@ -99,6 +102,28 @@ class TestProblems(object):
         return level1_problems
 
     level1_problems = generate_problems(correct, base_problems)
+
+    def generate_bundle(base_problems, level1_problems):
+        bundle = {
+            "name": "test bundle",
+            "author": "hacker joe",
+            "categories": ["Test Problems"],
+            "problems": [p["sanitized_name"] for p in base_problems+level1_problems],
+            "description": "this is a test bundle",
+        }
+
+        dependencies = {}
+        for p in level1_problems:
+            dependency = {}
+            dependency["weightmap"] = {dst["sanitized_name"]:1 for dst in base_problems}
+            dependency["threshold"] = len(base_problems)
+            dependencies[p["sanitized_name"]] = dependency
+
+        bundle["dependencies"] = dependencies
+        return bundle
+
+
+    bundle = generate_bundle(base_problems, level1_problems)
 
     enabled_problems = base_problems + level1_problems
     all_problems = enabled_problems + disabled_problems
@@ -126,8 +151,6 @@ class TestProblems(object):
             pid = api.problem.insert_problem(problem)
             api.problem.update_problem(pid, {"disabled": False})
             self.enabled_pids.append(pid)
-            for pid2 in self.base_pids:
-                api.problem.add_problem_dependency(pid, pid2)
 
         self.disabled_pids = []
         for problem in self.disabled_problems:
@@ -140,6 +163,10 @@ class TestProblems(object):
         # TODO: actually run generation
         for problem in api.problem.get_all_problems():
             api.problem.update_problem(problem["pid"], {"key":self.correct})
+
+        # insert bundle and enable dependencies
+        api.problem.insert_bundle(self.bundle)
+        api.problem.set_bundle_dependencies_enabled(self.bundle["bid"], True)
 
     def teardown_class(self):
         teardown_db()

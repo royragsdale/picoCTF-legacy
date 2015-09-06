@@ -107,12 +107,5 @@ def request_problem_hint_hook():
 def load_problems():
     data = json.loads(request.form.get("competition_data", ""))
 
-    if "problems" not in data:
-        return WebError("Please provide a problems list in your json.")
-
-    for problem in data["problems"]:
-        api.problem.insert_problem(problem)
-
-    api.cache.clear_all()
-
-    return WebSuccess("Problems inserted successfully.")
+    num_inserted = api.problem.load_published(data)
+    return WebSuccess("Inserted {} problems.".format(num_inserted))

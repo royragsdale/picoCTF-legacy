@@ -3,9 +3,13 @@ TabPane = ReactBootstrap.TabPane
 
 ManagementTabbedArea = React.createClass
   getInitialState: ->
+    tab = window.location.hash.substring(1)
+    if tab == ""
+      tab = "problems"
+
     updates: []
     problems: []
-    tabKey: 1
+    tabKey: tab
 
   onProblemChange: ->
     apiCall "GET", "/api/admin/problems"
@@ -31,11 +35,11 @@ ManagementTabbedArea = React.createClass
         <TabPane eventKey={1} tab='Manage Problems'>
           <ProblemTab problems={@state.problems} onProblemChange={@onProblemChange}/>
         </TabPane>
-        <TabPane eventKey={2} tab='Exceptions'>
+        <TabPane eventKey='exceptions' tab='Exceptions'>
           <ExceptionTab/>
         </TabPane>
-        <TabPane eventKey={3} tab='Load Problems'>
-          <ProblemLoaderTab/>
+        <TabPane eventKey='shell-servers' tab='Shell Server'>
+          <ShellServerTab/>
         </TabPane>
       </TabbedArea>
 

@@ -13,13 +13,6 @@ from api.annotations import log_action
 
 blueprint = Blueprint("user_api", __name__)
 
-@blueprint.route('/shell', methods=['GET'])
-@api_wrapper
-def get_shell_account_hook():
-    if api.config.enable_shell:
-        return WebSuccess(data=api.team.get_shell_account())
-    return WebError(data="Shell is not available.")
-
 @blueprint.route('/create_simple', methods=['POST'])
 @api_wrapper
 def create_simple_user_hook():
@@ -95,7 +88,6 @@ def status_hook():
         "teacher": api.auth.is_logged_in() and api.user.is_teacher(),
         "enable_teachers": api.config.enable_teachers,
         "enable_feedback": api.config.enable_feedback,
-        "shell": api.config.enable_shell,
         "enable_captcha": api.config.enable_captcha,
         "reCAPTCHA_public_key": api.config.reCAPTCHA_public_key,
         "competition_active": api.utilities.check_competition_active(),
