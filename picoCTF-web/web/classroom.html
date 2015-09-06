@@ -36,13 +36,14 @@ startup_functions:
 <script type="text/template" id="team-selection-template">
       <div class="row" style="margin-top: 10px">
         <div class="col-md-12">
-          <% if(teams.length > 0 ) { %>
-            <% _.each(_.sortBy(teams, "team_name"), function(team) { %>
+            <% if(teams.length > 0 ) { %>
+            <% _.each(_.sortBy(teams, "team_name"), function(team) {
+              member = team.members[0]; %>
               <div class="row">
                 <div class="col-md-12">
                     <div class="problem panel panel-default">
                       <div class="panel-heading team-visualization-enabler" expanded data-tid="<%= team.tid %>" data-toggle="collapse" data-target="#<%= team.tid %>">
-                          <%- team.team_name %> <div class="pull-right"><%- team.competition_active ? team.score : '' %></div>
+                          <%- team.team_name %> (<%- member.firstname %> <%- member.lastname %>) <div class="pull-right"><%- team.competition_active ? team.score : '' %></div>
                       </div>
                       <div class="panel-collapse collapse" id="<%= team.tid %>">
                         <div class="panel-body">

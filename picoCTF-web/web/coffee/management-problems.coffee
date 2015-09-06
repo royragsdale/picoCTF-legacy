@@ -269,27 +269,29 @@ Problem = React.createClass
     expanded: false
 
   onStateToggle: (e) ->
-    console.log e
     e.preventDefault()
     apiCall "POST", "/api/admin/problems/availability", {pid: @props.pid, state: !@props.disabled}
     .done @props.onProblemChange
 
   handleExpand: (e) ->
-    if !$(e.target).hasClass "btn"
+    e.preventDefault()
+
+    #This is awkward.
+    if $(e.target).parent().hasClass "do-expand"
       @setState {expanded: !@state.expanded}
 
   render: ->
 
     statusButton =
-    <Button bsSize="xsmall" onClick={@onStateToggle}>
-      {if @props.disabled then "Enable" else "Disable"}
+    <Button bsSize="xsmall" bsStyle={if @props.disabled then "default" else "default"} onClick={@onStateToggle}>
+      {if @props.disabled then "Enable" else "Disable"} <Glyphicon glyph={if @props.disabled then "ok" else "minus"}/>
     </Button>
 
     problemHeader =
     <div>
-      {@props.category} - {@props.name} ({@props.score})
+      <span className="do-expand">{@props.category} - {@props.name}</span>
       <div className="pull-right">
-        {statusButton}
+        ({@props.score}) {statusButton}
       </div>
     </div>
 
@@ -368,7 +370,7 @@ ProblemDependencyView = React.createClass
 
   render: ->
     bundleDisplay = @props.bundles.map ((bundle, i) ->
-      switchText = if bundle.dependencies_enabled then "Disable" else "Enable"
+      switchText = if bundle.dependencies_enabled then "Unlock Problems" else "Lock Problems"
       <ListGroupItem key={i} className="clearfix">
         <div>{bundle.name}
           <div className="pull-right">
