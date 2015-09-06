@@ -136,6 +136,11 @@ def migrate_cs2014_problem(problem_path, problem, overrides={}):
             dependencies = []
             for requirements in ["local_requirements", ""]:
                 requirements_index = challenge.find(requirements)
+
+                #Could not find it, we shouldn't do anything.
+                if requirements_index == -1:
+                    continue
+
                 requirements_bound = challenge.find("]", requirements_index)
 
                 dependencies_text = challenge[requirements_index:requirements_bound]
