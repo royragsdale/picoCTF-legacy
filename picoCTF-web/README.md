@@ -1,2 +1,2 @@
-picoCTF-Platform 2
-===================
+CTF Web
+=======

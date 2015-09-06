@@ -14,6 +14,7 @@ from os import path
 import os
 import sys
 
+#Necessary to drop bins
 if 'bdist_wheel' in sys.argv:
     raise RuntimeError("This setup.py does not support wheels")
 
@@ -24,18 +25,18 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='cyberstakes-web-api',
+    name='ctf-web-api',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version='1.2.1',
 
-    description="CyberStakes Web Infrastructure",
+    description="CTF Web Infrastructure",
     long_description=long_description,
 
     # The project's main homepage.
-    url='http://forallsecure.com',
+    url='https://github.com/picoCTF/picoCTF-web',
 
     # Author details
     author='Christopher Ganas',
