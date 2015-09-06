@@ -82,7 +82,7 @@ default_settings = {
     # CAPTCHA
     "captcha": {
         "enable_captcha": False,
-        "captcha_url": "http://www.google.com/recaptcha/api/verify",
+        "captcha_url": "https://www.google.com/recaptcha/api/siteverify",
         "reCAPTCHA_public_key":  "",
         "reCAPTCHA_private_key": "",
     },

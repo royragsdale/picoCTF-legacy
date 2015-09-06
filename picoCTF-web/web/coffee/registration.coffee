@@ -2,7 +2,7 @@ reloadCaptcha = ->
   apiCall "GET", "/api/user/status", {}
   .done (data) ->
     if data.data.enable_captcha
-        Recaptcha.reload()
+        grecaptcha.reset()
     ga('send', 'event', 'Registration', 'NewCaptcha')
 
 
@@ -21,9 +21,9 @@ submitRegistration = (e) ->
   .done (data) ->
     switch data['status']
       when 0
-        $("#register-button-create").apiNotify(data, {position: "right"})
-        ga('send', 'event', 'Registration', 'Failure', "NewTeam::" + data.message)
-        reloadCaptcha()
+        $(submitButton).apiNotify(data, {position: "right"})
+        ga('send', 'event', 'Registration', 'Failure', logType + "::" + data.message)
+        grecaptcha.reset()
       when 1
             document.location.href = "/profile"
 
@@ -31,6 +31,6 @@ $ ->
   apiCall "GET", "/api/user/status", {}
   .done (data) ->
     if data.data.enable_captcha
-        Recaptcha.create(data.data.reCAPTCHA_public_key, "captcha", { theme: "red" })
+      grecaptcha.render("captcha", { "sitekey": data.data.recaptchaPublicKey })
 
   $("#user-registration-form").on "submit", submitRegistration
