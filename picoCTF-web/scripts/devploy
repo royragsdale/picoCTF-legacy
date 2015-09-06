@@ -21,6 +21,7 @@ sudo jekyll build
 # Make sure everything is in UNIX format.
 sudo dos2unix -q /srv/http/ctf/*.html
 
+# Make sure everything is readable
 sudo chmod -R +r /srv/http/ctf/*
 
 # Start the server
@@ -32,11 +33,15 @@ sudo pip3 install --upgrade $ROOT
 
 # Clear the cache
 echo "Clearing the API cache"
-$ROOT/api/api_manager.py database clear cache
+api_manager database clear cache
 
 START_CMD="python3 run.py"
 if [[ $1 = "production" ]]; then
     START_CMD="./gunicorn_start.sh"
+fi
+
+if [[ $1 = "stresstest" ]]; then
+    START_CMD="python3 run.py -d -k test_key"
 fi
 
 #Start Ctf API
