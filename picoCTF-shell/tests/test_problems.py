@@ -20,3 +20,8 @@ class TestProblems:
 
     def test_compiled_sources_url(self):
         deploy_problem(join(PATH, "problems/compiled_sources_url"))
+
+    def test_high_level_local(self):
+        deploy_problem(join(PATH, "problems/local_compiled1"))
+        deploy_problem(join(PATH, "problems/local_compiled2"))
+        deploy_problem(join(PATH, "problems/local_compiled3"))

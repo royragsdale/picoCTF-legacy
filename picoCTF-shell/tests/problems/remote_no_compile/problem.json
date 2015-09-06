@@ -1,5 +1,5 @@
 {
-  "name": "My problem2",
+  "name": "My problem 2",
   "score": 50,
   "author": "test",
   "description": "Service is running at {{server}}:{{port}}",
