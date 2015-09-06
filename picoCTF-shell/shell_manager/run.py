@@ -52,8 +52,8 @@ def main():
     deploy_parser = subparsers.add_parser("deploy", help="problem deployment")
     deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate.")
     deploy_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
-    deploy_parser.add_argument("-b", "--bundle-name", type=str, default=None, help="the bundle to deploy")
     deploy_parser.add_argument("-D", "--deployment-directory", type=str, default=None, help="the directory to deploy to")
+    deploy_parser.add_argument("-b", "--bundle", action="store_true", help="specify a bundle of problems to deploy.")
     deploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
     deploy_parser.set_defaults(func=deploy_problems)
 

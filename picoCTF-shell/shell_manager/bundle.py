@@ -3,17 +3,16 @@ Bundling operation for the shell manager. A special case of packaging.
 """
 
 import json, spur
+import copy as object_copy
 
+import os
 from os import getcwd, makedirs
 from os.path import join, isdir, basename
 
-from shutil import rmtree, copy2
+from shutil import rmtree, copyfile
 
-from copy import deepcopy
-
-from shell_manager.problem import get_problem
-from shell_manager.package import get_problem_root, DEB_DEFAULTS
-from shell_manager.package import sanitize_name
+from shell_manager.problem import get_problem, get_problem_root
+from shell_manager.package import sanitize_name, DEB_DEFAULTS
 
 def bundle_to_control(bundle, debian_path):
     """
@@ -24,7 +23,7 @@ def bundle_to_control(bundle, debian_path):
         debian_path: path to the DEBIAN directory
     """
 
-    control = deepcopy(DEB_DEFAULTS)
+    control = object_copy.deepcopy(DEB_DEFAULTS)
     control.update(**{
         "Package": sanitize_name(bundle["name"]),
         "Version": bundle.get("version", "1.0-0"),
@@ -42,6 +41,26 @@ def bundle_to_control(bundle, debian_path):
     control_file = open(join(debian_path, "control"), "w")
     control_file.write(contents)
     control_file.close()
+
+
+def get_bundle_root(bundle_name, absolute=False):
+    """
+    Installation location for a given bundle.
+
+    Args:
+        bundle_name: the bundle name.
+        absolute: should return an absolute path.
+
+    Returns:
+        The tentative installation location.
+    """
+
+    bundle_root = join("opt", "hacksports", "bundles", sanitize_name(bundle_name))
+
+    if absolute:
+        return join(os.sep, bundle_root)
+
+    return bundle_root
 
 def get_bundle(bundle_path):
     """
@@ -73,14 +92,14 @@ def bundle_problems(args, config):
     paths = {"working": getcwd() if args.out is None else args.out}
     paths["staging"] = join(paths["working"], "__staging")
     paths["debian"] = join(paths["staging"], "DEBIAN")
+    paths["bundle_root"] = join(paths["staging"], get_bundle_root(bundle["name"]))
 
     [makedirs(staging_path) for _, staging_path in paths.items() if not isdir(staging_path)]
 
-    bundles_directory = join(paths["staging"], "opt", "hacksports", "bundles")
-    if not isdir(bundles_directory): makedirs(bundles_directory)
-    copy2(args.bundle_path, join(bundles_directory, basename(args.bundle_path)))
-
     bundle_to_control(bundle, paths["debian"])
+
+    copied_bundle_path = join(paths["bundle_root"], "bundle.json")
+    copyfile(args.bundle_path, copied_bundle_path)
 
     def format_deb_file_name(bundle):
         """

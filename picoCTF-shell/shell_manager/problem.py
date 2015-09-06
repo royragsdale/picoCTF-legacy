@@ -2,12 +2,14 @@
 Problem migration operations for the shell manager.
 """
 
-import json
+import json, os
 
 from sys import stdin
 from copy import deepcopy
 from os.path import join
 from re import findall
+
+from hacksport.utils import sanitize_name
 
 #More in-depth validation should occur with some sort of linting step.
 PROBLEM_FIELDS = [
@@ -66,6 +68,25 @@ def set_problem_defaults(problem, additional_defaults={}):
         if field not in problem:
             #Use the associated default function
             problem[field] = setter(problem)
+
+def get_problem_root(problem_name, absolute=False):
+    """
+    Installation location for a given problem.
+
+    Args:
+        problem_name: the problem name.
+        absolute: should return an absolute path.
+
+    Returns:
+        The tentative installation location.
+    """
+
+    problem_root = join("opt", "hacksports", "sources", sanitize_name(problem_name))
+
+    if absolute:
+        return join(os.sep, problem_root)
+
+    return problem_root
 
 def get_problem(problem_path):
     """

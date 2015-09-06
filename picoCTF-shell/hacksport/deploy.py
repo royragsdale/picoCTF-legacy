@@ -2,6 +2,7 @@
 Problem deployment.
 """
 
+from os.path import join
 from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
@@ -17,6 +18,9 @@ from hacksport.problem import File, ProtectedFile, ExecutableFile
 from hacksport.operations import create_user, execute
 from hacksport.utils import sanitize_name, get_attributes
 from shell_manager.bundle import get_bundle
+
+from shell_manager.bundle import get_bundle, get_bundle_root
+from shell_manager.problem import get_problem, get_problem_root
 
 import os
 import json
@@ -99,7 +103,7 @@ WantedBy=default.target
     problem_service_info = problem.service()
     converted_name = sanitize_name(problem.name)
     content = template.format(problem.name, problem_service_info['Type'], problem_service_info['ExecStart'])
-    service_file_path = os.path.join(path, "{}_{}.service".format(converted_name, instance_number))
+    service_file_path = join(path, "{}_{}.service".format(converted_name, instance_number))
 
     with open(service_file_path, "w") as f:
         f.write(content)
@@ -151,7 +155,7 @@ def generate_staging_directory(root=STAGING_ROOT):
         os.makedirs(root)
 
     def get_new_path():
-        path = os.path.join(root, str(randint(0, 1e12)))
+        path = join(root, str(randint(0, 1e12)))
         if os.path.isdir(path):
             return get_new_path()
         return path
@@ -203,7 +207,7 @@ def template_staging_directory(staging_directory, problem, dont_template_files =
     """
 
     # prepend the staging directory to all
-    dont_template_directories = [os.path.join(staging_directory, directory) for directory in dont_template_directories]
+    dont_template_directories = [join(staging_directory, directory) for directory in dont_template_directories]
 
     for root, dirnames, filenames in os.walk(staging_directory):
         if root in dont_template_directories:
@@ -211,7 +215,7 @@ def template_staging_directory(staging_directory, problem, dont_template_files =
         for filename in filenames:
             if filename in dont_template_files:
                 continue
-            fullpath = os.path.join(root, filename)
+            fullpath = join(root, filename)
             try:
                 template_file(fullpath, fullpath, **get_attributes(problem))
             except UnicodeDecodeError as e:
@@ -230,10 +234,10 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
 
     for f in file_list:
         # copy the file over, making the directories as needed
-        output_path = os.path.join(instance_directory, f.path)
+        output_path = join(instance_directory, f.path)
         if not os.path.isdir(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
-        shutil.copy2(os.path.join(staging_directory, f.path), output_path)
+        shutil.copy2(join(staging_directory, f.path), output_path)
 
         # set the ownership based on the type of file
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
@@ -304,14 +308,14 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
     username, home_directory = create_instance_user(problem_object['name'], instance_number)
     seed = generate_seed(problem_object['name'], deploy_config.DEPLOY_SECRET, str(instance_number))
     staging_directory = generate_staging_directory()
-    copypath = os.path.join(staging_directory, PROBLEM_FILES_DIR)
+    copypath = join(staging_directory, PROBLEM_FILES_DIR)
     shutil.copytree(problem_directory, copypath)
 
     # store cwd to restore later
     cwd = os.getcwd()
     os.chdir(copypath)
 
-    challenge = load_source("challenge", os.path.join(copypath, "challenge.py"))
+    challenge = load_source("challenge", join(copypath, "challenge.py"))
 
     if deployment_directory is None: deployment_directory = home_directory
 
@@ -329,18 +333,18 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
     web_accessible_files = []
 
     def url_for(web_accessible_files, source_name, display=None):
-        source_path = os.path.join(copypath, source_name)
+        source_path = join(copypath, source_name)
 
         problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
         problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
 
-        destination_path = os.path.join(sanitize_name(problem_object["name"]), problem_hash, source_name)
+        destination_path = join(sanitize_name(problem_object["name"]), problem_hash, source_name)
 
         link_template = "<a href='{}'>{}</a>"
 
-        web_accessible_files.append((source_path, os.path.join(deploy_config.WEB_ROOT, destination_path)))
+        web_accessible_files.append((source_path, join(deploy_config.WEB_ROOT, destination_path)))
         uri_prefix = "//"
-        uri = os.path.join(uri_prefix, deploy_config.HOSTNAME, destination_path)
+        uri = join(uri_prefix, deploy_config.HOSTNAME, destination_path)
 
         return link_template.format(uri, source_name if display is None else display)
 
@@ -398,7 +402,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
         TODO
     """
 
-    object_path = os.path.join(problem_directory, "problem.json")
+    object_path = join(problem_directory, "problem.json")
 
     with open(object_path, "r") as f:
         json_string = f.read()
@@ -488,15 +492,24 @@ def deploy_problems(args, config):
     if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
         raise Exception("Cannot specify deployment directory if deploying multiple problems or instances.")
 
-    if args.bundle_name is not None:
-        bundle_path = os.path.join("/", "opt", "hacksports", "bundles", args.bundle_name)
-        if not os.path.isfile(bundle_path):
-            raise Exception("Bundle {} does not exist.".format(args.bundle_name))
+    problems = args.problem_paths
 
-        problems = get_bundle(bundle_path)["problems"]
-        args.problem_paths.extend(problems)
+    if args.bundle:
+        bundle_problems = []
+        for bundle_path in args.problem_paths:
+            if os.path.isfile(bundle_path):
+                bundle = get_bundle(bundle_path)
+                bundle_problems.extend(bundle["problems"])
+            else:
+                bundle_sources_path = get_bundle_root(bundle_path, absolute=True)
+                if os.path.isdir(bundle_sources_path):
+                    bundle = get_bundle(join(bundle_sources_path, "bundle.json"))
+                    bundle_problems.extend(bundle["problems"])
+                else:
+                    raise Exception("Could not get bundle.")
+        problems = bundle_problems
 
-    for path in args.problem_paths:
+    for path in problems:
         if os.path.isdir(path):
             deploy_problem(path, instances=args.num_instances, test=args.dry,
                             deployment_directory=args.deployment_directory)
