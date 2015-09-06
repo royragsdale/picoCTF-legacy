@@ -1,6 +1,7 @@
 from flask import Flask, request, session, send_from_directory, render_template
 from flask import Blueprint
 import api
+import bson
 
 from api.common import WebSuccess, WebError
 from api.annotations import api_wrapper, require_login, require_teacher, require_admin
@@ -155,3 +156,17 @@ def bundle_dependencies():
     api.problem.set_bundle_dependencies_enabled(bid, state)
 
     return WebSuccess("Dependencies are now {}.".format("enabled" if state else "disabled"))
+
+@blueprint.route("/settings", methods=["GET"])
+@api_wrapper
+@require_admin
+def get_settings():
+    return WebSuccess(data=api.config.get_settings())
+
+@blueprint.route("/settings/change", methods=["POST"])
+@api_wrapper
+@require_admin
+def change_settings():
+    data = bson.json_util.loads(request.form["json"])
+    api.config.change_settings(data)
+    return WebSuccess("Settings updated")

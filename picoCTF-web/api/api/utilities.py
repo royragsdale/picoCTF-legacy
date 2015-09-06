@@ -12,13 +12,6 @@ from api.common import check, validate, safe_fail, WebException
 from voluptuous import Required, Length, Schema
 from datetime import datetime
 
-enable_email = False
-smtp_url = ''
-email_username = ''
-email_password = ''
-from_addr = ''
-from_name = ''
-
 password_reset_request_schema = Schema({
     Required('username'): check(
         ("Usernames must be between 3 and 20 characters.", [str, Length(min=3, max=20)]),
@@ -47,17 +40,19 @@ def send_email(recipient, subject, body):
         body: the body of the email
     """
 
+    settings = api.config.get_settings()["email"]
+
     #TODO: clean this up
-    if enable_email:
+    if settings["enable_email"]:
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = formataddr((from_name, from_addr))
+        msg['From'] = formataddr((settings["from_name"], settings["from_addr"]))
         msg['To'] = recipient
         part1 = MIMEText(body, 'plain')
         msg.attach(part1)
-        s = smtplib.SMTP_SSL(smtp_url)
-        s.login(email_username, email_password)
-        s.sendmail(from_addr, recipient, msg.as_string())
+        s = smtplib.SMTP_SSL(settings["smtp_url"])
+        s.login(settings["email_username"], settings["email_password"])
+        s.sendmail(settings["from_addr"], recipient, msg.as_string())
         s.quit()
     else:
         print("Emailing is disabled, not sending.")
@@ -127,4 +122,6 @@ def check_competition_active():
     Is the competition currently running
     """
 
-    return api.config.start_time.timestamp() < datetime.utcnow().timestamp() < api.config.end_time.timestamp()
+    settings = api.config.get_settings()
+
+    return settings["start_time"].timestamp() < datetime.utcnow().timestamp() < settings["end_time"].timestamp()

@@ -65,6 +65,9 @@ def problem_feedback_hook():
     if feedback is None or pid is None:
         return WebError("Please supply a pid and feedback.")
 
+    if not api.config.get_settings()["enable_feedback"]:
+        return WebError("Problem feedback is not enabled")
+
     api.problem_feedback.add_problem_feedback(pid, api.auth.get_uid(), feedback)
     return WebSuccess("Your feedback has been accepted.")
 

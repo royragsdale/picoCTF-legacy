@@ -6,15 +6,19 @@ post_scripts:
 -  js/management-problems-graphs.js
 -  js/management-problems.js
 -  js/management-shell.js
+-  js/management-settings.js
 -  js/management.js
 startup_functions:
  - redirectIfNotAdmin()
 ---
 
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.14.30/css/bootstrap-datetimepicker.min.css">
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
 <script type="text/javascript" src="/js/libs/jquery-sticky-tabs.js"></script>
 <script type="text/javascript" src="/js/libs/Chart.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.14.30/js/bootstrap-datetimepicker.min.js"></script>
 
 <script type="text/template" id="problem-category-options-template">
     <div class="panel panel-default">

@@ -82,14 +82,15 @@ def logout_hook():
 @blueprint.route('/status', methods=['GET'])
 @api_wrapper
 def status_hook():
+    settings = api.config.get_settings()
     status = {
         "logged_in": api.auth.is_logged_in(),
         "admin": api.auth.is_logged_in() and api.user.is_admin(),
         "teacher": api.auth.is_logged_in() and api.user.is_teacher(),
-        "enable_teachers": api.config.enable_teachers,
-        "enable_feedback": api.config.enable_feedback,
-        "enable_captcha": api.config.enable_captcha,
-        "reCAPTCHA_public_key": api.config.reCAPTCHA_public_key,
+        "enable_teachers": settings["enable_teachers"],
+        "enable_feedback": settings["enable_feedback"],
+        "enable_captcha": settings["captcha"]["enable_captcha"],
+        "reCAPTCHA_public_key": settings["captcha"]["reCAPTCHA_public_key"],
         "competition_active": api.utilities.check_competition_active(),
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else ""
     }

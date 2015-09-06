@@ -128,3 +128,8 @@ $.fn.serializeObject = ->
            o[this.name] = this.value || ''
    )
    return o
+
+$ ->
+  apiCall "GET", "/api/user/status", {}
+  .done (data) ->
+    document.competition_status = data.data

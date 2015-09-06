@@ -8,7 +8,7 @@ from collections import defaultdict
 from hashlib import sha1
 
 _get_problem_names = lambda problems: [problem['name'] for problem in problems]
-top_teams = 10
+top_teams = 5
 
 @api.cache.memoize()
 def get_score(tid=None, uid=None):

@@ -200,14 +200,16 @@ def _validate_captcha(data):
         data: the posted form data
     """
 
+    settings = api.config.get_settings()["captcha"]
+
     post_data = urllib.parse.urlencode({
-        "privatekey": api.config.reCAPTCHA_private_key,
+        "privatekey": settings["reCAPTCHA_private_key"],
         "remoteip": flask.request.remote_addr,
         "challenge": data["recaptcha_challenge_field"],
         "response": data["recaptcha_response_field"]
     }).encode("utf-8")
 
-    request = urllib.request.Request(api.config.captcha_url, post_data)
+    request = urllib.request.Request(settings["captcha_url"], post_data)
     response = urllib.request.urlopen(request).read().decode("utf-8")
     return response.split("\n")[0].lower() == "true"
 
@@ -228,7 +230,7 @@ def create_simple_user_request(params):
     params["country"] = "US"
     validate(user_schema, params)
 
-    if api.config.enable_captcha and not _validate_captcha(params):
+    if api.config.get_settings()["captcha"]["enable_captcha"] and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
 
     team_params = {

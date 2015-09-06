@@ -144,13 +144,14 @@ class SevereHandler(logging.handlers.SMTPHandler):
     messages = {}
 
     def __init__(self):
+        settings = api.config.get_settings()
         logging.handlers.SMTPHandler.__init__(
             self,
-            mailhost=api.utilities.smtp_url,
-            fromaddr=api.utilities.from_addr,
-            toaddrs=admin_emails,
+            mailhost=settings["email"]["smtp_url"],
+            fromaddr=settings["email"]["from_addr"],
+            toaddrs=settings["logging"]["admin_emails"],
             subject="Critical Error in {}".format(api.config.competition_name),
-            credentials=(api.utilities.email_username, api.utilities.email_password),
+            credentials=(settings["email"]["email_username"], settings["email"]["email_password"]),
             secure=()
         )
 
@@ -160,7 +161,7 @@ class SevereHandler(logging.handlers.SMTPHandler):
         """
 
         last_time = self.messages.get(record.msg, None)
-        if last_time is None or time.time() - last_time > critical_error_timeout:
+        if last_time is None or time.time() - last_time > api.config.get_settings()["critical_error_timeout"]:
             super(SevereHandler, self).emit(record)
             self.messages[record.msg] = time.time()
 
@@ -247,7 +248,7 @@ def setup_logs(args):
     log.root.setLevel(level)
     log.root.addHandler(internal_error_log)
 
-    if api.utilities.enable_email:
+    if api.config.get_settings()["email"]["enable_email"]:
         severe_error_log = SevereHandler()
         severe_error_log.setLevel(logging.CRITICAL)
         log.root.addHandler(severe_error_log)

@@ -93,7 +93,7 @@ def require_teacher(f):
     @require_login
     @wraps(f)
     def wrapper(*args, **kwds):
-        if not api.user.is_teacher() or not api.config.enable_teachers:
+        if not api.user.is_teacher() or not api.config.get_settings()["enable_teachers"]:
             raise WebException("You must be a teacher!")
         return f(*args, **kwds)
     return wrapper
@@ -144,7 +144,7 @@ def block_before_competition(return_result):
 
         @wraps(f)
         def wrapper(*args, **kwds):
-            if datetime.utcnow().timestamp() > api.config.start_time.timestamp():
+            if datetime.utcnow().timestamp() > api.config.get_settings()["start_time"].timestamp():
                 return f(*args, **kwds)
             else:
                 return return_result
@@ -163,7 +163,7 @@ def block_after_competition(return_result):
 
         @wraps(f)
         def wrapper(*args, **kwds):
-            if datetime.utcnow().timestamp() < api.config.end_time.timestamp():
+            if datetime.utcnow().timestamp() < api.config.get_settings()["end_time"].timestamp():
                 return f(*args, **kwds)
             else:
                 return return_result
