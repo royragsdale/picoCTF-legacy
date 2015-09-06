@@ -15,11 +15,14 @@ from hacksport.utils import sanitize_name, get_attributes
 
 import os
 import shutil
+import functools
 
 PROBLEM_FILES_DIR = "problem_files"
 
 # TODO: move somewhere else
 SECRET = "hacksports2015"
+WEB_ROOT = "/var/www"
+HOSTNAME = "supershellserver.com"
 
 def challenge_meta(attributes):
     """
@@ -58,7 +61,15 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
 
     random = Random(seed)
     attributes = problem_object
-    attributes.update({"random": random, "user": user, "directory": instance_directory})
+
+    #url_for is a stub. Real implementation is placed before templating.
+    #Calling it anywhere else is an error.
+    def url_for_stub(_):
+        raise Exception("url_for should only be called during templating operations.")
+
+    attributes.update({"random": random, "user": user,
+                       "directory": instance_directory, "url_for": url_for_stub})
+
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
 def create_service_file(problem, instance_number, path):
@@ -249,6 +260,28 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
 
     # reseed and generate flag
     problem.flag = problem.generate_flag(Random(seed))
+
+    web_accessible_files = []
+
+    def url_for(web_accessible_files, source_name):
+        source_path = os.path.join(copypath, source_name)
+
+        problem_hash = problem_object["name"] + SECRET + str(instance_number)
+        problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
+
+        destination_path = os.path.join(sanitize_name(problem_object["name"]), problem_hash, source_name)
+
+        link_template = "<a href='{}'>{}</a>"
+
+        web_accessible_files += [{"source": source_path,
+                                  "destination": os.path.join(WEB_ROOT, destination_path)}]
+        uri_prefix = "//"
+        uri = os.path.join(uri_prefix, HOSTNAME, destination_path)
+
+        return link_template.format(uri, source_name)
+
+    #Add real implementation
+    problem.url_for = functools.partial(url_for, web_accessible_files)
 
     template_staging_directory(staging_directory, problem)
 

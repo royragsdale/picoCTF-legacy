@@ -124,10 +124,11 @@ class Remote(Challenge):
     Base behavior for remote challenges.
     """
 
-    remote_files = []
-
     def setup(self):
-        """ No-op implementation for Challenge. """
+        """
+        No-op implementation of setup
+        """
+
         pass
 
     @property
@@ -143,6 +144,10 @@ class Remote(Challenge):
         """
         Setup function for remote challenges
         """
+
+        if self.program_name is None:
+            raise Exception("Must specify program_name for remote challenge.")
+
         self.remote_files = [ExecutableFile(self.program_name)]
 
     def service(self):
