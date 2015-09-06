@@ -6,6 +6,8 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from hashlib import md5
 from hacksport.operations import give_port, execute
 
+import os
+
 class File(object):
     """
     Wraps files with default permissions
@@ -142,8 +144,7 @@ class Remote(Challenge):
         self.remote_files = [ExecutableFile(self.program_name)]
 
     def service(self):
-        #TODO: use full path of binary for EXEC:
         return {"Type":"simple",
-                "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} EXEC:./{}".format(
-                    self.port, self.user, self.program_name)
+                "ExecStart":"socat tcp-listen:{},fork,reuseaddr,su={} EXEC:{}".format(
+                    self.port, self.user, os.path.join(self.directory, self.program_name))
                }

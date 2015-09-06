@@ -234,7 +234,7 @@ def generate_instance(problem_object, problem_directory, instance_number, test_i
         problem_object: The contents of the problem.json
 
     Returns:
-        A tuple containing (flag, staging_directory, files)
+        A tuple containing (problem, staging_directory, home_directory, files)
     """
 
     username, home_directory = create_instance_user(problem_object['name'], instance_number)
