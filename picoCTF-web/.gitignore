@@ -1,5 +1,7 @@
 *.pyc
 *.project
+results.xml
+ghostdriver.log
 .idea
 .vagrant
 web/js/*.js

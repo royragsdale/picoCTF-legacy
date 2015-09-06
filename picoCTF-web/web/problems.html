@@ -66,9 +66,11 @@ startup_functions:
             <% if (problem.unlocked) { %>
               <div class="problem-body panel-body">
                   <ul class="nav nav-tabs">
-                      <li class="<%= pill.solveClassName %>"><a href="#<%= pill.solveId %>" data-toggle="tab">Solve</a>
+                      <li class="<%= pill.solveClassName %>">
+                        <a href="#<%= pill.solveId %>" data-toggle="tab" class="solve-tab-button" data-pid="<%= problem.pid %>">Solve</a>
                       </li>
-                      <li><a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
+                      <li>
+                        <a href="#<%= pill.hintId %>" data-toggle="tab" class="hint-tab-button" data-pid="<%= problem.pid %>">Hints</a>
                       </li>
                   </ul>
                   <div class="tab-content">

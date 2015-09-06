@@ -21,6 +21,7 @@ sudo jekyll build
 # Make sure everything is in UNIX format.
 sudo dos2unix -q /srv/http/ctf/*.html
 
+# Make sure everything is readable
 sudo chmod -R +r /srv/http/ctf/*
 
 # Start the server
