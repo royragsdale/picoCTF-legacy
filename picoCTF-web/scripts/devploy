@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOT=/vagrant/ctf-infrastructure
+ROOT="/vagrant/picoCTF-web"
 
 # Transpile the CoffeeScript files
 echo "Transpiling Coffeescript"
