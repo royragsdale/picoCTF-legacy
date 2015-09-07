@@ -62,7 +62,12 @@ def bundle_problems(args, config):
             raise Exception("'{}' is not an installed problem.".format(problem_name))
 
     paths = {"working": getcwd() if args.out is None else args.out}
-    paths["staging"] = join(paths["working"], "__staging")
+
+    if args.staging_dir:
+        paths["staging"] = join(args.staging_dir, "__staging")
+    else:
+        paths["staging"] = join(paths["working"], "__staging")
+
     paths["debian"] = join(paths["staging"], "DEBIAN")
     paths["bundle_root"] = join(paths["staging"], get_bundle_root(bundle["name"]))
 
