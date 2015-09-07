@@ -1,8 +1,4 @@
-import sys
-
-sys.path.append("/vagrant/ctf-infrastructure/api")
-
-import api
+import sys, api
 
 try:
     sid = api.shell_servers.add_server({
