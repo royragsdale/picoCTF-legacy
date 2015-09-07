@@ -114,7 +114,7 @@ def find_problems(problem_path):
     Args:
         problem_path: the problem directory
     Returns:
-        A list of problem objects returned from get_problem.
+        A list of problem paths returned from get_problem.
     """
 
     problem_paths = []
@@ -123,7 +123,7 @@ def find_problems(problem_path):
         if "problem.json" in files:
             problem_paths.append(root)
 
-    return [get_problem(found_problem_path) for found_problem_path in problem_paths]
+    return problem_paths
 
 def problem_builder(args, config):
     """
@@ -131,16 +131,17 @@ def problem_builder(args, config):
     """
 
     #Grab a problem_path
-    problem_path = args.problem_paths.pop()
+    problem_base_path = args.problem_paths.pop()
 
-    problems = find_problems(problem_path)
+    problem_paths = find_problems(problem_base_path)
 
-    if len(problems) == 0:
-        print("No problems found under {}!".format(problem_path))
+    if len(problem_paths) == 0:
+        print("No problems found under {}!".format(problem_base_path))
 
-    for problem in problems:
+    for problem_path in problem_paths:
+        problem = get_problem(problem_path)
+
         paths = {}
-
         if args.staging_dir is None:
             paths["staging"] = join(problem_path, "__staging")
         else:
