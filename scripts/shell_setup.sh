@@ -1,5 +1,6 @@
 #!/bin/bash
 
+USER_HOME="/home/vagrant"
 ROOT="/vagrant/picoCTF-shell-manager"
 
 apt-get -y update
@@ -30,3 +31,28 @@ cp /vagrant/configs/monit/shell.conf /etc/monit/conf.d
 systemctl enable monit
 systemctl start monit
 monit reload
+
+# Install the example problems.
+EXAMPLE_PROBLEMS_ROOT="/vagrant/picoCTF-problems/Examples"
+
+mkdir -p $USER_HOME/debs $USER_HOME/bundles
+
+shell_manager package -s $USER_HOME -o $USER_HOME/debs $EXAMPLE_PROBLEMS_ROOT
+for f in $USER_HOME/debs/*
+do
+    echo "Installing $f..."
+    dpkg -i $f
+    apt-get install -fy
+done
+
+
+shell_manager bundle -s $USER_HOME -o $USER_HOME/bundles $EXAMPLE_PROBLEMS_ROOT/Bundles/example.json
+for f in $USER_HOME/bundles/*
+do
+    echo "Installing bundle: $f..."
+    dpkg -i $f
+    apt-get install -fy
+done
+
+# Fix dependencies
+shell_manager deploy -b challenge-sampler
