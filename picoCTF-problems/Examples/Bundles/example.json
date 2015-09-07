@@ -3,7 +3,7 @@
   "author": "Christopher Ganas",
   "description": "This is the set of example challenges provided in the picoCTF-Problems repository.",
   "categories": ["Binary Exploitation", "Cryptography", "Web Exploitation"],
-  "problems": ["buffer-overflow-1", "ecb-encryption", "sql-injection-1"],
+  "problems": ["buffer-overflow-1", "ecb-1", "sql-injection-1"],
   "dependencies": {
     "ecb-encryption": {
       "threshold": 1,
