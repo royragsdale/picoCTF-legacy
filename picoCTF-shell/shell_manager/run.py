@@ -49,6 +49,7 @@ def main():
 
     bundle_parser = subparsers.add_parser("bundle", help="create a bundle of problems")
     bundle_parser.add_argument("bundle_path", type=str, help="the name of the bundle.")
+    bundle_parser.add_argument("-s", "--staging-dir", help="use an explicit directory for problem staging.")
     bundle_parser.add_argument("-o", "--out", type=str, help="folder to store the bundle.")
     bundle_parser.set_defaults(func=bundle_problems)
 
