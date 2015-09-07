@@ -24,6 +24,7 @@ def main():
     subparsers = parser.add_subparsers(help="package problem for distribution")
 
     problem_package_parser = subparsers.add_parser("package", help="problem package management")
+    problem_package_parser.add_argument("-s", "--staging-dir", help="use an explicit directory for problem staging.")
     problem_package_parser.add_argument("-o", "--out", help="folder to store problem package.")
     problem_package_parser.add_argument("-i", "--ignore", dest="ignore", default=[], action="append", help="list of files to ignore adding to the deb")
     problem_package_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
