@@ -1356,6 +1356,7 @@ VT100.prototype.mouseEvent = function(event, type) {
   // invalidate the selection.
   var selection    = this.selection();
   if ((type == 1 /* MOUSE_UP */ || type == 2 /* MOUSE_CLICK */) && !selection.length) {
+    this.input.setAttribute('style', 'position:fixed; top:' + event.y + 'px;opacity:0;z-index;-10');
     this.input.focus();
   }
 
