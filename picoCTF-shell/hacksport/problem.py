@@ -183,8 +183,7 @@ class Service(Challenge):
 
     def service(self):
         return {"Type":"simple",
-                "ExecStart":"/bin/bash -c \"cd {}; {}\"".format(
-                    self.directory, self.start_cmd)
+                "ExecStart":"/bin/bash -c \"{}\"".format(self.start_cmd)
                }
 
 class Remote(Service):
