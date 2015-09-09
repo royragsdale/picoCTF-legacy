@@ -188,16 +188,20 @@ AuthPanel = React.createClass
 
     if @state.page == "Team Management"
       <div>
-        <Col md={6} mdOffset={3}>
-          <TeamManagementForm/>
-        </Col>
+        <Row>
+          <Col md={6} mdOffset={3}>
+            <TeamManagementForm/>
+          </Col>
+        </Row>
       </div>
     else
       <div>
-        <Col md={6} mdOffset={3}>
-          <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
-            onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
-        </Col>
+        <Row>
+          <Col md={6} mdOffset={3}>
+            <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
+              onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
+          </Col>
+        </Row>
       </div>
 
 $ ->
