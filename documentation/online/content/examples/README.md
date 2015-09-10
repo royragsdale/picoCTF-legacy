@@ -1,7 +1,7 @@
 # Example Challenges
 
 In this section, we will walk through making a few challenges
-for the picoCTF platform.
+for the picoCTF-platform.
 
 1. [Simple Buffer Overflow Challenge](bufferoverflow.md)
 2. [Cryptography Challenge + Intermediate Usage](crypto.md)
