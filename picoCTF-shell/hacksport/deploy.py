@@ -4,6 +4,7 @@ Problem deployment.
 
 PROBLEM_FILES_DIR = "problem_files"
 STATIC_FILE_ROOT = "static"
+SYSTEMD_SERVICE_PATH = "/lib/systemd/system/"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -145,16 +146,21 @@ def create_service_file(problem, instance_number, path):
 Description={} instance
 
 [Service]
+User={}
+WorkingDirectory={}
 Type={}
 ExecStart={}
+Restart={}
 
 [Install]
-WantedBy=default.target
+WantedBy=shell_manager.target
 """
 
     problem_service_info = problem.service()
     converted_name = sanitize_name(problem.name)
-    content = template.format(problem.name, problem_service_info['Type'], problem_service_info['ExecStart'])
+    content = template.format(problem.name, problem.user, problem.directory,
+                              problem_service_info['Type'], problem_service_info['ExecStart'],
+                              "no" if problem_service_info['Type'] == "oneshot" else "always")
     service_file_path = join(path, "{}_{}.service".format(converted_name, instance_number))
 
     with open(service_file_path, "w") as f:
@@ -305,46 +311,22 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
         # set the permissions appropriately
         os.chmod(output_path, f.permissions)
 
-def install_user_service(home_directory, user, service_file):
+def install_user_service(service_file):
     """
-    Installs the service file into the systemd user directory for the provided user,
+    Installs the service file into the systemd service directory,
     sets the service to start on boot, and starts the service now.
 
     Args:
-        home_directory: The home directory for the user provided
-        user: The user that will run the service
         service_file: The path to the systemd service file to install
     """
 
-    # make user service directory
-    service_dir_path = os.path.join(home_directory, ".config", "systemd", "user")
-    if not os.path.isdir(service_dir_path):
-        os.makedirs(service_dir_path)
-
-    # make target directory for enabled services
-    default_target_path = os.path.join(service_dir_path, "default.target.wants")
-    if not os.path.isdir(default_target_path):
-        os.makedirs(default_target_path)
-
-    userpw = getpwnam(user)
-    os.chown(default_target_path, userpw.pw_uid, userpw.pw_gid)
+    service_name = os.path.basename(service_file)
 
     # copy service file
-    service_path = os.path.join(service_dir_path, os.path.basename(service_file))
+    service_path = os.path.join(SYSTEMD_SERVICE_PATH, service_name)
     shutil.copy2(service_file, service_path)
 
-    # enable automatic starting of user services
-    execute("loginctl enable-linger {}".format(user))
-    execute("systemctl restart user@{}.service".format(userpw.pw_uid), timeout=60)
-
-    # set environment variable so "su -l problem_user" will correctly populate it
-    # this is due to a known issue with su -l
-    with open(os.path.join(home_directory, ".profile"), "w") as f:
-        f.write("export XDG_RUNTIME_DIR=/run/user/{}\n".format(userpw.pw_uid))
-
-    # enable and restart the service
-    execute("su -l {} bash -c 'systemctl --user daemon-reload; systemctl --user enable {}; systemctl --user restart {}'".format(
-        user, os.path.basename(service_file), os.path.basename(service_file)))
+    execute("systemctl enable {0}; systemctl restart {0};".format(service_name), timeout=60)
 
 def generate_instance(problem_object, problem_directory, instance_number, deployment_directory=None):
     """
@@ -520,7 +502,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
                     os.makedirs(os.path.dirname(destination))
                 shutil.copy2(source, destination)
 
-            install_user_service(instance["home_directory"], problem.user, instance["service_file"])
+            install_user_service(instance["service_file"])
 
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
