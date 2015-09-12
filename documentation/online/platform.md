@@ -1,6 +1,6 @@
-# Infrastructure Overview
+# picoCTF-platform Overview
 
-The picoCTF infrastructure has two main components: the shell servers and the web server.
+The picoCTF-platform has two main components: the shell servers and the web server.
 
 ## Shell Servers
 
@@ -16,7 +16,7 @@ using the same credentials as the web server.
 ## Web Server
 
 The web server is responsible for running the web site and storing competition data. Here the
-adminstrator can manage the problems and competition settings and montior the progress of the
+administrator can manage the problems and competition settings and monitor the progress of the
 competitors.
 
 The problems are loaded into the web server on the Shell Servers tab of the administrator page.
