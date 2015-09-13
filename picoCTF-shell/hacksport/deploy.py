@@ -326,9 +326,9 @@ def install_user_service(service_file):
     service_path = os.path.join(SYSTEMD_SERVICE_PATH, service_name)
     shutil.copy2(service_file, service_path)
 
-    execute(["systemctl", "daemon-reload"])
-    execute(["systemctl", "enable", service_name])
-    execute(["systemctl", "restart", service_name])
+    execute(["systemctl", "daemon-reload"], timeout=60)
+    execute(["systemctl", "enable", service_name], timeout=60)
+    execute(["systemctl", "restart", service_name], timeout=60)
 
 def generate_instance(problem_object, problem_directory, instance_number, deployment_directory=None):
     """
