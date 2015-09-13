@@ -4,7 +4,7 @@ Problem deployment.
 
 PROBLEM_FILES_DIR = "problem_files"
 STATIC_FILE_ROOT = "static"
-SYSTEMD_SERVICE_PATH = "/lib/systemd/system/"
+SYSTEMD_SERVICE_PATH = "/etc/systemd/system/"
 
 # will be set to the configuration module during deployment
 deploy_config = None
@@ -326,7 +326,9 @@ def install_user_service(service_file):
     service_path = os.path.join(SYSTEMD_SERVICE_PATH, service_name)
     shutil.copy2(service_file, service_path)
 
-    execute("systemctl enable {0}; systemctl restart {0};".format(service_name), timeout=60)
+    execute(["systemctl", "daemon-reload"])
+    execute(["systemctl", "enable", service_name])
+    execute(["systemctl", "restart", service_name])
 
 def generate_instance(problem_object, problem_directory, instance_number, deployment_directory=None):
     """
