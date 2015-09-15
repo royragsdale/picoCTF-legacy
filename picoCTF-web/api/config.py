@@ -62,16 +62,23 @@ into the database if no settings are already loaded.
 default_settings = {
     "enable_teachers": True,
     "enable_feedback": True,
-    # start and end times!
+
+    # TIME WINDOW
     "start_time": datetime.datetime.utcnow(),
     "end_time": datetime.datetime.utcnow(),
+
+    # EMAIL WHITELIST
+    "email_filter": [],
+
     # TEAMS
     "max_team_size": 1,
+
     # ACHIEVEMENTS
     "achievements": {
         "enable_achievements": True,
         "processor_base_path": "./achievements",
     },
+
     # EMAIL (SMTP)
     "email":{
         "enable_email": False,
@@ -81,6 +88,7 @@ default_settings = {
         "from_addr": "",
         "from_name": "",
     },
+
     # CAPTCHA
     "captcha": {
         "enable_captcha": False,
@@ -88,6 +96,7 @@ default_settings = {
         "reCAPTCHA_public_key":  "",
         "reCAPTCHA_private_key": "",
     },
+
     # LOGGING
     # Will be emailed any severe internal exceptions!
     # Requires email block to be setup.
