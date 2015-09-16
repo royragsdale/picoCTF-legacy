@@ -65,10 +65,12 @@ EmailTab = React.createClass
     refresh: React.PropTypes.func.isRequired
     emailSettings: React.PropTypes.object.isRequired
     loggingSettings: React.PropTypes.object.isRequired
+    emailFilterSettings: React.PropTypes.array.isRequired
 
   getInitialState: ->
     settings = @props.emailSettings
-    $.extend(settings, @props.loggingSettings)
+    $.extend settings, @props.loggingSettings
+    settings.email_filter = @props.emailFilterSettings
     settings
 
   updateSMTPUrl: (e) ->
@@ -101,7 +103,7 @@ EmailTab = React.createClass
       $set:
         enable_email: !@state.enable_email
 
-  pushUpdates: ->
+  pushUpdates: (makeChange) ->
     pushData =
       email:
         enable_email: @state.enable_email
@@ -112,6 +114,10 @@ EmailTab = React.createClass
         from_name: @state.from_name
       logging:
         admin_emails: @state.admin_emails
+      email_filter: @state.email_filter
+
+    if makeChange
+      pushData = makeChange pushData
 
     apiCall "POST", "/api/admin/settings/change", {json: JSON.stringify(pushData)}
     .done ((data) ->
@@ -128,18 +134,25 @@ EmailTab = React.createClass
     fromNameDescription = "The name to use for sending emails"
 
     <Well>
-      <BooleanEntry name="Send Emails" value={@state.enable_email} onChange=@toggleEnabled description={emailDescription}/>
-      <TextEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl description={SMTPDescription} />
-      <TextEntry name="Email Username" value={@state.email_username} type="text" onChange=@updateUsername description={usernameDescription}/>
-      <TextEntry name="Email Password" value={@state.email_password} type="password" onChange=@updatePassword description={passwordDescription}/>
-      <TextEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr description={fromAddressDescription}/>
-      <TextEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName description={fromNameDescription}/>
       <Row>
-        <div className="text-center">
-          <ButtonToolbar>
-            <Button onClick={@pushUpdates}>Update</Button>
-          </ButtonToolbar>
-        </div>
+        <Col xs={6}>
+          <BooleanEntry name="Send Emails" value={@state.enable_email} onChange=@toggleEnabled description={emailDescription}/>
+          <TextEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl description={SMTPDescription} />
+          <TextEntry name="Email Username" value={@state.email_username} type="text" onChange=@updateUsername description={usernameDescription}/>
+          <TextEntry name="Email Password" value={@state.email_password} type="password" onChange=@updatePassword description={passwordDescription}/>
+          <TextEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr description={fromAddressDescription}/>
+          <TextEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName description={fromNameDescription}/>
+          <Row>
+            <div className="text-center">
+              <ButtonToolbar>
+                <Button onClick={@pushUpdates}>Update</Button>
+              </ButtonToolbar>
+            </div>
+          </Row>
+        </Col>
+        <Col xs={6}>
+          <EmailWhitelist pushUpdates={@pushUpdates} emails={@props.emailFilterSettings}/>
+        </Col>
       </Row>
     </Well>
 
@@ -160,6 +173,7 @@ SettingsTab = React.createClass
         from_name: ""
       logging:
         admin_emails: []
+      email_filter: []
 
     tabKey: "general"
 
@@ -195,7 +209,8 @@ SettingsTab = React.createClass
             <GeneralTab refresh=@refresh settings={generalSettings} key={Math.random()}/>
           </TabPane>
           <TabPane eventKey='email' tab='Email'>
-            <EmailTab refresh=@refresh emailSettings={@state.settings.email} loggingSettings={@state.settings.logging} key={Math.random()}/>
+            <EmailTab refresh=@refresh emailSettings={@state.settings.email} emailFilterSettings={@state.settings.email_filter}
+              loggingSettings={@state.settings.logging} key={Math.random()}/>
           </TabPane>
         </TabbedArea>
       </Grid>
