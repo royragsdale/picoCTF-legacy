@@ -2,7 +2,7 @@
 API functions relating to user management and registration.
 """
 
-import bcrypt, re, urllib.parse, urllib.request, flask, json, string
+import bcrypt, re, urllib.parse, urllib.request, flask, json, string, re
 
 import api
 
@@ -16,10 +16,32 @@ _check_email_format = lambda email: re.match(r".+@.+\..{2,}", email) is not None
 def _check_username(username):
     return all([c in string.digits + string.ascii_lowercase for c in username.lower()])
 
+def verify_email_in_whitelist(email):
+    """
+    Verify that the email address passes the global whitelist if one exists.
+
+    Args:
+        email: The email address to verify
+    """
+
+    settings = api.config.get_settings()
+
+    #Nothing to check against!
+    if len(settings["email_filter"]) == 0:
+        return True
+
+    for email_domain in settings["email_filter"]:
+        if re.match(r".*?@{}$".format(email_domain), email) is not None:
+            return True
+
+    return False
+
 user_schema = Schema({
     Required('email'): check(
         ("Email must be between 5 and 50 characters.", [str, Length(min=5, max=50)]),
-        ("Your email does not look like an email address.", [_check_email_format])
+        ("Your email does not look like an email address.", [_check_email_format]),
+        ("Your email does not belong to the whitelist. Please see the registration form for details.",
+          [verify_email_in_whitelist])
     ),
     Required('firstname'): check(
         ("First Name must be between 1 and 50 characters.", [str, Length(min=1, max=50)])
