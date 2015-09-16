@@ -77,7 +77,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=["Flask", "py3k-bcrypt", "pymongo==2.7.1", "pyzmq", "py",
                       "pytest", "voluptuous", "gunicorn", "spur", "line_profiler",
-                      "selenium"],
+                      "selenium", "Flask-Mail"],
 
     entry_points={
         'console_scripts': [
