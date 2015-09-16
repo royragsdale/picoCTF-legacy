@@ -6,10 +6,12 @@ Panel = ReactBootstrap.Panel
 Glyphicon = ReactBootstrap.Glyphicon
 ButtonInput = ReactBootstrap.ButtonInput
 ButtonGroup = ReactBootstrap.ButtonGroup
+Alert = ReactBootstrap.Alert
 
 update = React.addons.update
 
 LoginForm = React.createClass
+
   render: ->
     userGlyph = <Glyphicon glyph="user"/>
     lockGlyph = <Glyphicon glyph="lock"/>
@@ -34,14 +36,21 @@ LoginForm = React.createClass
         </form>
       </Panel>
     else
+      showEmailFilter = (->
+        <Alert bsStyle="warning">
+          You can register provided you have an email for one of these domains: <strong>{@props.emailFilter.join ", "}</strong>.
+        </Alert>
+      ).bind this
+
       registrationForm = if @props.status == "Register" then \
         <span>
           <Row>
+            {if @props.emailFilter.length > 0 then showEmailFilter() else <span/>}
             <Col md={6}>
-              <Input type="text" id="first-name" valueLink={@props.firstname} label="Firstname"/>
+              <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
             </Col>
             <Col md={6}>
-              <Input type="text" id="last-name" valueLink={@props.lastname} label="Lastname"/>
+              <Input type="text" id="last-name" valueLink={@props.lastname} label="Last Name"/>
             </Col>
           </Row>
           <Row>
@@ -196,7 +205,8 @@ AuthPanel = React.createClass
       <div>
         <Col md={6} mdOffset={3}>
           <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
-            onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
+            onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
+            {...links}/>
         </Col>
       </div>
 
