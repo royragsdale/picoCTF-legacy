@@ -43,6 +43,10 @@ def join_team_hook():
 @api_wrapper
 def get_team_status():
     settings = api.config.get_settings()
-    filtered_settings = {"max_team_size": settings["max_team_size"]}
+
+    filtered_settings = {
+        "max_team_size": settings["max_team_size"],
+        "email_filter": settings["email_filter"]
+    }
 
     return WebSuccess(data=filtered_settings)
