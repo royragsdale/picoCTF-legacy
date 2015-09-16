@@ -49,7 +49,8 @@ EmailWhitelist = React.createClass
     # It would probably make more sense to this kind of validation server side.
     # However, it can't cause any real issue being here.
 
-    console.log @props.emails, _.indexOf(@props.emails, @state.emailDomain)
+    e.preventDefault()
+
     if _.indexOf(@props.emails, @state.emailDomain) != -1
       apiNotify {status: 0, message: "This email domain has already been whitelisted."}
     else if _.indexOf(@state.emailDomain, "@") != -1
