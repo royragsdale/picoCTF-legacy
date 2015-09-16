@@ -127,6 +127,7 @@ def get_user(name=None, uid=None):
 def create_user(username, firstname, lastname, email, password_hash, tid, teacher=False, country="US", admin=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
+    **GENERALLY CONSIDERED DEPRECATED**
 
     Args:
         username: user's username
