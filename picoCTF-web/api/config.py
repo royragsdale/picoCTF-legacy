@@ -40,7 +40,7 @@ testing_mongo_port = 27017
 
 """ SETUP """
 competition_name = "ctf"
-competition_urls = ["127.0.0.1:8080"]
+competition_urls = ["http://192.168.2.2"]
 
 
 # Helper class for timezones
@@ -62,6 +62,8 @@ into the database if no settings are already loaded.
 default_settings = {
     "enable_teachers": True,
     "enable_feedback": True,
+
+    "email_verification": True,
 
     # TIME WINDOW
     "start_time": datetime.datetime.utcnow(),
