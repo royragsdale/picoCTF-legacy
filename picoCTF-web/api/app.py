@@ -4,6 +4,7 @@ Flask routing
 
 from flask import Flask, request, session, send_from_directory, render_template
 from werkzeug.contrib.fixers import ProxyFix
+from flask_mail import Mail
 
 app = Flask(__name__, static_path="/")
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -42,10 +43,19 @@ def config_app(*args, **kwargs):
     This needed to be done for gunicorn.
     """
 
+    settings = api.config.get_settings()
+
     app.secret_key = secret_key
     app.config["SESSION_COOKIE_DOMAIN"] = session_cookie_domain
     app.config["SESSION_COOKIE_PATH"] = session_cookie_path
     app.config["SESSION_COOKIE_NAME"] = session_cookie_name
+
+    if settings["email"]["enable_email"]:
+        app.config["MAIL_SERVER"] = settings["email"]["smtp_url"]
+        app.config["MAIL_USERNAME"] = settings["email"]["email_username"]
+        app.config["MAIL_PASSWORD"] = settings["email"]["email_password"]
+
+        api.email.mail = Mail(app)
 
     app.register_blueprint(api.routes.autogen.blueprint, url_prefix="/api/autogen")
     app.register_blueprint(api.routes.user.blueprint, url_prefix="/api/user")
