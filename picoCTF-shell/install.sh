@@ -48,3 +48,6 @@ sysctl -p
 hostname shell
 echo "shell" > /etc/hostname
 echo -e "127.0.0.1\tshell" >> /etc/hosts
+
+# make shell_manager.target services run on reboot
+sudo systemctl add-wants default.target shell_manager.target

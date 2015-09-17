@@ -115,7 +115,7 @@ def status(args, config):
                 status["connection"] = True
             except ConnectionRefusedError as e:
                 pass
-        result = execute("sudo su -l {} bash -c 'systemctl --user is-failed {}'".format(instance["user"], instance["service"]), allow_error=True)
+        result = execute(["systemctl", "is-failed", instance["service"]], allow_error=True)
         status["service"] = result.return_code == 1
 
         if status["port"] is not None and not status["connection"]:
