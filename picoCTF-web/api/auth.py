@@ -52,6 +52,9 @@ def login(username, password):
     if user.get("disabled", False):
         raise WebException("This account has been disabled.")
 
+    if not user["verified"]:
+        raise WebException("This account has not been verified yet.")
+
     if confirm_password(password, user['password_hash']):
         if debug_disable_general_login:
             if session.get('debugaccount', False):
