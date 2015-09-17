@@ -330,7 +330,7 @@ def install_user_service(service_file):
     execute(["systemctl", "enable", service_name], timeout=60)
     execute(["systemctl", "restart", service_name], timeout=60)
 
-def generate_instance(problem_object, problem_directory, instance_number, deployment_directory=None):
+def generate_instance(problem_object, problem_directory, instance_number, staging_directory, deployment_directory=None):
     """
     Runs the setup functions of Problem in the correct order
 
@@ -338,6 +338,7 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
         problem_object: The contents of the problem.json
         problem_directory: The directory to the problem
         instance_number: The instance number to be generated
+        staging_directory: The temporary directory to store files in
         deployment_directory: The directory that will be deployed to. Defaults to the home directory of the user created.
 
     Returns:
@@ -346,7 +347,6 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
 
     username, home_directory = create_instance_user(problem_object['name'], instance_number)
     seed = generate_seed(problem_object['name'], deploy_config.DEPLOY_SECRET, str(instance_number))
-    staging_directory = generate_staging_directory()
     copypath = join(staging_directory, PROBLEM_FILES_DIR)
     shutil.copytree(problem_directory, copypath)
 
@@ -428,6 +428,7 @@ def generate_instance(problem_object, problem_directory, instance_number, deploy
         "problem": problem,
         "staging_directory": staging_directory,
         "home_directory": home_directory,
+        "deployment_directory": deployment_directory,
         "files": all_files,
         "web_accessible_files": web_accessible_files,
         "service_file": service_file
@@ -455,7 +456,11 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
     for instance_number in range(instances):
         current_instance = instance_number
         print("Generating instance {} of \"{}\".".format(instance_number, problem_object["name"]))
-        instance = generate_instance(problem_object, problem_directory, instance_number, deployment_directory=deployment_directory)
+        staging_directory = generate_staging_directory()
+        if test and deployment_directory is None:
+            deployment_directory = os.path.join(staging_directory, "deployed")
+
+        instance = generate_instance(problem_object, problem_directory, instance_number, staging_directory, deployment_directory=deployment_directory)
         instance_list.append(instance)
 
     deployment_json_dir = os.path.join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
@@ -469,17 +474,14 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
     for instance_number, instance in enumerate(instance_list):
         print("Deploying instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
-
         problem = instance["problem"]
+        deployment_directory = instance["deployment_directory"]
+
+        deploy_files(problem_path, deployment_directory, instance["files"], problem.user)
 
         if test is True:
-            # display what we would do, and clean up the user and home directory
-            destination_directory = os.path.join(instance["staging_directory"], "deployed") if deployment_directory is None \
-                                    else deployment_directory
-            deploy_files(problem_path, destination_directory, instance["files"], problem.user)
-            print("\tDescription: {}".format(problem.description))
-            print("\tFlag: {}".format(problem.flag))
-            print("\tDeployment Directory: {}".format(destination_directory))
+            print("Description: {}".format(problem.description))
+            print("Deployment Directory: {}".format(deployment_directory))
 
             #This doesn't look great.
             try:
@@ -493,11 +495,6 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
             deployment_json_dir = instance["staging_directory"]
         else:
-            # let's deploy them now
-            destination_directory = instance["home_directory"] if deployment_directory is None else deployment_directory
-            problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
-            deploy_files(problem_path, destination_directory, instance["files"], problem.user)
-
             # copy files to the web root
             for source, destination in instance["web_accessible_files"]:
                 if not os.path.isdir(os.path.dirname(destination)):
