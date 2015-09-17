@@ -139,7 +139,13 @@ AuthPanel = React.createClass
     apiCall "GET", "/api/team/settings"
     .done ((req) ->
       @setState update @state,
-        settings: $set: req.data
+        settings: $merge: req.data
+     ).bind this
+     
+    apiCall "GET", "/api/user/status"
+    .done ((req) ->
+      @setState update @state,
+        settings: $merge: req.data
      ).bind this
 
   onRegistration: (e) ->
@@ -149,10 +155,22 @@ AuthPanel = React.createClass
       apiNotify resp
       switch resp.status
         when 1
+          verificationAlert =
+            status: 1
+            message: "You have been sent a verification email. You will need to complete this step before logging in."
+
           if @state.settings.max_team_size > 1
+            if @state.settings.email_verification
+              apiNotify verificationAlert
             @setPage "Team Management"
           else
-            document.location.href = "/profile"
+            if @state.settings.email_verification
+              apiNotify verificationAlert
+              @setPage "Login"
+              document.location.hash = "#team-builder"
+            else
+              document.location.href = "/profile"
+
     ).bind this
 
   onPasswordReset: (e) ->
@@ -167,15 +185,19 @@ AuthPanel = React.createClass
   onLogin: (e) ->
     e.preventDefault()
     apiCall "POST", "/api/user/login", {username: @state.username, password: @state.password}
-    .done (resp) ->
+    .done ((resp) ->
       switch resp.status
         when 0
             apiNotify resp
         when 1
+          if document.location.hash == "#team-builder"
+            @setPage "Team Management"
+          else
             if resp.data.teacher
               document.location.href = "/classroom"
             else
               document.location.href = "/profile"
+    ).bind this
 
   setPage: (page) ->
     @setState update @state,
