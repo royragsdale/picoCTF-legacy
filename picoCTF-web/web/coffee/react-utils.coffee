@@ -113,7 +113,6 @@ FormEntry = React.createClass
 TextEntry = React.createClass
   propTypes:
     name: React.PropTypes.string.isRequired
-    value: React.PropTypes.string.isRequired
     type: React.PropTypes.string.isRequired
     onChange: React.PropTypes.func.isRequired
 

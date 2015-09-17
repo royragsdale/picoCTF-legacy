@@ -7,6 +7,8 @@ Col = ReactBootstrap.Col
 
 update = React.addons.update
 
+# The settings fields need to use the linked state mixin to avoid a lot of boilerplate.
+
 GeneralTab = React.createClass
   propTypes:
     refresh: React.PropTypes.func.isRequired
@@ -78,6 +80,11 @@ EmailTab = React.createClass
       $set:
         smtp_url: e.target.value
 
+  updateSMTPPort: (e) ->
+    @setState update @state,
+      $set:
+        smtp_port: parseInt(e.target.value)
+
   updateUsername: (e) ->
     @setState update @state,
       $set:
@@ -108,6 +115,7 @@ EmailTab = React.createClass
       email:
         enable_email: @state.enable_email
         smtp_url: @state.smtp_url
+        smtp_port: @state.smtp_port
         email_username: @state.email_username
         email_password: @state.email_password
         from_addr: @state.from_addr
@@ -116,7 +124,7 @@ EmailTab = React.createClass
         admin_emails: @state.admin_emails
       email_filter: @state.email_filter
 
-    if makeChange
+    if makeChange is not undefined
       pushData = makeChange pushData
 
     apiCall "POST", "/api/admin/settings/change", {json: JSON.stringify(pushData)}
@@ -128,6 +136,7 @@ EmailTab = React.createClass
   render: ->
     emailDescription = "Emails must be sent in order for users to reset their passwords."
     SMTPDescription = "The URL of the STMP server you are using"
+    SMTPPortDescription = "The port of the running SMTP server"
     usernameDescription = "The username of the email account"
     passwordDescription = "The password of the email account"
     fromAddressDescription = "The address that the emails should be sent from"
@@ -138,6 +147,7 @@ EmailTab = React.createClass
         <Col xs={6}>
           <BooleanEntry name="Send Emails" value={@state.enable_email} onChange=@toggleEnabled description={emailDescription}/>
           <TextEntry name="SMTP URL" value={@state.smtp_url} type="text" onChange=@updateSMTPUrl description={SMTPDescription} />
+          <TextEntry name="SMTP Port" value={@state.smtp_port} type="number" onChange=@updateSMTPPort description={SMTPPortDescription} />
           <TextEntry name="Email Username" value={@state.email_username} type="text" onChange=@updateUsername description={usernameDescription}/>
           <TextEntry name="Email Password" value={@state.email_password} type="password" onChange=@updatePassword description={passwordDescription}/>
           <TextEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr description={fromAddressDescription}/>
@@ -168,6 +178,7 @@ SettingsTab = React.createClass
         enable_email: false
         from_addr: ""
         smtp_url: ""
+        smtp_port: 0
         email_username: ""
         email_password: ""
         from_name: ""

@@ -83,6 +83,7 @@ default_settings = {
     "email":{
         "enable_email": False,
         "smtp_url":"",
+        "smtp_port": 587,
         "email_username": "",
         "email_password":  "",
         "from_addr": "",
