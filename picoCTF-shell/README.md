@@ -1,50 +1,51 @@
-Shell Manager
+picoCTF-shell-manager
 =============
 
-Init readme. More to follow.
-Packages and deploys problems for CTF platform.
+The picoCTF-shell-manager project consists of the hacksport library and the shell_manager utility which are used to create, package, and deploy challenges for use in a CTF.  During a competition these components can be used to run a shell-server where competitors are given access to the necessary command line tools and challenge related files.
 
-How to package your problem
----------------------------
-...
+This project has two goals:
 
+1. To reduce the overhead associated with CTF challenges. Both prior to a competition in the challenge creation phase as well as during a competition in the system administration and management phase.
+2. To allow reproducible challenge sharing and reuse.
 
-How to use your problem repository
-----------------------------------
+Quick Start
+------------
+Though it is possible to use picoCTF-shell-manager as a stand alone component, it is best integrated with the rest of the [picoCTF-platform](https://github.com/picoCTF/picoCTF-platform). Please consult the Quick Start section of that repository for the simplest way to begin using this component.
 
-Add this line to your sources file (`/etc/apt/sources.list`)
-```
-deb file:///usr/local/ctf-packages ./
-```
-
-Problem Format
+Components
 --------------
 
-Problems consist of three main parts:
-1. problem.json
-2. problem generators
-3. data files
-... will be elaborated
+### hacksport
 
+The hacksport library consists of a number of convenience functions related to challenge creations.  Specifically it provides the following features:
 
-#### problem.json
+- Templating to support auto-generated challenge instances from a single problem source.
+- Creation of Debian packages (.deb) from problem sources to ease sharing and reuse.
+- Dependency management for challenges.
+- Common challenge functionality such as random flags, file permissions, and remotely accessible services.
 
-Every problem must contain a problem.json. This file provides metadata about the problem through a series of mandatory and optional fields.
-(It would be cool if hints were time sensitive).
+Examples of how to use the hacksport library to create picoCTF-platform compatible challenges are available in the [picoCTF-problems](https://github.com/picoCTF/picoCTF-problems) project as well as end-to-end examples in the [picoCTF-platform](https://github.com/picoCTF/picoCTF-platform) documentation.
 
-| Field | Datatype | Required | Description |
-|-------|----------|----------|-------------|
-| author | String | Yes | Author of the problem. |
-| score | Int | Yes | Points gained for solving the problem. |
-| name | String | Yes | The title of the problem on the competition page. |
-| description | String Template | Yes | Description for the problem. jinja2 template. |
-| category | String | Yes | Category of the problem. |
-| version | String | No | Version string for the problem. Defaults to "1.0.0". |
-| tags | List[String] | No | Minor descriptors for the problem. |
-| hints | List[String] | No | Additional help to the problem. |
-| organization | String | No | Organization that the problem identifies with. |
-| pkg\_architecture | String | No | Compatible [architectures](https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Architecture). Defaults to "all". |
-| pkg\_description | String | No | Description for the deb package. Defaults to `desc`. |
-| pkg\_name | String | No | Optional name for the problem package. Defaults to `name`. Check here for the [naming policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Source). |
-| pkg\_dependencies | List[String] | No | List of package dependencies. Defaults to none. |
-| pip\_requirements | List[String] | No | List of pip requirements for the challenge. Defaults to none. Can alternatively include a `requirements.txt` in your problem directory. |
+### shell_manager
+
+The shell_manager is the utility that a competition organizer would use to package, deploy, and manage challenge instances on a picoCTF-platform shell-server.  This tool builds on the hacksport library and problem specification metadata to turn challenge sources into deployed instances which a competitor will face in a CTF.
+
+The [picoCTF-web](https://github.com/picoCTF/picoCTF-web) project integrates with the shell_manager utility to expose deployed challenges to competitors.
+
+Contact
+------------
+
+We are happy to help but no support is guaranteed.
+
+Authors: Tim Becker, Chris Ganas
+
+Copyright: Carnegie Mellon University
+
+License: MIT
+
+Maintainers: Roy Ragsdale
+
+Credits: David Brumley, Tim Becker, Chris Ganas
+
+Email: rragsdale@cmu.edu
+
