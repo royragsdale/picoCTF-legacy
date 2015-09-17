@@ -1,5 +1,5 @@
 from flask import Flask, request, session, send_from_directory, render_template
-from flask import Blueprint
+from flask import Blueprint, redirect
 import api
 import json
 import mimetypes
@@ -16,8 +16,14 @@ blueprint = Blueprint("user_api", __name__)
 @blueprint.route('/create_simple', methods=['POST'])
 @api_wrapper
 def create_simple_user_hook():
+    settings = api.config.get_settings()
+
     new_uid = api.user.create_simple_user_request(api.common.flat_multi(request.form))
-    session['uid'] = new_uid
+
+    #Only automatically login if we don't have to verify
+    if api.user.get_user(uid=new_uid)["verified"]:
+        session['uid'] = new_uid
+
     return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
 
 @blueprint.route('/create', methods=['POST'])
@@ -61,6 +67,18 @@ def confirm_password_reset_hook():
     api.email.reset_password(token_value, password, confirm)
     return WebSuccess("Your password has been reset")
 
+@blueprint.route('/verify', methods=['GET'])
+#@api_wrapper
+def verify_user_hook():
+    uid = request.args.get("uid")
+    token = request.args.get("token")
+
+    # Needs to be more telling of success
+    if api.common.safe_fail(api.user.verify_user, uid, token):
+        return redirect("/#team-builder")
+    else:
+        return redirect("/")
+
 @blueprint.route('/login', methods=['POST'])
 @api_wrapper
 def login_hook():
@@ -92,7 +110,8 @@ def status_hook():
         "enable_captcha": settings["captcha"]["enable_captcha"],
         "reCAPTCHA_public_key": settings["captcha"]["reCAPTCHA_public_key"],
         "competition_active": api.utilities.check_competition_active(),
-        "username": api.user.get_user()['username'] if api.auth.is_logged_in() else ""
+        "username": api.user.get_user()['username'] if api.auth.is_logged_in() else "",
+        "email_verification": settings["email_verification"]
     }
 
     if api.auth.is_logged_in():
