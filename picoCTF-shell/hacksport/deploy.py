@@ -55,7 +55,7 @@ def give_port():
         port = port_random.randint(0, 65535)
         if port not in context["config"].BANNED_PORTS:
             owner, instance = context["port_map"].get(port, (None, None))
-            if owner is None or (owner is context["problem"] and instance is context["instance"]):
+            if owner is None or (owner == context["problem"] and instance == context["instance"]):
                 context["port_map"][port] = (context["problem"], context["instance"])
                 return port
 
@@ -519,6 +519,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             "description": problem.description,
             "flag": problem.flag,
             "iid": iid,
+            "instance_number": instance_number,
             "files": [f.to_dict() for f in problem.files]
         }
 
@@ -567,7 +568,7 @@ def deploy_problems(args, config):
     for path, problem in get_all_problems().items():
         for instance in get_all_problem_instances(path):
             if "port" in instance:
-                port_map[instance["port"]] = (problem["name"], instance["iid"])
+                port_map[instance["port"]] = (problem["name"], instance["instance_number"])
 
     lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
     if os.path.isfile(lock_file):
