@@ -196,6 +196,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
         'admin': admin,
         'disabled': False,
         'country': country,
+        tokens: {}
     }
 
     db.users.insert(user)
@@ -388,42 +389,64 @@ def is_admin(uid=None):
     user = get_user(uid=uid)
     return user.get('admin', False)
 
-def set_password_reset_token(uid, token):
+def set_token(uid, token_name, token_value=None):
     """
-    Sets the password reset token for the user in mongo
+    Sets a token for the user.
 
     Args:
         uid: the user id
-        token: the token to set
+        token_name: the name of the token to set
+        token_value: optionally specify the value of the token
+    Returns:
+        The token value
     """
 
     db = api.common.get_conn()
-    db.users.update({'uid': uid}, {'$set': {'password_reset_token': token}})
 
-def delete_password_reset_token(uid):
+    # Should never realistically collide.
+    if token_value is None:
+        token_value = api.common.hash(uid + api.common.token())
+
+    mongo_token_path = "tokens."+token_name
+
+    db.users.update({'uid': uid}, {'$set': {mongo_token_path: token_value}})
+
+    return token_value
+
+def delete_token(uid, token_name):
     """
     Removes the password reset token for the user in mongo
 
     Args:
         uid: the user id
+        token_name: the name of the token
     """
 
     db = api.common.get_conn()
-    db.users.update({'uid': uid}, {'$unset': {'password_reset_token': ''}})
 
-def find_user_by_reset_token(token):
+    mongo_token_path = "tokens."+token_name
+
+    db.users.update({'uid': uid}, {'$unset': {mongo_token_path: ''}})
+
+def find_user_by_token(token_name, token_value):
     """
-    Searches the database for a team with the given password reset token
+    Searches the database for a user with a token_name token_value pair.
+
+    Args:
+        token_name: the name of the token
+        token_value: the value of the token
     """
 
     db = api.common.get_conn()
-    user = db.users.find_one({'password_reset_token': token})
+
+    mongo_token_path = "tokens."+token_name
+
+    user = db.users.find_one({mongo_token_path: token_value})
 
     if user is None:
-        raise WebException("That is not a valid password reset token!")
+        raise WebException("That is not a valid token!")
 
     return user
-
 
 @log_action
 def update_password_request(params, uid=None, check_current=False):

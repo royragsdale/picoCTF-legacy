@@ -6,14 +6,6 @@ import api
 
 mail = None
 
-def test():
-    with api.app.app.app_context():
-        for a, b in api.app.app.app_context().app.config.items():
-            if "MAIL" in a:
-                print(a,b)
-        msg = Message("Hello", recipients=["ganaschristopher@gmail.com"])
-        print(mail.send(msg))
-
 from api.common import check, validate, safe_fail, WebException
 from voluptuous import Required, Length, Schema
 from datetime import datetime
@@ -33,7 +25,7 @@ password_reset_schema = Schema({
     )
 })
 
-def reset_password(token, password, confirm_password):
+def reset_password(token_value, password, confirm_password):
     """
     Perform the password update operation.
 
@@ -41,19 +33,19 @@ def reset_password(token, password, confirm_password):
     the new password is hashed and set, the token is then removed and an appropriate response is returned.
 
     Args:
-        token: the password reset token
+        token_value: the password reset token
         password: the password to set
         confirm_password: the same password again
     """
 
-    validate(password_reset_schema, {"token": token, "password": password})
-    user = api.user.find_user_by_reset_token(token)
+    validate(password_reset_schema, {"token": token_value, "password": password})
+    user = api.user.find_user_by_token("password_reset", token_value)
     api.user.update_password_request({
             "new-password": password,
             "new-password-confirmation": confirm_password
     }, uid=user['uid'])
 
-    api.user.delete_password_reset_token(user['uid'])
+    api.user.delete_token(user['uid'], "password_reset")
 
 def request_password_reset(username):
     """
@@ -73,11 +65,10 @@ def request_password_reset(username):
     if user is None:
         raise WebException("No registration found for '{}'.".format(username))
 
-    token = api.common.token()
-    api.user.set_password_reset_token(user['uid'], token)
+    token_value = api.user.set_token(user['uid'], "password_reset")
 
     body = """We recently received a request to reset the password for the following {0} account:\n\n\t{2}\n\nOur records show that this is the email address used to register the above account.  If you did not request to reset the password for the above account then you need not take any further steps.  If you did request the password reset please follow the link below to set your new password. \n\n {1}/reset#{3} \n\n Best of luck! \n\n ~The {0} Team
-    """.format(api.config.competition_name, api.config.competition_urls[0], username, token)
+    """.format(api.config.competition_name, api.config.competition_urls[0], username, token_value)
 
     subject = "{} Password Reset".format(api.config.competition_name)
 

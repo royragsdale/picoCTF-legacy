@@ -56,9 +56,9 @@ def reset_password_hook():
 def confirm_password_reset_hook():
     password = request.form.get("new-password")
     confirm = request.form.get("new-password-confirmation")
-    token = request.form.get("reset-token")
+    token_value = request.form.get("reset-token")
 
-    api.email.reset_password(token, password, confirm)
+    api.email.reset_password(token_value, password, confirm)
     return WebSuccess("Your password has been reset")
 
 @blueprint.route('/login', methods=['POST'])
