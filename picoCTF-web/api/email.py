@@ -74,3 +74,23 @@ def request_password_reset(username):
 
     message = Message(body=body, recipients=[user['email']], subject=subject)
     mail.send(message)
+
+def send_user_verification_email(username):
+    """
+    Emails the user a link to verify his account. If email_verification is
+    enabled in the config then the user won't be able to login until this step is completed.
+    """
+
+    user = api.user.get_user(name=username)
+
+    token_value = api.user.set_token(user["uid"], "email_verification")
+
+    #Is there a better way to do this without dragging url_for + app_context into it?
+    verification_link = "{}/api/user/verify?uid={}&token={}".\
+        format(api.config.competition_urls[0], user["uid"], token_value)
+
+    body = """Verification link: {}""".format(verification_link)
+    subject = "{} Account Verification".format(api.config.competition_name)
+
+    message = Message(body=body, recipients=[user['email']], subject=subject)
+    mail.send(message)
