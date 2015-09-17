@@ -69,7 +69,7 @@ class StatsHandler(logging.StreamHandler):
             },
         "api.user.update_password_request":
             lambda params, uid=None, check_current=False, result=None: {},
-        "api.utilities.request_password_reset":
+        "api.email.request_password_reset":
             lambda username, result=None: {},
         "api.team.create_team":
             lambda params, result=None: params,

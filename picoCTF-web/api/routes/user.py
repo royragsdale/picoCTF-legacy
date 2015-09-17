@@ -48,7 +48,7 @@ def disable_account_hook():
 def reset_password_hook():
     username = request.form.get("username", None)
 
-    api.utilities.request_password_reset(username)
+    api.email.request_password_reset(username)
     return WebSuccess("A password reset link has been sent to the email address provided during registration.")
 
 @blueprint.route('/confirm_password_reset', methods=['POST'])
@@ -58,7 +58,7 @@ def confirm_password_reset_hook():
     confirm = request.form.get("new-password-confirmation")
     token = request.form.get("reset-token")
 
-    api.utilities.reset_password(token, password, confirm)
+    api.email.reset_password(token, password, confirm)
     return WebSuccess("Your password has been reset")
 
 @blueprint.route('/login', methods=['POST'])
