@@ -42,15 +42,14 @@ startup_functions:
                 <div class="panel-body">
                     <div style="margin-left: 5px">
                         <p>Students can join this class by visiting the "Profile" page, and entering the following under "Class Membership":</p>
-                        <div><p><strong>Class Name</strong>: <%- groupName %><br/>
-                            <strong>Teacher Username</strong>: <%- owner %></p></div>
-                        <p> Student can also join by following this link: </p>
-                        <span>
-                            <% var link = document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+encodeURIComponent(groupName)+"&teacher="+encodeURIComponent(owner); %>
-                            <code>
-                              <%= link %>
-                            </code>
-                        </span>
+                        <div>
+                            <p>
+                                <strong>Class Name</strong>: <%- groupName %>
+                            </p>
+                            <p>
+                                <strong>Teacher Username</strong>: <%- owner %>
+                            </p>
+                        </div>
                     </div>
                 </div>
               </div>

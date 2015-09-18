@@ -151,13 +151,3 @@ $ ->
   load_group_info()
   load_achievement_info()
   window.drawTeamProgressionGraph("#team-progression-graph", "#team-progression-graph-container")
-
-  if window.location.hash.startsWith("#joinclass")
-    hash = window.location.hash
-    group = decodeURIComponent(hash.split('class=')[1].split("&")[0])
-    teacher = decodeURIComponent(hash.split('&teacher=')[1])
-    setTimeout(->
-      $("#group-name-input").val group
-      $("#group-owner-input").val teacher
-      $("#join-group").click()
-    , 500)
