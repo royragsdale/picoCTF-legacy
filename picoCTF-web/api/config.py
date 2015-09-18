@@ -63,7 +63,7 @@ default_settings = {
     "enable_teachers": True,
     "enable_feedback": True,
 
-    "email_verification": True,
+    "email_verification": False,
 
     # TIME WINDOW
     "start_time": datetime.datetime.utcnow(),
