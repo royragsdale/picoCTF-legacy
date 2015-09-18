@@ -152,7 +152,6 @@ AuthPanel = React.createClass
     e.preventDefault()
     apiCall "POST", "/api/user/create_simple", @state
     .done ((resp) ->
-      apiNotify resp
       switch resp.status
         when 1
           verificationAlert =
@@ -162,6 +161,8 @@ AuthPanel = React.createClass
           if @state.settings.max_team_size > 1
             if @state.settings.email_verification
               apiNotify verificationAlert
+            else
+              apiNotify resp
             @setPage "Team Management"
           else
             if @state.settings.email_verification
@@ -169,7 +170,7 @@ AuthPanel = React.createClass
               @setPage "Login"
               document.location.hash = "#team-builder"
             else
-              document.location.href = "/profile"
+             apiNotify resp, "/profile"
 
     ).bind this
 
