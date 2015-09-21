@@ -153,6 +153,8 @@ AuthPanel = React.createClass
     apiCall "POST", "/api/user/create_simple", @state
     .done ((resp) ->
       switch resp.status
+        when 0
+          apiNotify resp
         when 1
           verificationAlert =
             status: 1
