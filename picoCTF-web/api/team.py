@@ -78,20 +78,20 @@ def get_groups(tid=None, uid=None):
     if uid is None:
         user = api.user.get_user()
 
-        # if admin, you can own all groups
-        if user["admin"] is True:
-            for group in list(db.groups.find({}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
-                owner = api.user.get_user(uid=group['owner'])['username']
-                groups.append({'name': group['name'],
-                               'gid': group['gid'],
-                               'members': group['members'],
-                               'owner': owner,
-                               'score': api.stats.get_group_average_score(gid=group['gid'])})
-            return groups
-
         uid = user["uid"]
 
-    for group in list(db.groups.find({'owner': uid}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
+    # if admin, you can own all groups
+    if user["admin"] is True:
+        for group in list(db.groups.find({}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
+            owner = api.user.get_user(uid=group['owner'])['username']
+            groups.append({'name': group['name'],
+                            'gid': group['gid'],
+                            'members': group['members'],
+                            'owner': owner,
+                            'score': api.stats.get_group_average_score(gid=group['gid'])})
+        return groups
+
+    for group in list(db.groups.find({"$or": [{'owner': uid}, {"teachers": tid}, {"members": tid}]}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
         owner = api.user.get_user(uid=group['owner'])['username']
         groups.append({'name': group['name'],
                        'gid': group['gid'],
@@ -99,12 +99,6 @@ def get_groups(tid=None, uid=None):
                        'owner': owner,
                        'score': api.stats.get_group_average_score(gid=group['gid'])})
 
-    for group in list(db.groups.find({'members': tid}, {'name': 1, 'gid': 1, 'owner': 1})):
-        owner = api.user.get_user(uid=group['owner'])['username']
-        groups.append({'name': group['name'],
-                       'gid': group['gid'],
-                       'owner': owner,
-                       'score': api.stats.get_group_average_score(gid=group['gid'])})
     return groups
 
 def create_new_team_request(params, uid=None):
