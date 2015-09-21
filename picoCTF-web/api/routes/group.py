@@ -54,7 +54,7 @@ def get_group_score_hook():  #JB: Fix this
 @blueprint.route('/create', methods=['POST'])
 @api_wrapper
 @check_csrf
-@require_teacher
+@require_admin
 def create_group_hook():
     gid = api.group.create_group_request(api.common.flat_multi(request.form))
     return WebSuccess("Successfully created group", gid)
@@ -78,7 +78,7 @@ def leave_group_hook():
 @blueprint.route('/delete', methods=['POST'])
 @api_wrapper
 @check_csrf
-@require_teacher
+@require_admin
 def delete_group_hook():
     api.group.delete_group_request(api.common.flat_multi(request.form))
     return WebSuccess("Successfully deleted group")
