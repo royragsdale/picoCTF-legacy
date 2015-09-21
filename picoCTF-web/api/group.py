@@ -49,7 +49,7 @@ def is_owner_of_group(gid):
     else:
         raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
 
-    return user["admin"] or user["uid"] == group["owner"]
+    return user["admin"] or user["uid"] == group["owner"] or user["tid"] in group["teachers"]
 
 def is_member_of_group(gid=None, name=None, owner_uid=None, tid=None):
     """
@@ -138,6 +138,7 @@ def create_group(uid, group_name):
     db.groups.insert({
         "name": group_name,
         "owner": uid,
+        "teachers": [],
         "members": [],
         "gid": gid
     })
@@ -170,18 +171,20 @@ def create_group_request(params, uid=None):
     return create_group(uid, params["group-name"])
 
 @log_action
-def join_group(tid, gid):
+def join_group(tid, gid, teacher=False):
     """
     Adds a team to a group. Assumes everything is valid.
 
     Args:
         tid: the team id
         gid: the group id to join
+        teacher: whether or not the user is a teacher
     """
 
     db = api.common.get_conn()
 
-    db.groups.update({'gid': gid}, {'$push': {'members': tid}})
+    role_group = "teachers" if teacher else "memebers"
+    db.groups.update({'gid': gid}, {'$push': {role_group: tid}})
 
 def join_group_request(params, tid=None):
     """
