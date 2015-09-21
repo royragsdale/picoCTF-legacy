@@ -31,7 +31,7 @@ delete_group_schema = Schema({
     )
 }, extra=True)
 
-def is_owner_of_group(gid):
+def is_owner_of_group(gid, uid = None):
     """
     Determine whether or not the current user is an owner of the group. gid must be specified.
     Administrators will always be considered owners.
@@ -44,7 +44,9 @@ def is_owner_of_group(gid):
 
     group = get_group(gid=gid)
 
-    if api.auth.is_logged_in():
+    if uid is not None:
+        user = api.user.get_user(uid=uid)
+    elif api.auth.is_logged_in():
         user = api.user.get_user()
     else:
         raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
@@ -183,7 +185,13 @@ def join_group(tid, gid, teacher=False):
 
     db = api.common.get_conn()
 
-    role_group = "teachers" if teacher else "memebers"
+    role_group = "teachers" if teacher else "members"
+
+    if teacher:
+        uids = api.team.get_team_uids(tid=tid)
+        for uid in uids:
+            api.admin.give_teacher_role(uid=uid)
+
     db.groups.update({'gid': gid}, {'$push': {role_group: tid}})
 
 def join_group_request(params, tid=None):
