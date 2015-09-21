@@ -39,8 +39,8 @@ createGroupSetup = () ->
       download(csvData, "#{groupName}.csv", "text/csv")
   )
 
-loadGroupManagement = (groups, showFirstTab, callback) ->
-  $("#group-management").html renderGroupInformation({data: groups})
+loadGroupOverview = (groups, showFirstTab, callback) ->
+  $("#group-overview").html renderGroupInformation({data: groups})
 
   $("#new-class-tab").on "click", (e) ->
     createGroupSetup()
@@ -86,7 +86,7 @@ loadGroupInfo = (showFirstTab, callback) ->
         ga('send', 'event', 'Group', 'GroupListLoadFailure', data.message)
       when 1
         window.groupListCache = data.data
-        loadGroupManagement data.data, showFirstTab, callback
+        loadGroupOverview data.data, showFirstTab, callback
 
 createGroup = (groupName) ->
   apiCall "POST",  "/api/group/create", {"group-name": groupName}
