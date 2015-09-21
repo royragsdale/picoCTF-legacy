@@ -85,6 +85,7 @@ def delete_group_hook():
 
 @blueprint.route('/flag_sharing', methods=['GET'])
 @api_wrapper
+@require_teacher
 def get_flag_shares():
     gid = request.args.get("gid", None)
     if gid is None:
