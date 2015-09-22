@@ -19,13 +19,10 @@ startup_functions:
             <div class="row">
                 <div class="col-md-12">
                     <p>
-                        You are logged into an administrator account, which allows you to manage multiple students grouped together in classes.
-                        On this page, you can create new class groups, check which users are in which class groups, and see more detailed information about
-                        each of your students.
+                        You are logged into a teacher account, which allows you to manage multiple students grouped together in classes.
                     </p>
                     <p>
-                        Note that you cannot automatically add users to a class. Instead, you provide your username and the name of the class to your students, who
-                        join the class on their account on the "Profile" page.
+                        You can also provide your username and the name of the class to your students, who join the class on their account on the "Profile" page.
                     </p>
                 </div>
             </div>
@@ -63,6 +60,9 @@ startup_functions:
                                 <strong>Teacher Username</strong>: <%- owner %>
                             </p>
                         </div>
+                        <% var registrationLink = document.location.origin + "/#g=" + gid; %>
+                        <p>Or register with this link to automatically join:</p>
+                        <a href="<%= registrationLink %>"><%= registrationLink %></a>
                     </div>
                 </div>
               </div>
