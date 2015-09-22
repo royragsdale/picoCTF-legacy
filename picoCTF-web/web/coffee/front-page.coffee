@@ -38,7 +38,7 @@ LoginForm = React.createClass
     else
       showGroupMessage = (->
         <Alert bsStyle="info">
-          You are registering as part of the {@props.groupName} organization.
+          You are registering as a member of <strong>{@props.groupName}</strong>.
         </Alert>
       ).bind this
 
@@ -51,8 +51,10 @@ LoginForm = React.createClass
       registrationForm = if @props.status == "Register" then \
         <span>
           <Row>
-            {if @props.groupName.length > 0 then showGroupMessage() else <span/>}
-            {if @props.emailFilter.length > 0 then showEmailFilter() else <span/>}
+            <div>
+              {if @props.groupName.length > 0 then showGroupMessage() else <span/>}
+              {if @props.emailFilter.length > 0 then showEmailFilter() else <span/>}
+            </div>
             <Col md={6}>
               <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
             </Col>
