@@ -31,7 +31,18 @@ startup_functions:
         </div>
     </div>
     <div class="row">
-        <div id="group-overview"></div>
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#group-overview-tab" data-toggle="tab">Overview</a></li>
+            <li><a href="#group-management-tab" data-toggle="tab">Management</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="group-overview-tab">
+                <div id="group-overview"></div>
+            </div>
+            <div class="tab-pane" id="group-management-tab">
+                <h1>blank</h1>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -251,6 +262,7 @@ startup_functions:
 
 <script type="text/template" id="group-info-template">
     <% if (data.length > 0 ) { %>
+        <br/>
         <ul class="nav nav-tabs nav-tabs-outline" role="tablist" id="class-tabs">
           <% _.each(data, function(group, index) { %>
             <li><a href="#group-tab-<%- group.gid %>"
