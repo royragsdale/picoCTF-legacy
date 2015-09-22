@@ -248,7 +248,7 @@ def join_group_request(params, tid=None):
         raise WebException("Your team is already a member of that class!")
 
     join_group(tid, group["gid"])
-    
+
 @log_action
 def leave_group(tid, gid):
     """

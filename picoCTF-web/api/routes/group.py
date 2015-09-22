@@ -1,6 +1,6 @@
 from flask import Flask, request, session, send_from_directory, render_template
 from flask import Blueprint
-import api
+import api, json
 
 from api.common import WebSuccess, WebError
 from api.annotations import api_wrapper, require_login, require_teacher, require_admin, check_csrf
@@ -15,9 +15,17 @@ blueprint = Blueprint("group_api", __name__)
 def get_group_hook():
     name = request.form.get("group-name")
     owner = request.form.get("group-owner")
+    gid = request.form.get("gid")
+
     owner_uid = api.user.get_user(name=owner)["uid"]
-    if not api.group.is_member_of_group(name=name, owner_uid=owner_uid):
-        return WebError("You are not a member of this group.")
+
+    if gid is not None:
+        if not api.group.is_member_of_group(gid=gid):
+            return WebError("You are not a member of this group.")
+    else:
+        if not api.group.is_member_of_group(name=name, owner_uid=owner_uid):
+            return WebError("You are not a member of this group.")
+
     return WebSuccess(data=api.group.get_group(name=request.form.get("group-name"), owner_uid=owner_uid))
 
 @blueprint.route('/settings', methods=['GET'])
@@ -38,7 +46,7 @@ def get_group_settings_hook():
 @require_teacher
 def change_group_settings_hook():
     gid = request.form.get("gid")
-    settings = request.form.get("settings")
+    settings = json.loads(request.form.get("settings"))
 
     user = api.user.get_user()
     group = api.group.get_group(gid=gid)
