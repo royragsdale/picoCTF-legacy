@@ -36,6 +36,12 @@ LoginForm = React.createClass
         </form>
       </Panel>
     else
+      showGroupMessage = (->
+        <Alert bsStyle="info">
+          You are registering as part of the {@props.groupName} organization.
+        </Alert>
+      ).bind this
+
       showEmailFilter = (->
         <Alert bsStyle="warning">
           You can register provided you have an email for one of these domains: <strong>{@props.emailFilter.join ", "}</strong>.
@@ -45,6 +51,7 @@ LoginForm = React.createClass
       registrationForm = if @props.status == "Register" then \
         <span>
           <Row>
+            {if @props.groupName.length > 0 then showGroupMessage() else <span/>}
             {if @props.emailFilter.length > 0 then showEmailFilter() else <span/>}
             <Col md={6}>
               <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
@@ -132,16 +139,29 @@ TeamManagementForm = React.createClass
 AuthPanel = React.createClass
   mixins: [React.addons.LinkedStateMixin]
   getInitialState: ->
+    params = $.deparam $.param.fragment()
+
     page: "Login"
     settings: {}
+    gid: params.g
+    groupName: ""
 
   componentWillMount: ->
-    apiCall "GET", "/api/team/settings"
-    .done ((req) ->
-      @setState update @state,
-        settings: $merge: req.data
-     ).bind this
-     
+    if @state.gid
+      apiCall "GET", "/api/group/settings", {gid: @state.gid}
+      .done ((req) ->
+        @setState update @state,
+          groupName: $set: req.data.name
+          settings: $merge: req.data.settings
+          page: $set: "Register"
+      ).bind this
+    else
+      apiCall "GET", "/api/team/settings"
+      .done ((req) ->
+        @setState update @state,
+          settings: $merge: req.data
+      ).bind this
+
     apiCall "GET", "/api/user/status"
     .done ((req) ->
       @setState update @state,
@@ -231,7 +251,7 @@ AuthPanel = React.createClass
         <Col md={6} mdOffset={3}>
           <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
             onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
-            {...links}/>
+            groupName={@state.groupName}{...links}/>
         </Col>
       </div>
 
