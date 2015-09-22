@@ -268,13 +268,13 @@ def create_simple_user_request(params):
 
     whitelist = None
 
-    if params["gid"]:
-        group = api.group.get_group(gid=gid)
+    if params.get("gid", None):
+        group = api.group.get_group(gid=params["gid"])
         group_settings = api.group.get_group_settings(gid=group["gid"])
 
         whitelist = group_settings["email_filter"]
 
-    if not verify_email_in_whitelist(user["email"], whitelist):
+    if not verify_email_in_whitelist(params["email"], whitelist):
         raise InternalException("Your email does not belong to the whitelist. Please see the registration form for details.")
 
     if api.config.get_settings()["captcha"]["enable_captcha"] and not _validate_captcha(params):
@@ -290,6 +290,7 @@ def create_simple_user_request(params):
 
     if tid is None:
         raise InternalException("Failed to create new team")
+
     team = api.team.get_team(tid=tid)
 
     # Create new user
@@ -305,6 +306,10 @@ def create_simple_user_request(params):
 
     if uid is None:
         raise InternalException("There was an error during registration.")
+
+    # Join group after everything else has succeeded
+    if params.get("gid", None):
+        api.group.join_group(team["tid"], params["gid"])
 
     return uid
 
