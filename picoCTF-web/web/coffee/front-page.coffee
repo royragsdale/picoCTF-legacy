@@ -146,9 +146,12 @@ AuthPanel = React.createClass
     page: "Login"
     settings: {}
     gid: params.g
+    status: params.status
     groupName: ""
 
   componentWillMount: ->
+    if @state.status == "verified"
+      apiNotify({status: 1, message: "Your account has been successfully verified. Please login."})
     if @state.gid
       apiCall "GET", "/api/group/settings", {gid: @state.gid}
       .done ((req) ->
@@ -192,7 +195,8 @@ AuthPanel = React.createClass
             if @state.settings.email_verification
               apiNotify verificationAlert
               @setPage "Login"
-              document.location.hash = "#team-builder"
+              if @state.settings.max_team_size > 1
+                document.location.hash = "#team-builder"
             else
              apiNotify resp, "/profile"
 

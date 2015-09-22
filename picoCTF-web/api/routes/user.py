@@ -75,7 +75,10 @@ def verify_user_hook():
 
     # Needs to be more telling of success
     if api.common.safe_fail(api.user.verify_user, uid, token):
-        return redirect("/#team-builder")
+        if api.config.get_settings()["max_team_size"] > 1:
+            return redirect("/#team-builder")
+        else:
+            return redirect("/#status=verified")
     else:
         return redirect("/")
 
