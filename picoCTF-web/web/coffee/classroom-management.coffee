@@ -2,44 +2,55 @@ Input = ReactBootstrap.Input
 Row = ReactBootstrap.Row
 Col = ReactBootstrap.Col
 Button = ReactBootstrap.Button
+ButtonGroup = ReactBootstrap.ButtonGroup
 Panel = ReactBootstrap.Panel
 ListGroup = ReactBootstrap.ListGroup
 ListGroupItem = ReactBootstrap.ListGroupItem
 Glyphicon = ReactBootstrap.Glyphicon
+TabbedArea = ReactBootstrap.TabbedArea
+TabPane = ReactBootstrap.TabPane
 
 update = React.addons.update
 
 MemberManagementItem = React.createClass
   render: ->
     user = _.first @props.members
-    <Row>
-      <Col xs={4}>
-        <Row>{user.username}</Row>
-        <Row>
-          <Col xs={6}>{user.firstname}</Col>
-          <Col xs={6}>{user.lastname}</Col>
-        </Row>
-        <Row>{user.email}</Row>
-      </Col>
-      <Col xs={8}>
-        test
-      </Col>
-    </Row>
+    <ListGroupItem>
+      <Row>
+        <Col xs={2}>
+          <Button bsStyle="primary" className="btn-sq">
+            <Glyphicon glyph="user" bsSize="large"/>
+            <p className="text-center">User</p>
+          </Button>
+        </Col>
+        <Col xs={6}>
+          <h4>{user.username}</h4>
+          <p>
+            <strong>Name:</strong> {user.firstname} {user.lastname}
+          </p>
+          <p><strong>Email:</strong> {user.email}</p>
+        </Col>
+        <Col xs={4}>
+          <ButtonGroup vertical>
+            <Button>Remove User</Button>
+            <Button>Make Teacher</Button>
+          </ButtonGroup>
+        </Col>
+      </Row>
+    </ListGroupItem>
 
 MemberManagement = React.createClass
   render: ->
     <div>
-      Group User Management
+      <h4>User Management</h4>
       <ListGroup>
-        {@props.memberInformation.map ((member) ->
-          <ListGroupItem>
-            <MemberManagementItem {...member}/>
-          </ListGroupItem>
+        {@props.memberInformation.map ((member, i) ->
+          <MemberManagementItem key={i} {...member}/>
         ).bind this}
       </ListGroup>
     </div>
 
-ClassroomManagement = React.createClass
+GroupManagement = React.createClass
   getInitialState: ->
     name: ""
     settings:
@@ -147,5 +158,27 @@ GroupEmailWhitelist = React.createClass
       </form>
     </div>
 
+TeacherManagement = React.createClass
+  getInitialState: ->
+    groups: []
+    tabKey: 0
+
+  onTabSelect: (tab) ->
+    @setState update @state, tabKey: $set: tab
+
+  componentWillMount: ->
+    apiCall "GET", "/api/group/list"
+    .done ((resp) ->
+      @setState update @state, groups: $set: resp.data
+    ).bind this
+
+  render: ->
+    <TabbedArea activeKey={@state.tabKey} onSelect={@onTabSelect}>
+      {@state.groups.map ((group, i) ->
+        <TabPane eventKey={i} key={i} tab={group.name}>
+          <GroupManagement key={group.name} gid={group.gid}/>
+        </TabPane>
+      ).bind this}
+    </TabbedArea>
 $ ->
-  React.render <ClassroomManagement gid="9fd32927fda84b90a8c1fb7cbb59508f"/>, document.getElementById("group-management")
+  React.render <TeacherManagement/>, document.getElementById("group-management")
