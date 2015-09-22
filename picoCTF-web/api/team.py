@@ -182,7 +182,7 @@ def get_team_uids(tid=None, name=None, show_disabled=True):
 
     return [user['uid'] for user in get_team_members(tid=tid, name=name, show_disabled=show_disabled)]
 
-def get_team_information(tid=None):
+def get_team_information(tid=None, gid=None):
     """
     Retrieves the information of a team.
 
@@ -199,10 +199,14 @@ def get_team_information(tid=None):
     if tid is None:
         tid = team_info["tid"]
 
+    if gid is not None:
+        group = api.group.get_group(gid=gid)
+
     team_info["score"] = api.stats.get_score(tid=tid)
     team_info["members"] = [{
         "username": member["username"], "firstname": member["firstname"],
-        "lastname": member["lastname"], "email": member["email"]
+        "lastname": member["lastname"], "email": member["email"],
+        "teacher": api.group.is_teacher_of_group(group["gid"], uid=api.user.get_user(member["username"])["uid"]) if gid else False
     } for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()
     team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
