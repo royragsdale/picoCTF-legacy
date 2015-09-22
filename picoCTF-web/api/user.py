@@ -16,7 +16,7 @@ _check_email_format = lambda email: re.match(r".+@.+\..{2,}", email) is not None
 def _check_username(username):
     return all([c in string.digits + string.ascii_lowercase for c in username.lower()])
 
-def verify_email_in_whitelist(email):
+def verify_email_in_whitelist(email, whitelist=None):
     """
     Verify that the email address passes the global whitelist if one exists.
 
@@ -24,13 +24,15 @@ def verify_email_in_whitelist(email):
         email: The email address to verify
     """
 
-    settings = api.config.get_settings()
+    if whitelist is None:
+        settings = api.config.get_settings()
+        whitelist = settings["email_filter"]
 
     #Nothing to check against!
-    if len(settings["email_filter"]) == 0:
+    if len(whitelist) == 0:
         return True
 
-    for email_domain in settings["email_filter"]:
+    for email_domain in whitelist:
         if re.match(r".*?@{}$".format(email_domain), email) is not None:
             return True
 
@@ -40,8 +42,6 @@ user_schema = Schema({
     Required('email'): check(
         ("Email must be between 5 and 50 characters.", [str, Length(min=5, max=50)]),
         ("Your email does not look like an email address.", [_check_email_format]),
-        ("Your email does not belong to the whitelist. Please see the registration form for details.",
-          [verify_email_in_whitelist])
     ),
     Required('firstname'): check(
         ("First Name must be between 1 and 50 characters.", [str, Length(min=1, max=50)])
@@ -265,6 +265,17 @@ def create_simple_user_request(params):
 
     params["country"] = "US"
     validate(user_schema, params)
+
+    whitelist = None
+
+    if params["gid"]:
+        group = api.group.get_group(gid=gid)
+        group_settings = api.group.get_group_settings(gid=group["gid"])
+
+        whitelist = group_settings["email_filter"]
+
+    if not verify_email_in_whitelist(user["email"], whitelist):
+        raise InternalException("Your email does not belong to the whitelist. Please see the registration form for details.")
 
     if api.config.get_settings()["captcha"]["enable_captcha"] and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
