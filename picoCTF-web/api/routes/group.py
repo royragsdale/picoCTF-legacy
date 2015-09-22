@@ -20,6 +20,35 @@ def get_group_hook():
         return WebError("You are not a member of this group.")
     return WebSuccess(data=api.group.get_group(name=request.form.get("group-name"), owner_uid=owner_uid))
 
+@blueprint.route('/settings', methods=['GET'])
+@api_wrapper
+def get_group_settings_hook():
+    gid = request.args.get("gid")
+    group = api.group.get_group(gid=gid)
+
+    prepared_data = {
+        "name": group["name"],
+        "settings": api.group.get_group_settings(group["gid"])
+    }
+
+    return WebSuccess(data=prepared_data)
+
+@blueprint.route('/settings', methods=['POST'])
+@api_wrapper
+@require_teacher
+def change_group_settings_hook():
+    gid = request.form.get("gid")
+    settings = request.form.get("settings")
+
+    user = api.user.get_user()
+    group = api.group.get_group(gid=gid)
+
+    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]):
+        api.group.change_group_settings(group["gid"], settings)
+        return WebSuccess(message="Group settings changed successfully.")
+    else:
+        return WebError(message="You do not have sufficient privilege to do that.")
+
 @blueprint.route('/list')
 @api_wrapper
 @require_login

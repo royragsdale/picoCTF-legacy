@@ -142,10 +142,37 @@ def create_group(uid, group_name):
         "owner": uid,
         "teachers": [],
         "members": [],
+        "settings": {
+          "email_filter": []
+        },
         "gid": gid
     })
 
     return gid
+
+def get_group_settings(gid):
+    """
+    Get various group settings.
+    """
+
+    db = api.common.get_conn()
+
+    #Ensure it exists.
+    group = api.group.get_group(gid=gid)
+    group_result = db.groups.find_one({"gid": group["gid"]}, {"_id": 0, "settings": 1})
+
+    return group_result["settings"]
+
+def change_group_settings(gid, settings):
+    """
+    Replace the current settings with the supplied ones.
+    """
+
+    db = api.common.get_conn()
+
+    group = api.group.get_group(gid=gid)
+    db.groups.update({"gid": group["gid"]}, {"$set": {"settings": settings}})
+
 
 def create_group_request(params, uid=None):
     """
