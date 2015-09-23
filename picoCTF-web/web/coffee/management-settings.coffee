@@ -124,7 +124,7 @@ EmailTab = React.createClass
         admin_emails: @state.admin_emails
       email_filter: @state.email_filter
 
-    if makeChange
+    if typeof(makeChange) == "function"
       pushData = makeChange pushData
 
     apiCall "POST", "/api/admin/settings/change", {json: JSON.stringify(pushData)}
