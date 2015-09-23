@@ -57,7 +57,7 @@ loadGroupOverview = (groups, showFirstTab, callback) ->
         ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
         for group in groups
           if group.name == groupName
-            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
+            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner, gid: group.gid})
         $(".team-visualization-enabler").on "click", (e) ->
           tid = $(e.target).data("tid")
           for team in teamData.data
@@ -69,6 +69,12 @@ loadGroupOverview = (groups, showFirstTab, callback) ->
 
   if showFirstTab
     $('#class-tabs a:first').tab('show')
+
+
+  $("ul.nav-tabs a").click ( (e) ->
+    e.preventDefault();
+    $(this).tab 'show'
+  );
 
   $("#group-request-form").on "submit", groupRequest
   $(".delete-group-span").on "click", (e) ->

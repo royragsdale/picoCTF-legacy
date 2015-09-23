@@ -13,3 +13,7 @@ Things to do:
 * #team-builder explicit in user.py routes and front-page.coffee
 * /api/user/verify doesn't have a great way of informing the user whether or not they succeeded.
   * Realistically we could just create a /verify and a verify.coffee but that is a lot of boilerplate.
+* Code duplication like crazy for react components. classroom-management, react-utils, etc. We **need** to fix the js organization.
+* Shouldn't show option to create/delete group to teachers.
+* Group info in get_team_information is awkward
+* is_owner vs is_teacher in groups

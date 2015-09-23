@@ -31,6 +31,29 @@ delete_group_schema = Schema({
     )
 }, extra=True)
 
+def is_teacher_of_group(gid, uid = None):
+    """
+    Determine whether or not the current user is an owner of the group. gid must be specified.
+    Administrators will always be considered owners.
+
+    Args:
+        gid: the group id
+    Returns:
+        Whether or not the user is a teacher in the group
+    """
+
+    group = get_group(gid=gid)
+
+    if uid is not None:
+        user = api.user.get_user(uid=uid)
+    elif api.auth.is_logged_in():
+        user = api.user.get_user()
+    else:
+        raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
+
+    return user["admin"] or user["tid"] in group["teachers"]
+
+# Misleading, owner/teacher
 def is_owner_of_group(gid, uid = None):
     """
     Determine whether or not the current user is an owner of the group. gid must be specified.
@@ -248,7 +271,7 @@ def join_group_request(params, tid=None):
         raise WebException("Your team is already a member of that class!")
 
     join_group(tid, group["gid"])
-    
+
 @log_action
 def leave_group(tid, gid):
     """
