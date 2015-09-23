@@ -53,7 +53,7 @@ LoginForm = React.createClass
           <Row>
             <div>
               {if @props.groupName.length > 0 then showGroupMessage() else <span/>}
-              {if @props.emailFilter.length > 0 then showEmailFilter() else <span/>}
+              {if @props.emailFilter.length > 0 and not @props.rid then showEmailFilter() else <span/>}
             </div>
             <Col md={6}>
               <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
@@ -158,6 +158,7 @@ AuthPanel = React.createClass
     page: "Login"
     settings: {}
     gid: params.g
+    rid: params.r
     status: params.status
     groupName: ""
     eligibility: "eligible"
@@ -170,6 +171,7 @@ AuthPanel = React.createClass
       .done ((req) ->
         @setState update @state,
           groupName: $set: req.data.name
+          affiliation: $set: req.data.name
           settings: $merge: req.data.settings
           page: $set: "Register"
       ).bind this
@@ -200,7 +202,7 @@ AuthPanel = React.createClass
             message: "You have been sent a verification email. You will need to complete this step before logging in."
 
           if @state.settings.max_team_size > 1
-            if @state.settings.email_verification
+            if @state.settings.email_verification and not @state.rid
               apiNotify verificationAlert
             else
               apiNotify resp
@@ -273,7 +275,7 @@ AuthPanel = React.createClass
         <Col md={6} mdOffset={3}>
           <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
             onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
-            groupName={@state.groupName}{...links}/>
+            groupName={@state.groupName} rid={@state.rid} gid={@state.gid} {...links}/>
         </Col>
       </div>
 
