@@ -94,3 +94,21 @@ def send_user_verification_email(username):
 
     message = Message(body=body, recipients=[user['email']], subject=subject)
     mail.send(message)
+
+def send_email_invite(gid, email, teacher=False):
+    """
+    Sends an email registration link that will automatically join into a group. This link will bypass the email filter.
+    """
+
+    group = api.group.get_group(gid=gid)
+
+    token_value = api.token.set_token({"gid": group["gid"], "email": email, "teacher": teacher}, "registration_token")
+
+    registration_link = "{}/#g={}&r={}".\
+        format(api.config.competition_urls[0], group["gid"], token_value)
+
+    body = """Registration link: {}""".format(registration_link)
+    subject = "{} Registration".format(api.config.competition_name)
+
+    message = Message(body=body, recipients=[email], subject=subject)
+    mail.send(message)
