@@ -153,7 +153,8 @@ def get_user(name=None, uid=None):
 
     return user
 
-def create_user(username, firstname, lastname, email, password_hash, tid, affiliation, teacher=False, country="US", admin=False):
+def create_user(username, firstname, lastname, email, password_hash, tid, affiliation,
+                teacher=False, country="US", admin=False, verified=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
 
@@ -204,12 +205,12 @@ def create_user(username, firstname, lastname, email, password_hash, tid, affili
         'affiliation': affiliation,
         'disabled': False,
         'country': country,
-        'verified': not settings["email_verification"],
+        'verified': not settings["email_verification"] or verified,
     }
 
     db.users.insert(user)
 
-    if settings["email_verification"]:
+    if settings["email_verification"] and not user["verified"]:
         api.email.send_user_verification_email(username)
 
     return uid
@@ -271,6 +272,7 @@ def create_simple_user_request(params):
         eligibile: "eligibile" or "ineligibile"
         affiliation: user's affiliation
         gid: group registration
+        rid: registration id
     """
 
     params["country"] = "US"
@@ -287,8 +289,25 @@ def create_simple_user_request(params):
 
         whitelist = group_settings["email_filter"]
 
-    if not verify_email_in_whitelist(params["email"], whitelist):
-        raise InternalException("Your email does not belong to the whitelist. Please see the registration form for details.")
+    user_is_teacher = False
+    user_was_invited = False
+
+    if params.get("rid", None):
+        key = api.token.find_key_by_token("registration_token", params["rid"])
+
+        if params.get("gid") != key["gid"]:
+            raise InternalException("Registration token group and supplied gid do not match.")
+
+        if params["email"] != key["email"]:
+            raise InternalException("Registration token email does not match the supplied one.")
+
+        user_is_teacher = key["teacher"]
+        user_was_invited = True
+
+        api.token.delete_token(key, "registration_token")
+    else:
+        if not verify_email_in_whitelist(params["email"], whitelist):
+            raise InternalException("Your email does not belong to the whitelist. Please see the registration form for details.")
 
     if api.config.get_settings()["captcha"]["enable_captcha"] and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
@@ -316,6 +335,8 @@ def create_simple_user_request(params):
         team["tid"],
         params["affiliation"],
         country=params["country"],
+        teacher=user_is_teacher,
+        verified=user_was_invited
     )
 
     if uid is None:
@@ -323,7 +344,7 @@ def create_simple_user_request(params):
 
     # Join group after everything else has succeeded
     if params.get("gid", None):
-        api.group.join_group(team["tid"], params["gid"])
+        api.group.join_group(team["tid"], params["gid"], teacher=user_is_teacher)
 
     return uid
 
