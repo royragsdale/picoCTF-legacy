@@ -57,6 +57,30 @@ def change_group_settings_hook():
     else:
         return WebError(message="You do not have sufficient privilege to do that.")
 
+@blueprint.route('/invite', methods=['POST'])
+@api_wrapper
+@require_teacher
+def invite_email_to_group_hook():
+    gid = request.form.get("gid")
+    email = request.form.get("email")
+    role = request.form.get("role")
+
+    user = api.user.get_user()
+
+    if gid is None or email is None:
+        return WebError(message="You must specify a gid and email address to invite.")
+
+    if role not in ["member", "teacher"]:
+        return WebError(message="A user's role is either a member or teacher.")
+
+    group = api.group.get_group(gid=gid)
+
+    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]):
+        api.email.send_email_invite(group["gid"], email, teacher=(role == "teacher"))
+        return WebSuccess(message="Email invitation has been sent.")
+    else:
+        return WebError(message="You do not have sufficient privilege to do that.")
+
 @blueprint.route('/list')
 @api_wrapper
 @require_login
