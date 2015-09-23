@@ -17,3 +17,5 @@ Things to do:
 * Shouldn't show option to create/delete group to teachers.
 * Group info in get_team_information is awkward
 * is_owner vs is_teacher in groups
+* It would be great to get teacher=Bool out of user, we could just aggregate it and it would be a lot smoother.
+* Affiliation does not work for team builder.
