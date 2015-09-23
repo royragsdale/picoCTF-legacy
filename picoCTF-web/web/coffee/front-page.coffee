@@ -67,6 +67,18 @@ LoginForm = React.createClass
               <Input type="email" id="email" valueLink={@props.email} label="E-mail"/>
             </Col>
           </Row>
+          <Row>
+            <Col md={6}>
+              <Input type="text" id="affiliation" valueLink={@props.affiliation} label="Affiliation"/>
+            </Col>
+            <Col md={6}>
+              <Input type="select" label="Status" placeholder="Competitor" valueLink={@props.eligibility}>
+                <option value="eligible">Competitor</option>
+                <option value="ineligible">Instructor</option>
+                <option value="ineligible">Other</option>
+              </Input>
+            </Col>
+          </Row>
           <ButtonInput type="submit">Register</ButtonInput>
         </span> else <span/>
 
@@ -148,6 +160,7 @@ AuthPanel = React.createClass
     gid: params.g
     status: params.status
     groupName: ""
+    eligibility: "eligible"
 
   componentWillMount: ->
     if @state.status == "verified"
@@ -175,6 +188,7 @@ AuthPanel = React.createClass
 
   onRegistration: (e) ->
     e.preventDefault()
+
     apiCall "POST", "/api/user/create_simple", @state
     .done ((resp) ->
       switch resp.status
@@ -245,6 +259,8 @@ AuthPanel = React.createClass
     lastname: @linkState "lastname"
     firstname: @linkState "firstname"
     email: @linkState "email"
+    affiliation: @linkState "affiliation"
+    eligibility: @linkState "eligibility"
 
     if @state.page == "Team Management"
       <div>

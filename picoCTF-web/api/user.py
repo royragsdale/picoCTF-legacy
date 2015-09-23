@@ -63,6 +63,13 @@ user_schema = Schema({
     Required('password'):
         check(("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)])
     ),
+    Required('affiliation'):
+        check(("You must specify an affiliation.", [str, Length(min=3, max=50)])
+    ),
+    Required('eligibility'):
+        check(("You must specify whether or not your account is eligibile.", [str,
+            lambda status: status in ["eligible", "ineligible"]])
+    ),
 }, extra=True)
 
 new_team_schema = Schema({
@@ -146,7 +153,7 @@ def get_user(name=None, uid=None):
 
     return user
 
-def create_user(username, firstname, lastname, email, password_hash, tid, teacher=False, country="US", admin=False):
+def create_user(username, firstname, lastname, email, password_hash, tid, affiliation, teacher=False, country="US", admin=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
 
@@ -194,6 +201,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
         'tid': tid,
         'teacher': teacher,
         'admin': admin,
+        'affiliation': affiliation,
         'disabled': False,
         'country': country,
         'verified': not settings["email_verification"],
@@ -261,6 +269,9 @@ def create_simple_user_request(params):
         firstname: user's first name
         lastname: user's first name
         email: user's email
+        eligibile: "eligibile" or "ineligibile"
+        affiliation: user's affiliation
+        gid: group registration
     """
 
     params["country"] = "US"
@@ -271,6 +282,9 @@ def create_simple_user_request(params):
     if params.get("gid", None):
         group = api.group.get_group(gid=params["gid"])
         group_settings = api.group.get_group_settings(gid=group["gid"])
+
+        #Force affiliation
+        params["affiliation"] = group["name"]
 
         whitelist = group_settings["email_filter"]
 
@@ -283,7 +297,7 @@ def create_simple_user_request(params):
     team_params = {
         "team_name": params["username"],
         "password": api.common.token(),
-        "eligible": True
+        "eligible": params["eligibility"] == "eligible"
     }
 
     tid = api.team.create_team(team_params)
@@ -301,6 +315,7 @@ def create_simple_user_request(params):
         params["email"],
         hash_password(params["password"]),
         team["tid"],
+        params["affiliation"],
         country=params["country"],
     )
 

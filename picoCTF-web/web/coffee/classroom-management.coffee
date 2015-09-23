@@ -132,7 +132,9 @@ GroupEmailWhitelist = React.createClass
         apiNotify {status: 0, message: "Your email domain did not include a '.' as I expected. Please make sure this is an email domain."}
     else
       @props.pushUpdates ((data) ->
-        update data, {email_filter: {$push: [@state.emailDomain]}}
+        #Fine because @setState won't affect the next line
+        @setState update @state, $set: emailDomain: ""
+        update data, email_filter: $push: [@state.emailDomain]
       ).bind this
 
   createItemDisplay: ->
