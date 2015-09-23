@@ -124,7 +124,7 @@ EmailTab = React.createClass
         admin_emails: @state.admin_emails
       email_filter: @state.email_filter
 
-    if makeChange is not undefined
+    if makeChange
       pushData = makeChange pushData
 
     apiCall "POST", "/api/admin/settings/change", {json: JSON.stringify(pushData)}
@@ -220,7 +220,7 @@ SettingsTab = React.createClass
             <GeneralTab refresh=@refresh settings={generalSettings} key={Math.random()}/>
           </TabPane>
           <TabPane eventKey='email' tab='Email'>
-            <EmailTab refresh=@refresh emailSettings={@state.settings.email} emailFilterSettings={@state.settings.email_filter}
+            <EmailTab refresh={@refresh} emailSettings={@state.settings.email} emailFilterSettings={@state.settings.email_filter}
               loggingSettings={@state.settings.logging} key={Math.random()}/>
           </TabPane>
         </TabbedArea>
