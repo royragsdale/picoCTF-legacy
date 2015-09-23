@@ -53,6 +53,7 @@ def get_group_scores(gid=None, name=None):
         result.append({
             "name": team['team_name'],
             "tid": team['tid'],
+            "affiliation": team["affiliation"],
             "score": get_score(tid=team['tid'])
         })
 
@@ -99,6 +100,7 @@ def get_all_team_scores():
                 "name": team['team_name'],
                 "tid": team['tid'],
                 "score": score,
+                "affiliation": team["affiliation"],
                 "lastsubmit": lastsubmit
             })
     time_ordered = sorted(result, key=lambda entry: entry['lastsubmit'])

@@ -123,6 +123,8 @@ def create_new_team_request(params, uid=None):
     desired_tid = create_team({
         "team_name": params["team_name"],
         "password": params["team_password"],
+        #TODO: fix
+        "affiliation": "None",
         "eligible": True
     })
 
@@ -206,7 +208,7 @@ def get_team_information(tid=None, gid=None):
     team_info["members"] = [{
         "username": member["username"], "firstname": member["firstname"],
         "lastname": member["lastname"], "email": member["email"],
-        "uid": member["uid"],
+        "uid": member["uid"], "affiliation": member.get("affiliation", "None"),
         "teacher": api.group.is_teacher_of_group(group["gid"], uid=api.user.get_user(member["username"])["uid"]) if gid else False
     } for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()

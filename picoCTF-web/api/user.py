@@ -153,7 +153,7 @@ def get_user(name=None, uid=None):
 
     return user
 
-def create_user(username, firstname, lastname, email, password_hash, tid, affiliation,
+def create_user(username, firstname, lastname, email, password_hash, tid,
                 teacher=False, country="US", admin=False, verified=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
@@ -202,7 +202,6 @@ def create_user(username, firstname, lastname, email, password_hash, tid, affili
         'tid': tid,
         'teacher': teacher,
         'admin': admin,
-        'affiliation': affiliation,
         'disabled': False,
         'country': country,
         'verified': not settings["email_verification"] or verified,
@@ -315,7 +314,8 @@ def create_simple_user_request(params):
     team_params = {
         "team_name": params["username"],
         "password": api.common.token(),
-        "eligible": params["eligibility"] == "eligible"
+        "eligible": params["eligibility"] == "eligible",
+        "affiliation": params["affiliation"]
     }
 
     tid = api.team.create_team(team_params)
@@ -333,7 +333,6 @@ def create_simple_user_request(params):
         params["email"],
         hash_password(params["password"]),
         team["tid"],
-        params["affiliation"],
         country=params["country"],
         teacher=user_is_teacher,
         verified=user_was_invited
