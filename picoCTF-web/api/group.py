@@ -284,7 +284,20 @@ def leave_group(tid, gid):
 
     db = api.common.get_conn()
 
-    db.groups.update({'gid': gid}, {'$pull': {'members': tid}})
+    group = get_group(gid=gid)
+    team = api.team.get_team(tid=tid)
+
+    role = "members"
+    if is_member_of_group(team["tid"]):
+        role = "members"
+    elif is_teacher_of_group(team["tid"]):
+        role = "teachers"
+    elif is_owner_of_group(team["tid"]):
+        raise InternalException("Owners can not leave their group.")
+    else:
+        raise InternalException("That team does not belong to that group.")
+
+    db.groups.update({'gid': gid}, {'$pull': {role: tid}})
 
 def leave_group_request(params, tid=None):
     """
@@ -309,6 +322,38 @@ def leave_group_request(params, tid=None):
         raise WebException("Your team is not a member of that class!")
 
     leave_group(tid, group["gid"])
+
+
+def switch_role(gid, uid, role):
+    """
+    Switch a user's given role in his group.
+
+    Cannot switch to/from owner.
+    """
+
+    db = api.common.get_conn()
+
+    group = get_group(gid=gid)
+    user = api.user.get_user(uid=uid)
+    tid = api.user.get_team(uid=user["uid"])["tid"]
+
+    if role == "member":
+        if api.group.is_teacher_of_group(gid, tid) and not api.group.is_member_of_group(gid, tid):
+            db.groups.update({"gid": gid}, {"$pull": {"teachers": tid}, "$push": {"members": tid}})
+        else:
+            raise InternalException("User is already a member of that group.")
+
+    elif role == "teacher":
+        if not api.group.is_teacher_of_group(gid, tid) and api.group.is_member_of_group(gid, tid):
+            db.groups.update({"gid": gid}, {"$push": {"teachers": tid}, "$pull": {"members": tid}})
+        else:
+            raise InternalException("User is already a teacher of that group.")
+
+    else:
+        raise InternalException("Only supported roles are member and teacher.")
+
+    #Keep teacher status up to date.
+    db.users.update({"uid": uid}, {"$set": {"teacher": db.groups.count({"teachers": tid}) > 0}})
 
 @log_action
 def delete_group(gid):

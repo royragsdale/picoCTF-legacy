@@ -67,7 +67,7 @@ def invite_email_to_group_hook():
 
     user = api.user.get_user()
 
-    if gid is None or email is None:
+    if gid is None or email is None or len(email) == 0:
         return WebError(message="You must specify a gid and email address to invite.")
 
     if role not in ["member", "teacher"]:
@@ -75,12 +75,11 @@ def invite_email_to_group_hook():
 
     group = api.group.get_group(gid=gid)
 
-    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]):
+    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]) or api.group.is_teacher_of_group(uid=user["uid"], gid=group["gid"]):
         api.email.send_email_invite(group["gid"], email, teacher=(role == "teacher"))
         return WebSuccess(message="Email invitation has been sent.")
     else:
         return WebError(message="You do not have sufficient privilege to do that.")
-
 @blueprint.route('/list')
 @api_wrapper
 @require_login
@@ -156,3 +155,51 @@ def get_flag_shares():
             return WebError("You must own a group to see its flag sharing statistics.")
 
     return WebSuccess(data=api.stats.check_invalid_instance_submissions(gid=gid))
+
+@blueprint.route('/teacher/leave', methods=['POST'])
+@api_wrapper
+@check_csrf
+@require_teacher
+def force_leave_group_hook():
+    gid = request.form.get("gid")
+    tid = request.form.get("tid")
+
+    print("l", gid, tid) 
+
+    if gid is None or tid is None:
+        return WebError("You must specify a gid and tid.")
+
+    api.group.leave_group(tid, gid)
+
+    return WebSuccess("Team has successfully left the group.")
+
+@blueprint.route('/teacher/role_switch', methods=['POST'])
+@api_wrapper
+@require_teacher
+def switch_user_role_group_hook():
+    gid = request.form.get("gid")
+    uid = request.form.get("uid")
+    role = request.form.get("role")
+
+    print("s", gid, uid, role)
+
+    user = api.user.get_user()
+
+    if gid is None or uid is None:
+        return WebError(message="You must specify a gid and uid to perform a role switch.")
+
+    if role not in ["member", "teacher"]:
+        return WebError(message="A user's role is either a member or teacher.")
+
+    group = api.group.get_group(gid=gid)
+
+    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]) or api.group.is_teacher_of_group(uid=user["uid"], gid=group["gid"]):
+        affected_user = api.user.get_user(uid=uid)
+
+        if api.group.is_owner_of_group(uid=affected_user["uid"], gid=group["gid"]):
+            return WebError(message="You can not change the role of the owner of the group.")
+
+        api.group.switch_role(group["gid"], affected_user["uid"], role)
+        return WebSuccess(message="User's role has been successfully changed.")
+    else:
+        return WebError(message="You do not have sufficient privilege to do that.")
