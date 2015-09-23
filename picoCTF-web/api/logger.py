@@ -45,7 +45,7 @@ class StatsHandler(logging.StreamHandler):
                 "owner": uid
             },
         "api.group.join_group":
-            lambda tid, gid, result=None: {
+            lambda tid, gid, teacher=False, result=None: {
                 "gid": gid
             },
         "api.group.leave_group":
