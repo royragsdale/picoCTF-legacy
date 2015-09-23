@@ -39,13 +39,13 @@ def reset_password(token_value, password, confirm_password):
     """
 
     validate(password_reset_schema, {"token": token_value, "password": password})
-    user = api.user.find_user_by_token("password_reset", token_value)
+    uid = api.token.find_key_by_token("password_reset", token_value)["uid"]
     api.user.update_password_request({
             "new-password": password,
             "new-password-confirmation": confirm_password
-    }, uid=user['uid'])
+    }, uid=uid)
 
-    api.user.delete_token(user['uid'], "password_reset")
+    api.token.delete_token({"uid": uid}, "password_reset")
 
 def request_password_reset(username):
     """
@@ -65,7 +65,7 @@ def request_password_reset(username):
     if user is None:
         raise WebException("No registration found for '{}'.".format(username))
 
-    token_value = api.user.set_token(user['uid'], "password_reset")
+    token_value = api.token.set_token({"uid": user['uid']}, "password_reset")
 
     body = """We recently received a request to reset the password for the following {0} account:\n\n\t{2}\n\nOur records show that this is the email address used to register the above account.  If you did not request to reset the password for the above account then you need not take any further steps.  If you did request the password reset please follow the link below to set your new password. \n\n {1}/reset#{3} \n\n Best of luck! \n\n ~The {0} Team
     """.format(api.config.competition_name, api.config.competition_urls[0], username, token_value)
@@ -83,7 +83,7 @@ def send_user_verification_email(username):
 
     user = api.user.get_user(name=username)
 
-    token_value = api.user.set_token(user["uid"], "email_verification")
+    token_value = api.token.set_token({"uid": user["uid"]}, "email_verification")
 
     #Is there a better way to do this without dragging url_for + app_context into it?
     verification_link = "{}/api/user/verify?uid={}&token={}".\
