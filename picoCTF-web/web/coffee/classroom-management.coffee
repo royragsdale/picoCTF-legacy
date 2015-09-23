@@ -42,8 +42,17 @@ MemberManagementItem = React.createClass
 MemberInvitePanel = React.createClass
   mixins: [React.addons.LinkedStateMixin]
 
+  propTypes:
+    gid: React.PropTypes.string.isRequired
+
   getInitialState: ->
     role: "member"
+
+  inviteUser: ->
+    apiCall "POST", "/api/group/invite", {gid: @props.gid, email: @state.email, role: @state.role}
+    .done ((resp) ->
+      apiNotify resp
+    )
 
   render: ->
     <Panel>
@@ -57,7 +66,7 @@ MemberInvitePanel = React.createClass
         </Input>
       </Col>
       <Col xs={4}>
-        <Button>Invite</Button>
+        <Button onClick={@inviteUser}>Invite User</Button>
       </Col>
     </Panel>
 
@@ -65,7 +74,7 @@ MemberManagement = React.createClass
   render: ->
     <div>
       <h4>User Management</h4>
-      <MemberInvitePanel/>
+      <MemberInvitePanel gid={@props.gid}/>
       <ListGroup>
         {@props.memberInformation.map ((member, i) ->
           <MemberManagementItem key={i} {...member}/>
@@ -109,7 +118,7 @@ GroupManagement = React.createClass
   render: ->
     <div>
       <Col xs={6}>
-        <MemberManagement memberInformation={@state.member_information}/>
+        <MemberManagement memberInformation={@state.member_information} gid={@props.gid}/>
       </Col>
       <Col xs={6}>
         <GroupEmailWhitelist emails={@state.settings.email_filter} pushUpdates={@pushUpdates} gid={@props.gid}/>
