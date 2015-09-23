@@ -39,10 +39,33 @@ MemberManagementItem = React.createClass
       </Row>
     </ListGroupItem>
 
+MemberInvitePanel = React.createClass
+  mixins: [React.addons.LinkedStateMixin]
+
+  getInitialState: ->
+    role: "member"
+
+  render: ->
+    <Panel>
+      <Col xs={8}>
+        <Input type="email" label="E-mail" valueLink={@linkState "email"}/>
+      </Col>
+      <Col xs={4}>
+        <Input type="select" label="Role" placeholder="Member" valueLink={@linkState "role"}>
+          <option value="member">Member</option>
+          <option value="teacher">Teacher</option>
+        </Input>
+      </Col>
+      <Col xs={4}>
+        <Button>Invite</Button>
+      </Col>
+    </Panel>
+
 MemberManagement = React.createClass
   render: ->
     <div>
       <h4>User Management</h4>
+      <MemberInvitePanel/>
       <ListGroup>
         {@props.memberInformation.map ((member, i) ->
           <MemberManagementItem key={i} {...member}/>
