@@ -205,7 +205,6 @@ def create_user(username, firstname, lastname, email, password_hash, tid, affili
         'disabled': False,
         'country': country,
         'verified': not settings["email_verification"],
-        'tokens': {}
     }
 
     db.users.insert(user)
@@ -424,64 +423,6 @@ def is_admin(uid=None):
     user = get_user(uid=uid)
     return user.get('admin', False)
 
-def set_token(uid, token_name, token_value=None):
-    """
-    Sets a token for the user.
-
-    Args:
-        uid: the user id
-        token_name: the name of the token to set
-        token_value: optionally specify the value of the token
-    Returns:
-        The token value
-    """
-
-    db = api.common.get_conn()
-
-    # Should never realistically collide.
-    if token_value is None:
-        token_value = api.common.hash(uid + api.common.token())
-
-    mongo_token_path = "tokens."+token_name
-
-    db.users.update({'uid': uid}, {'$set': {mongo_token_path: token_value}})
-
-    return token_value
-
-def delete_token(uid, token_name):
-    """
-    Removes the password reset token for the user in mongo
-
-    Args:
-        uid: the user id
-        token_name: the name of the token
-    """
-
-    db = api.common.get_conn()
-
-    mongo_token_path = "tokens."+token_name
-
-    db.users.update({'uid': uid}, {'$unset': {mongo_token_path: ''}})
-
-def find_user_by_token(token_name, token_value):
-    """
-    Searches the database for a user with a token_name token_value pair.
-
-    Args:
-        token_name: the name of the token
-        token_value: the value of the token
-    """
-
-    db = api.common.get_conn()
-
-    mongo_token_path = "tokens."+token_name
-
-    user = db.users.find_one({mongo_token_path: token_value})
-
-    if user is None:
-        raise WebException("That is not a valid token!")
-
-    return user
 
 def verify_user(uid, token_value):
     """
@@ -499,11 +440,11 @@ def verify_user(uid, token_value):
     if uid is None:
         raise InternalException("You must specify a uid.")
 
-    token_user = find_user_by_token("email_verification", token_value)
+    token_user = api.token.find_key_by_token("email_verification", token_value)
 
     if token_user["uid"] == uid:
         db.users.find_and_modify({"uid": uid}, {"$set": {"verified": True}})
-        delete_token(uid, "email_verification")
+        api.token.delete_token({"uid": uid}, "email_verification")
         return True
     else:
         raise InternalException("This is not a valid token for your user.")
