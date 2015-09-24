@@ -54,6 +54,7 @@ def get_group_scores(gid=None, name=None):
             "name": team['team_name'],
             "tid": team['tid'],
             "affiliation": team["affiliation"],
+            "eligible": team["eligible"],
             "score": get_score(tid=team['tid'])
         })
 
@@ -256,6 +257,7 @@ def get_top_teams_score_progressions(gid=None, eligible=True):
 
     return [{
         "name": team["name"],
+        "affiliation": team["affiliation"],
         "score_progression": get_score_progression(tid=team["tid"]),
     } for team in get_top_teams(gid=gid) if team["eligible"] == eligible]
 
