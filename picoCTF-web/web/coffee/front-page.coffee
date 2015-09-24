@@ -211,6 +211,8 @@ AuthPanel = React.createClass
             if @state.settings.email_verification
               if not @state.rid or @state.rid.length == 0
                 apiNotify verificationAlert
+              else
+                apiNotify resp, "/profile"
               @setPage "Login"
               if @state.settings.max_team_size > 1
                 document.location.hash = "#team-builder"
