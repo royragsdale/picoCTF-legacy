@@ -107,7 +107,7 @@ MemberInvitePanel = React.createClass
 MemberManagement = React.createClass
   render: ->
     allMembers = update @props.teacherInformation, {$push: @props.memberInformation}
-    allMembers = _.without allMembers, (member) -> @props.userInformation["tid"] != member["tid"]
+    allMembers = _.without allMembers, ((member) -> @props.currentUser["tid"] != member["tid"]).bind this
 
     memberInformation = <ListGroup>
         {allMembers.map ((member, i) ->
@@ -141,7 +141,7 @@ GroupManagement = React.createClass
 
     apiCall "GET", "/api/user/status"
     .done ((resp) ->
-      @setState update @state, $set: current_user
+      @setState update @state, $set: resp.data
     ).bind this
 
     apiCall "GET", "/api/group/member_information", {gid: @props.gid}
@@ -169,7 +169,7 @@ GroupManagement = React.createClass
   render: ->
     <div>
       <Col xs={6}>
-        <MemberManagement teacherInformation={@state.teacher_information} currentUser={@state.teacher_information}
+        <MemberManagement teacherInformation={@state.teacher_information} currentUser={@state.current_user}
           memberInformation={@state.member_information} gid={@props.gid} refresh={@refreshSettings}/>
       </Col>
       <Col xs={6}>
