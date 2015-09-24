@@ -62,6 +62,7 @@ MemberManagementItem = React.createClass
         </Col>
         <Col xs={4}>
           <ButtonGroup vertical>
+            {switchUser}
             <Button onClick={@removeTeam}>Remove User</Button>
           </ButtonGroup>
         </Col>
