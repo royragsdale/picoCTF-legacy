@@ -93,8 +93,7 @@ MemberInvitePanel = React.createClass
 
 MemberManagement = React.createClass
   render: ->
-    #Temporarily removed.
-    memberInformation =<ListGroup>
+    memberInformation = <ListGroup>
         {@props.memberInformation.map ((member, i) ->
           <MemberManagementItem key={i} gid={@props.gid} refresh={@props.refresh} {...member}/>
         ).bind this}
@@ -103,6 +102,7 @@ MemberManagement = React.createClass
     <div>
       <h4>User Management</h4>
       <MemberInvitePanel gid={@props.gid} refresh={@props.refresh}/>
+      {memberInformation}
     </div>
 
 GroupManagement = React.createClass
