@@ -34,6 +34,14 @@
           ga('send', 'event', 'Redirect', 'Teacher')
           window.location.href = "/classroom"
 
+@redirectIfNotTeacher = ->
+  apiCall "GET", "/api/user/status", {}
+  .done (data) ->
+    switch data["status"]
+      when 1
+        if not data.data["teacher"]
+          window.location.href = "/"
+
 @redirectIfNotAdmin = ->
   apiCall "GET", "/api/user/status", {}
   .done (data) ->
