@@ -21,3 +21,4 @@ Things to do:
 * Affiliation does not work for team builder.
 * Clear confusion between is_n_of_group, using TIDs for everything is wrong.
 * Group hierarchy is a mess ^
+* /api/user/status is a mess
