@@ -18,9 +18,14 @@ startup_functions:
 <script type="text/template" id="scoreboard-tabs-template">
   <ul class="nav nav-tabs" id="scoreboard-tabs">
     <li class="active" data-gid="public"><a data-toggle="tab" href="#public" onClick="window.reloadGraph()">Public</a></li>
+
     <% _.each(data.groups, function(group, index) { %>
       <li data-gid="<%= group.gid %>"><a data-toggle="tab" href="#<%= group.gid %>" onClick="window.reloadGraph()"><%- group.name %></a></li>
     <% }); %>
+
+    <% if(data.ineligible !== undefined) { %>
+      <li data-gid="ineligible"><a data-toggle="tab" href="#ineligible" onClick="window.reloadGraph()">Ineligible</a></li>
+    <% } %>
   </ul>
   <div class="tab-content">
     <div class="row">
@@ -36,7 +41,13 @@ startup_functions:
       <div id="<%= group.gid %>" class="tab-pane fade">
         <%= renderScoreboard({scoreboard: group.scoreboard}) %>
       </div>
-    <% }); %>
+     <% }); %>
+
+     <% if(data.ineligible !== undefined) { %>
+        <div id="ineligible" class="tab-pane fade">
+        <%= renderScoreboard({scoreboard: data.ineligible}) %>
+        </div>
+     <% } %>
   </div>
 </script>
 

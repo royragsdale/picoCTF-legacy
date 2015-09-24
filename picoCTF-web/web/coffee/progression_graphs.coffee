@@ -141,6 +141,9 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   if gid == "public"
     apiCall "GET", "/api/stats/top_teams/score_progression", {}
     .done drawgraph
+  else if gid == "ineligible"
+    apiCall "GET", "/api/stats/top_teams/score_progression", {eligible: false}
+    .done drawgraph
   else
     apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
     .done drawgraph
