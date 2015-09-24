@@ -76,7 +76,7 @@ def get_group_average_score(gid=None, name=None):
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
-def get_all_team_scores():
+def get_all_team_scores(eligible=True):
     """
     Gets the score for every team in the database.
 
@@ -89,7 +89,7 @@ def get_all_team_scores():
 
     result = []
     for team in teams:
-        team_query = db.submissions.find({'tid': team['tid'], 'eligible': True, 'correct': True})
+        team_query = db.submissions.find({'tid': team['tid'], 'eligible': eligible, 'correct': True})
         if team_query.count() > 0:
             lastsubmit = team_query.sort('timestamp', direction=pymongo.DESCENDING)[0]['timestamp']
         else:
@@ -242,7 +242,7 @@ def get_top_teams(gid=None):
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
-def get_top_teams_score_progressions(gid=None):
+def get_top_teams_score_progressions(gid=None, eligible=True):
     """
     Gets the score_progressions for the top teams
 
@@ -257,7 +257,7 @@ def get_top_teams_score_progressions(gid=None):
     return [{
         "name": team["name"],
         "score_progression": get_score_progression(tid=team["tid"]),
-    } for team in get_top_teams(gid=gid)]
+    } for team in get_top_teams(gid=gid) if team["eligible"] == eligible]
 
 
 # Custom statistics not necessarily to be served publicly

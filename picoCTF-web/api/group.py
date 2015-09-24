@@ -31,7 +31,7 @@ delete_group_schema = Schema({
     )
 }, extra=True)
 
-def is_teacher_of_group(gid, uid = None):
+def is_teacher_of_group(gid, tid=None, uid=None):
     """
     Determine whether or not the current user is an owner of the group. gid must be specified.
     Administrators will always be considered owners.
@@ -46,6 +46,12 @@ def is_teacher_of_group(gid, uid = None):
 
     if uid is not None:
         user = api.user.get_user(uid=uid)
+    elif tid is not None:
+        team = api.team.get_team(tid=tid)
+        uids = api.team.get_team_uids(tid=team["tid"])
+        if len(uids) > 1:
+            raise InternalException("Non-singular team can not be an owner.")
+        user = api.user.get_user(uid=uids[0])
     elif api.auth.is_logged_in():
         user = api.user.get_user()
     else:
@@ -54,7 +60,7 @@ def is_teacher_of_group(gid, uid = None):
     return user["admin"] or user["tid"] in group["teachers"]
 
 # Misleading, owner/teacher
-def is_owner_of_group(gid, uid = None):
+def is_owner_of_group(gid, tid=None, uid=None):
     """
     Determine whether or not the current user is an owner of the group. gid must be specified.
     Administrators will always be considered owners.
@@ -69,14 +75,20 @@ def is_owner_of_group(gid, uid = None):
 
     if uid is not None:
         user = api.user.get_user(uid=uid)
+    elif tid is not None:
+        team = api.team.get_team(tid=tid)
+        uids = api.team.get_team_uids(tid=team["tid"])
+        if len(uids) > 1:
+            raise InternalException("Non-singular team can not be an owner.")
+        user = api.user.get_user(uid=uids[0])
     elif api.auth.is_logged_in():
         user = api.user.get_user()
     else:
         raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
 
-    return user["admin"] or user["uid"] == group["owner"] or user["tid"] in group["teachers"]
+    return user["admin"] or user["uid"] == group["owner"]
 
-def is_member_of_group(gid=None, name=None, owner_uid=None, tid=None):
+def is_member_of_group(gid=None, name=None, owner_uid=None, tid=None, uid=None):
     """
     Determine whether or not a user is a member of the group. gid or name must be specified.
 
@@ -91,13 +103,17 @@ def is_member_of_group(gid=None, name=None, owner_uid=None, tid=None):
 
     group = get_group(gid=gid, name=name, owner_uid=owner_uid)
 
-    if tid is None:
-        if api.auth.is_logged_in():
-            tid = api.user.get_team()["tid"]
-        else:
-            raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
+    if uid is not None:
+        user = api.user.get_user(uid=uid)
+    elif tid is not None:
+        team = api.team.get_team(tid=tid)
+        uids = api.team.get_team_uids(tid=team["tid"])
+        if len(uids) > 1:
+            raise InternalException("Non-singular team can not be an owner.")
+        user = api.user.get_user(uid=uids[0])
 
-    return tid in group["members"]
+    return user["tid"] in group["members"]
+
 
 def get_group(gid=None, name=None, owner_uid=None):
     """
@@ -288,11 +304,11 @@ def leave_group(tid, gid):
     team = api.team.get_team(tid=tid)
 
     role = "members"
-    if is_member_of_group(team["tid"]):
+    if is_member_of_group(gid=group["gid"], tid=team["tid"]):
         role = "members"
-    elif is_teacher_of_group(team["tid"]):
+    elif is_teacher_of_group(gid=group["gid"], tid=team["tid"]):
         role = "teachers"
-    elif is_owner_of_group(team["tid"]):
+    elif is_owner_of_group(gid=group["gid"], tid=team["tid"]):
         raise InternalException("Owners can not leave their group.")
     else:
         raise InternalException("That team does not belong to that group.")
@@ -338,13 +354,13 @@ def switch_role(gid, uid, role):
     tid = api.user.get_team(uid=user["uid"])["tid"]
 
     if role == "member":
-        if api.group.is_teacher_of_group(gid, tid) and not api.group.is_member_of_group(gid, tid):
+        if api.group.is_teacher_of_group(gid=gid, tid=tid) and not api.group.is_member_of_group(gid=gid, tid=tid):
             db.groups.update({"gid": gid}, {"$pull": {"teachers": tid}, "$push": {"members": tid}})
         else:
             raise InternalException("User is already a member of that group.")
 
     elif role == "teacher":
-        if not api.group.is_teacher_of_group(gid, tid) and api.group.is_member_of_group(gid, tid):
+        if not api.group.is_teacher_of_group(gid=gid, tid=tid) and api.group.is_member_of_group(gid=gid, tid=tid):
             db.groups.update({"gid": gid}, {"$push": {"teachers": tid}, "$pull": {"members": tid}})
         else:
             raise InternalException("User is already a teacher of that group.")
@@ -353,7 +369,8 @@ def switch_role(gid, uid, role):
         raise InternalException("Only supported roles are member and teacher.")
 
     #Keep teacher status up to date.
-    db.users.update({"uid": uid}, {"$set": {"teacher": db.groups.count({"teachers": tid}) > 0}})
+    active_teacher_roles = db.groups.find({"teachers": tid}).count()
+    db.users.update({"uid": uid}, {"$set": {"teacher": active_teacher_roles > 0}})
 
 @log_action
 def delete_group(gid):

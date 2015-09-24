@@ -51,7 +51,7 @@ def change_group_settings_hook():
     user = api.user.get_user()
     group = api.group.get_group(gid=gid)
 
-    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]):
+    if api.group.is_teacher_of_group(uid=user["uid"], gid=group["gid"]):
         api.group.change_group_settings(group["gid"], settings)
         return WebSuccess(message="Group settings changed successfully.")
     else:
@@ -75,11 +75,12 @@ def invite_email_to_group_hook():
 
     group = api.group.get_group(gid=gid)
 
-    if api.group.is_owner_of_group(uid=user["uid"], gid=group["gid"]) or api.group.is_teacher_of_group(uid=user["uid"], gid=group["gid"]):
+    if api.group.is_teacher_of_group(uid=user["uid"], gid=group["gid"]) or api.group.is_teacher_of_group(uid=user["uid"], gid=group["gid"]):
         api.email.send_email_invite(group["gid"], email, teacher=(role == "teacher"))
         return WebSuccess(message="Email invitation has been sent.")
     else:
         return WebError(message="You do not have sufficient privilege to do that.")
+
 @blueprint.route('/list')
 @api_wrapper
 @require_login
@@ -91,7 +92,7 @@ def get_group_list_hook():
 @require_teacher
 def get_memeber_information_hook(gid=None):
     gid = request.args.get("gid")
-    if not api.group.is_owner_of_group(gid):
+    if not api.group.is_teacher_of_group(gid=gid):
         return WebError("You do not own that group!")
 
     return WebSuccess(data=api.group.get_member_information(gid=gid))
@@ -101,7 +102,7 @@ def get_memeber_information_hook(gid=None):
 @require_teacher
 def get_group_score_hook():  #JB: Fix this
     name = request.args.get("group-name")
-    if not api.group.is_owner_of_group(gid=name):
+    if not api.group.is_teacher_of_group(gid=name):
         return WebError("You do not own that group!")
 
     #TODO: Investigate!
@@ -151,7 +152,7 @@ def get_flag_shares():
     if gid is None:
         return WebError("You must specify a gid")
     else:
-        if not api.group.is_owner_of_group(gid):
+        if not api.group.is_teacher_of_group(gid=gid):
             return WebError("You must own a group to see its flag sharing statistics.")
 
     return WebSuccess(data=api.stats.check_invalid_instance_submissions(gid=gid))
@@ -163,8 +164,6 @@ def get_flag_shares():
 def force_leave_group_hook():
     gid = request.form.get("gid")
     tid = request.form.get("tid")
-
-    print("l", gid, tid) 
 
     if gid is None or tid is None:
         return WebError("You must specify a gid and tid.")
@@ -180,8 +179,6 @@ def switch_user_role_group_hook():
     gid = request.form.get("gid")
     uid = request.form.get("uid")
     role = request.form.get("role")
-
-    print("s", gid, uid, role)
 
     user = api.user.get_user()
 

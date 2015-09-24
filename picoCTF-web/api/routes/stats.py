@@ -42,6 +42,9 @@ def get_scoreboard_hook():
     result['groups'] = []
 
     if api.auth.is_logged_in():
+        user = api.user.get_user()
+        if not api.team.get_team(tid=user["tid"])["eligible"]:
+            result['ineligible'] = api.stats.get_all_team_scores(eligible=False)
         for group in api.team.get_groups():
             result['groups'].append({
                 'gid': group['gid'],
@@ -54,7 +57,8 @@ def get_scoreboard_hook():
 @blueprint.route('/top_teams/score_progression', methods=['GET'])
 @api_wrapper
 def get_top_teams_score_progressions_hook():
-    return WebSuccess(data=api.stats.get_top_teams_score_progressions())
+    eligible = request.args.get("eligible", True)
+    return WebSuccess(data=api.stats.get_top_teams_score_progressions(eligible=eligible))
 
 @blueprint.route('/group/score_progression', methods=['GET'])
 @api_wrapper
