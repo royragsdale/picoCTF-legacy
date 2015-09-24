@@ -114,6 +114,7 @@ def status_hook():
         "reCAPTCHA_public_key": settings["captcha"]["reCAPTCHA_public_key"],
         "competition_active": api.utilities.check_competition_active(),
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else "",
+        "tid": api.user.get_user()["tid"] if api.auth.is_logged_in() else "",
         "email_verification": settings["email_verification"]
     }
 
