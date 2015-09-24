@@ -212,13 +212,18 @@ def get_team_information(tid=None, gid=None):
         "teacher": api.group.is_teacher_of_group(group["gid"], uid=api.user.get_user(member["username"])["uid"]) if gid else False
     } for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()
-    team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
     team_info["progression"] = api.stats.get_score_progression(tid=tid)
     team_info["flagged_submissions"] = [sub for sub in api.stats.check_invalid_instance_submissions() if sub['tid'] == tid]
     team_info["max_team_size"] = api.config.get_settings()["max_team_size"]
 
     if api.config.get_settings()["achievements"]["enable_achievements"]:
         team_info["achievements"] = api.achievement.get_earned_achievements(tid=tid)
+
+    team_info["solved_problems"] = []
+    for solved_problem in api.problem.get_solved_problems(tid=tid):
+        solved_problem.pop("instances")
+        solved_problem.pop("pkg_dependencies")
+        team_info["solved_problems"].append(solved_problem)
 
     return team_info
 
