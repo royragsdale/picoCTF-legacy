@@ -36,7 +36,7 @@ def get_group_settings_hook():
 
     prepared_data = {
         "name": group["name"],
-        "settings": api.group.get_group_settings(group["gid"])
+        "settings": api.group.get_group_settings(gid=group["gid"])
     }
 
     return WebSuccess(data=prepared_data)
@@ -87,13 +87,23 @@ def invite_email_to_group_hook():
 def get_group_list_hook():
     return WebSuccess(data=api.team.get_groups())
 
+@blueprint.route('/teacher_information', methods=['GET'])
+@api_wrapper
+@require_teacher
+def get_teacher_information_hook(gid=None):
+    gid = request.args.get("gid")
+    if not api.group.is_teacher_of_group(gid=gid):
+        return WebError("You are not a teacher for this group.")
+
+    return WebSuccess(data=api.group.get_teacher_information(gid=gid))
+
 @blueprint.route('/member_information', methods=['GET'])
 @api_wrapper
 @require_teacher
 def get_memeber_information_hook(gid=None):
     gid = request.args.get("gid")
     if not api.group.is_teacher_of_group(gid=gid):
-        return WebError("You do not own that group!")
+        return WebError("You are not a teacher for this group.")
 
     return WebSuccess(data=api.group.get_member_information(gid=gid))
 

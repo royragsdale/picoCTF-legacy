@@ -144,6 +144,26 @@ def get_group(gid=None, name=None, owner_uid=None):
 
     return group
 
+def get_teacher_information(gid):
+    """
+    Retrieves the team information for all teams in a group.
+
+    Args:
+        gid: the group id
+    Returns:
+        A list of team information
+    """
+
+    group = get_group(gid=gid)
+
+    member_information = []
+    for tid in group["teachers"]:
+        team_information = api.team.get_team_information(tid=tid)
+        team_information["teacher"] = True
+        member_information.append(team_information)
+
+    return member_information
+
 def get_member_information(gid):
     """
     Retrieves the team information for all teams in a group.
