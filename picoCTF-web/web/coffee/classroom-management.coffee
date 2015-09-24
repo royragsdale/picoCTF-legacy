@@ -44,7 +44,7 @@ MemberManagementItem = React.createClass
       </Button>
 
     if @props.teacher
-      switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "user")}>Make User</Button>
+      switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "member")}>Make Member</Button>
     else
       switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "teacher")}>Make Teacher</Button>
 
