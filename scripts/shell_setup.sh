@@ -3,6 +3,9 @@
 USER_HOME="/home/vagrant"
 ROOT="/vagrant/picoCTF-shell-manager"
 
+# add universe
+sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
+
 apt-get -y update
 apt-get -y upgrade
 
