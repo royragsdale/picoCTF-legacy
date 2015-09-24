@@ -300,8 +300,13 @@ def join_group_request(params, tid=None):
 
     group = get_group(name=params["group-name"], owner_uid=owner_uid)
 
-    if tid is None:
-        tid = api.user.get_team()["tid"]
+    #TODO: assumes teams of size 1
+    user = api.user.get_user()
+
+    group_settings = get_group_settings(gid=group["gid"])
+
+    if not api.user.verify_email_in_whitelist(user["email"], group_settings["email_filter"]):
+        raise WebException("Your email does not belong to the whitelist for that group. You may not join it yourself.")
 
     if tid in group['members']:
         raise WebException("Your team is already a member of that class!")

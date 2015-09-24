@@ -22,3 +22,4 @@ Things to do:
 * Clear confusion between is_n_of_group, using TIDs for everything is wrong.
 * Group hierarchy is a mess ^
 * /api/user/status is a mess
+* join_group_request with email_filter assumes the teams are size of 1.
