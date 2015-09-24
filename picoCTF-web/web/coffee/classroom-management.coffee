@@ -20,9 +20,8 @@ MemberManagementItem = React.createClass
       @props.refresh()
     ).bind this
 
-  switchUserRole: (uid) ->
-    console.log uid, "?"
-    apiCall "POST", "/api/group/teacher/role_switch", {gid: @props.gid, uid: uid, role: "teacher"}
+  switchUserRole: (uid, role) ->
+    apiCall "POST", "/api/group/teacher/role_switch", {gid: @props.gid, uid: uid, role: role}
     .done ((resp) ->
       apiNotify resp
       @props.refresh()
@@ -30,14 +29,29 @@ MemberManagementItem = React.createClass
 
   render: ->
     user = _.first @props.members
-    console.log user
+
+    if @props.teacher
+      userButton =
+      <Button bsStyle="success" className="btn-sq">
+        <Glyphicon glyph="user" bsSize="large"/>
+        <p className="text-center">Teacher</p>
+      </Button>
+    else
+      userButton =
+      <Button bsStyle="primary" className="btn-sq">
+        <Glyphicon glyph="user" bsSize="large"/>
+        <p className="text-center">User</p>
+      </Button>
+
+    if @props.teacher
+      switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "user")}>Make User</Button>
+    else
+      switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "teacher")}>Make Teacher</Button>
+
     <ListGroupItem>
       <Row>
         <Col xs={2}>
-          <Button bsStyle="primary" className="btn-sq">
-            <Glyphicon glyph="user" bsSize="large"/>
-            <p className="text-center">{if @props.teacher then "Teacher" else "User"}</p>
-          </Button>
+          {userButton}
         </Col>
         <Col xs={6}>
           <h4>{user.username}</h4>
@@ -49,7 +63,6 @@ MemberManagementItem = React.createClass
         <Col xs={4}>
           <ButtonGroup vertical>
             <Button onClick={@removeTeam}>Remove User</Button>
-            <Button onClick={@switchUserRole.bind(null, user.uid)}>Make Teacher</Button>
           </ButtonGroup>
         </Col>
       </Row>
@@ -93,8 +106,11 @@ MemberInvitePanel = React.createClass
 
 MemberManagement = React.createClass
   render: ->
+    allMembers = update @props.teacherInformation, {$push: @props.memberInformation}
+    allMembers = _.without allMembers, (member) -> @props.userInformation["tid"] != member["tid"]
+
     memberInformation = <ListGroup>
-        {@props.memberInformation.map ((member, i) ->
+        {allMembers.map ((member, i) ->
           <MemberManagementItem key={i} gid={@props.gid} refresh={@props.refresh} {...member}/>
         ).bind this}
       </ListGroup>
@@ -111,6 +127,8 @@ GroupManagement = React.createClass
     settings:
       email_filter: []
     member_information: []
+    teacher_information: []
+    current_user: {}
 
   componentWillMount: ->
     @refreshSettings()
@@ -121,9 +139,19 @@ GroupManagement = React.createClass
       @setState update @state, $merge: resp.data
     ).bind this
 
+    apiCall "GET", "/api/user/status"
+    .done ((resp) ->
+      @setState update @state, $set: current_user
+    ).bind this
+
     apiCall "GET", "/api/group/member_information", {gid: @props.gid}
     .done ((resp) ->
       @setState update @state, member_information: $set: resp.data
+    ).bind this
+
+    apiCall "GET", "/api/group/teacher_information", {gid: @props.gid}
+    .done ((resp) ->
+      @setState update @state, teacher_information: $set: resp.data
     ).bind this
 
   pushUpdates: (modifier) ->
@@ -141,7 +169,8 @@ GroupManagement = React.createClass
   render: ->
     <div>
       <Col xs={6}>
-        <MemberManagement memberInformation={@state.member_information} gid={@props.gid} refresh={@refreshSettings}/>
+        <MemberManagement teacherInformation={@state.teacher_information} currentUser={@state.teacher_information}
+          memberInformation={@state.member_information} gid={@props.gid} refresh={@refreshSettings}/>
       </Col>
       <Col xs={6}>
         <GroupEmailWhitelist emails={@state.settings.email_filter} pushUpdates={@pushUpdates} gid={@props.gid}/>
