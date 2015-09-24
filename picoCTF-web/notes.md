@@ -19,3 +19,5 @@ Things to do:
 * is_owner vs is_teacher in groups
 * It would be great to get teacher=Bool out of user, we could just aggregate it and it would be a lot smoother.
 * Affiliation does not work for team builder.
+* Clear confusion between is_n_of_group, using TIDs for everything is wrong.
+* Group hierarchy is a mess ^
