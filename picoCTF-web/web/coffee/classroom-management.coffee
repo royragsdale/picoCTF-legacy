@@ -143,6 +143,8 @@ GroupManagement = React.createClass
     apiCall "GET", "/api/user/status"
     .done ((resp) ->
       @setState update @state, current_user: $set: resp.data
+      if not resp.data["teacher"] or (window.userStatus and not window.userStatus.teacher)
+        apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
     ).bind this
 
     apiCall "GET", "/api/group/member_information", {gid: @props.gid}

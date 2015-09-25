@@ -176,7 +176,11 @@ def get_member_information(gid):
 
     group = get_group(gid=gid)
 
-    member_information = [api.team.get_team_information(tid) for tid in group["members"]]
+    member_information = []
+    for tid in group["members"]:
+        team = api.team.get_team(tid=tid)
+        if team["size"] > 0:
+            member_information.append(api.team.get_team_information(tid=team["tid"]))
 
     return member_information
 
@@ -313,6 +317,16 @@ def join_group_request(params, tid=None):
 
     join_group(tid, group["gid"])
 
+def sync_teacher_status(tid, uid):
+    """
+    Determine if the given user is still a teacher and update his status.
+    """
+
+    db = api.common.get_conn()
+
+    active_teacher_roles = db.groups.find({"$or": [{"teachers": tid}, {"owner": uid}]}).count()
+    db.users.update({"uid": uid}, {"$set": {"teacher": active_teacher_roles > 0}})
+
 @log_action
 def leave_group(tid, gid):
     """
@@ -340,6 +354,11 @@ def leave_group(tid, gid):
 
     db.groups.update({'gid': gid}, {'$pull': {role: tid}})
 
+    #TODO: only works with team size of 1.
+    if team["size"] == 1:
+        uid = api.team.get_team_uids(tid=tid)[0]
+        sync_teacher_status(tid, uid)
+
 def leave_group_request(params, tid=None):
     """
     Tries to remove a team from a group. Validates forms.
@@ -363,7 +382,6 @@ def leave_group_request(params, tid=None):
         raise WebException("Your team is not a member of that class!")
 
     leave_group(tid, group["gid"])
-
 
 def switch_role(gid, uid, role):
     """
@@ -394,8 +412,7 @@ def switch_role(gid, uid, role):
         raise InternalException("Only supported roles are member and teacher.")
 
     #Keep teacher status up to date.
-    active_teacher_roles = db.groups.find({"teachers": tid}).count()
-    db.users.update({"uid": uid}, {"$set": {"teacher": active_teacher_roles > 0}})
+    sync_teacher_status(tid, uid)
 
 @log_action
 def delete_group(gid):

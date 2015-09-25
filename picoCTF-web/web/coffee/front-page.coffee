@@ -200,7 +200,7 @@ AuthPanel = React.createClass
           verificationAlert =
             status: 1
             message: "You have been sent a verification email. You will need to complete this step before logging in."
-          console.log @state
+
           if @state.settings.max_team_size > 1
             if @state.settings.email_verification and not @state.rid
               apiNotify verificationAlert

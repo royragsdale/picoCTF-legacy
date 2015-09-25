@@ -6,6 +6,9 @@
   .fail (jqXHR, text) ->
     ga('send', 'event', 'Error', 'APIOffline', url)
     $.notify "The server is currently down. We will work to fix this error right away.", "error"
+  .success (resp) ->
+    if url == "/api/user/status" and resp.status == 1
+      window.userStatus = resp.data
 
 @redirectIfNotLoggedIn = ->
   apiCall "GET", "/api/user/status", {}
