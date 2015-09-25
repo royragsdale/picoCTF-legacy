@@ -23,3 +23,4 @@ Things to do:
 * Group hierarchy is a mess ^
 * /api/user/status is a mess
 * join_group_request with email_filter assumes the teams are size of 1.
+* Competition readiness checks take forever, block a worker process. Off for now.
