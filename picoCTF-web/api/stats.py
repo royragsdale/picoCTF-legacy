@@ -102,10 +102,11 @@ def get_all_team_scores(eligible=True):
                 "tid": team['tid'],
                 "score": score,
                 "affiliation": team["affiliation"],
+                "eligible": team["eligible"],
                 "lastsubmit": lastsubmit
             })
     time_ordered = sorted(result, key=lambda entry: entry['lastsubmit'])
-    time_ordered_time_removed = [{'name': x['name'], 'tid': x['tid'], 'score': x['score']} for x in time_ordered]
+    time_ordered_time_removed = [{'name': x['name'], 'eligible': x['eligible'], 'tid': x['tid'], 'score': x['score'], 'affiliation': x['affiliation']} for x in time_ordered]
     return sorted(time_ordered_time_removed, key=lambda entry: entry['score'], reverse=True)
 
 
