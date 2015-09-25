@@ -283,7 +283,8 @@ post_scripts:
             <div class="tab-pane tab-pane-outline" id="group-tab-<%- group.gid %>"></div>
           <% }); %>
         </div>
-    <% } else if(window.userStatus && window.userStatus.admin) { %>
+    <% } %>
+    <% if(window.userStatus && window.userStatus.admin) { %>
      <div class="col-md-12">
         <span class="input-group-btn">
             <button class="btn btn-primary" type="submit" id="new-class-button">Create a New Class</button>
