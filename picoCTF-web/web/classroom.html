@@ -2,16 +2,13 @@
 layout: default
 title: Classroom
 post_scripts:
+  - js/libs/jquery.bbq.js
+  - js/libs/Chart.min.js
+  - js/libs/download.js
   - js/progression_graphs.js
   - js/classroom.js
   - js/classroom-management.js
-  - js/libs/jquery.bbq.js
-startup_functions:
-  - redirectIfNotTeacher()
 ---
-
-<script type="text/javascript" src="/js/libs/Chart.min.js"></script>
-<script type="text/javascript" src="/js/libs/download.js"></script>
 
 <div class="container">
     <div class="row">
@@ -272,8 +269,10 @@ startup_functions:
                    data-gid="<%- group.gid %>"
                    data-group-name="<%- group.name %>"
                    role="tab" data-toggle="tab">
-                        <%- group.name %>
-                        <span data-group-name="<%- group.name %>" class="glyphicon glyphicon-remove delete-group-span"></span>
+                  <%- group.name %>
+                  <% if(window.userStatus && window.userStatus.admin) { %>
+                    <span data-group-name="<%- group.name %>" class="glyphicon glyphicon-remove delete-group-span"></span>
+                  <% } %>
                 </a>
             </li>
           <% }); %>
@@ -284,7 +283,7 @@ startup_functions:
             <div class="tab-pane tab-pane-outline" id="group-tab-<%- group.gid %>"></div>
           <% }); %>
         </div>
-    <% } else { %>
+    <% } else if(window.userStatus && window.userStatus.admin) { %>
      <div class="col-md-12">
         <span class="input-group-btn">
             <button class="btn btn-primary" type="submit" id="new-class-button">Create a New Class</button>
