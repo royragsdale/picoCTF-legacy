@@ -275,21 +275,16 @@ post_scripts:
                   <% } %>
                 </a>
             </li>
-          <% }); %>
+        <% }); %>
+        <% if(window.userStatus && window.userStatus.admin) { %>
           <li><a href="#" id="new-class-tab">New Class</a></li>
+        <% } %>
         </ul>
         <div class="tab-content">
           <% _.each(data, function(group, index) { %>
             <div class="tab-pane tab-pane-outline" id="group-tab-<%- group.gid %>"></div>
           <% }); %>
         </div>
-    <% } %>
-    <% if(window.userStatus && window.userStatus.admin) { %>
-     <div class="col-md-12">
-        <span class="input-group-btn">
-            <button class="btn btn-primary" type="submit" id="new-class-button">Create a New Class</button>
-        </span>
-     </div>
     <% } %>
 </script>
 
