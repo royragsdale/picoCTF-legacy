@@ -176,7 +176,11 @@ def get_member_information(gid):
 
     group = get_group(gid=gid)
 
-    member_information = [api.team.get_team_information(tid) for tid in group["members"]]
+    member_information = []
+    for tid in group["members"]:
+        team = api.team.get_team(tid=tid)
+        if team["size"] > 0:
+            member_information.append(api.team.get_team_information(tid=team["tid"]))
 
     return member_information
 
