@@ -129,5 +129,12 @@ groupRequest = (e) ->
   createGroup groupName
 
 $ ->
+  if not window.userStatus
+    apiCall "GET", "/api/user/status"
+    .done () ->
+      if not window.userStatus.teacher
+        apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
+  else if not window.userStatus.teacher
+      apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
   loadGroupInfo(true)
   return
