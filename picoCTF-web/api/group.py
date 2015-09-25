@@ -312,7 +312,7 @@ def join_group_request(params, tid=None):
     if not api.user.verify_email_in_whitelist(user["email"], group_settings["email_filter"]):
         raise WebException("Your email does not belong to the whitelist for that group. You may not join it yourself.")
 
-    if tid in group['members']:
+    if tid in group['members'] or tid in group["teachers"]:
         raise WebException("Your team is already a member of that class!")
 
     join_group(tid, group["gid"])
