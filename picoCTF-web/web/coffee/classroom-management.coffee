@@ -270,4 +270,9 @@ TeacherManagement = React.createClass
       ).bind this}
     </TabbedArea>
 $ ->
-  React.render <TeacherManagement/>, document.getElementById("group-management")
+  React.render <TeacherManagement/>, document.getElementById "group-management"
+
+  $(document).on 'shown.bs.tab', 'a[href="#group-management-tab"]', () ->
+    React.unmountComponentAtNode document.getElementById "group-management"
+    React.render <TeacherManagement/>, document.getElementById "group-management"
+

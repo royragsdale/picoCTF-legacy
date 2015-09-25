@@ -136,5 +136,10 @@ $ ->
         apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
   else if not window.userStatus.teacher
       apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
+
   loadGroupInfo(true)
+
+  $(document).on 'shown.bs.tab', 'a[href="#group-overview-tab"]', () ->
+    loadGroupInfo(true)
+
   return
