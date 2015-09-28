@@ -3,7 +3,7 @@ server {
         listen       80;
         root   /srv/http/ctf;
 
-	error_page 404  =  /404.html;
+        error_page 404  =  /404.html;
 
         location = / {
                 default_type text/html;
@@ -15,10 +15,6 @@ server {
         {
             default_type text/html;
             alias /srv/http/ctf/$1.html;
-        }
-
-        location ~ /problem-static/ {
-            default_type application/octet-stream;
         }
 
         location ~ /api/ {
