@@ -169,11 +169,15 @@ AuthPanel = React.createClass
     if @state.gid
       apiCall "GET", "/api/group/settings", {gid: @state.gid}
       .done ((resp) ->
-        @setState update @state,
-          groupName: $set: resp.data.name
-          affiliation: $set: resp.data.name
-          settings: $merge: resp.data.settings
-          page: $set: "Register"
+        switch resp.status
+          when 0
+            apiNotify resp
+          when 1
+            @setState update @state,
+              groupName: $set: resp.data.name
+              affiliation: $set: resp.data.name
+              settings: $merge: resp.data.settings
+              page: $set: "Register"
       ).bind this
     else
       apiCall "GET", "/api/team/settings"
