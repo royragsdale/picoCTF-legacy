@@ -69,6 +69,7 @@ mount -o remount,hidepid=2 /proc
 chmod 1733 /tmp /var/tmp /dev/shm
 chmod 1111 /home/
 chmod -R o-r /var/log
+chmod o-rw /proc
 
 # set hostname
 hostname shell
