@@ -59,6 +59,16 @@ groupadd competitors
 echo "kernel.randomize_va_space=0" >> /etc/sysctl.conf
 sysctl -p
 
+# Securing the shell server
+# limits
+cp /vagrant/configs/limits.conf /etc/security/limits.conf
+bash /vagrant/scripts/socket-limits.sh
+# isolate users
+mount -o remount,hidepid=2 /proc
+chmod 1733 /tmp /var/tmp /dev/shm
+chmod 1111 /home/
+chmod -R o-r /var/log
+
 # set hostname
 hostname shell
 echo "shell" > /etc/hostname
