@@ -42,6 +42,7 @@ sudo service nginx restart
 
 # add shellinabox to cron
 crontab -u root /opt/hacksports/shellinabox/shellinabox_cron
+crontab -u root /vagrant/configs/isolate.cron
 
 # PAM module setup
 cp $ROOT/config/common-auth /etc/pam.d/common-auth
