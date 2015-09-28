@@ -168,24 +168,24 @@ AuthPanel = React.createClass
       apiNotify({status: 1, message: "Your account has been successfully verified. Please login."})
     if @state.gid
       apiCall "GET", "/api/group/settings", {gid: @state.gid}
-      .done ((req) ->
+      .done ((resp) ->
         @setState update @state,
-          groupName: $set: req.data.name
-          affiliation: $set: req.data.name
-          settings: $merge: req.data.settings
+          groupName: $set: resp.data.name
+          affiliation: $set: resp.data.name
+          settings: $merge: resp.data.settings
           page: $set: "Register"
       ).bind this
     else
       apiCall "GET", "/api/team/settings"
-      .done ((req) ->
+      .done ((resp) ->
         @setState update @state,
-          settings: $merge: req.data
+          settings: $merge: resp.data
       ).bind this
 
     apiCall "GET", "/api/user/status"
-    .done ((req) ->
+    .done ((resp) ->
       @setState update @state,
-        settings: $merge: req.data
+        settings: $merge: resp.data
      ).bind this
 
   onRegistration: (e) ->
