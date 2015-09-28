@@ -3,18 +3,13 @@ server {
         listen       80;
         root   /srv/http/ctf;
 
+        ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+
         error_page 404  =  /404.html;
 
         location = / {
-                default_type text/html;
-                index  index.html;
-        }
-
-        location ~
-^/(problems|login|logout|compete|registration|profile|scoreboard|classroom|account|reset|shell|faq|news|contact|teachers|game-preview|sponsors|about|learn|promotional|management)$
-        {
             default_type text/html;
-            alias /srv/http/ctf/$1.html;
+            index  index.html;
         }
 
         location ~ /api/ {
@@ -24,4 +19,23 @@ server {
             proxy_pass http://localhost:8000;
             proxy_redirect off;
         }
+
+        location ~ ^/(problems|profile|scoreboard|account|shell|reset|faq|news|contact)$ {
+            auth_request /api/user/authorize/user;
+            default_type text/html;
+            alias /srv/http/ctf/$1.html;
+        }
+
+        location ~ ^/(classroom) {
+            auth_request /api/user/authorize/teacher;
+            default_type text/html;
+            alias /srv/http/ctf/$1.html;
+        }
+
+        location ~ ^/(management) {
+            auth_request /api/user/authorize/admin;
+            default_type text/html;
+            alias /srv/http/ctf/$1.html;
+        }
+
 }

@@ -1,17 +1,34 @@
 from flask import Flask, request, session, send_from_directory, render_template
-from flask import Blueprint, redirect
+from flask import Blueprint, redirect, abort
 import api
 import json
 import mimetypes
 import os.path
 
 from datetime import datetime
-from api.common import WebSuccess, WebError
+from api.common import WebSuccess, WebError, safe_fail
 from api.annotations import api_wrapper, require_login, require_teacher, require_admin, check_csrf
 from api.annotations import block_before_competition, block_after_competition
 from api.annotations import log_action
 
 blueprint = Blueprint("user_api", __name__)
+
+@blueprint.route("/authorize/<role>")
+def authorize_role(role=None):
+    """
+    This route is used to ensure sensitive static content is witheld from withheld from clients.
+    """
+
+    if role == "user" and safe_fail(api.user.get_user):
+        return "Client is logged in.", 200
+    elif role == "teacher" and safe_fail(api.user.is_teacher):
+        return "Client is a teacher.", 200
+    elif role == "admin" and safe_fail(api.user.is_admin):
+        return "Client is an administrator.", 200
+    elif role == "anonymous":
+        return "Client is authorized.", 200
+    else:
+        return "Client is not authorized.", 401
 
 @blueprint.route('/create_simple', methods=['POST'])
 @api_wrapper
