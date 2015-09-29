@@ -81,6 +81,11 @@ echo "Setting permissions."
 chmod -R 1710 /var/cache/apt
 chmod 1710 /etc/apt/sources.list
 
+# Deploy journald config and restart
+cp /vagrant/configs/journald/journald.conf /etc/systemd
+systemctl restart systemd-journald
+journalctl --verify
+
 # Configure and launch monit
 cp /vagrant/configs/monit/public-secrets.conf /etc/monit/conf.d
 
