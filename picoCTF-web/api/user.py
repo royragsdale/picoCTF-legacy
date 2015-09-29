@@ -295,10 +295,10 @@ def create_simple_user_request(params):
         key = api.token.find_key_by_token("registration_token", params["rid"])
 
         if params.get("gid") != key["gid"]:
-            raise InternalException("Registration token group and supplied gid do not match.")
+            raise WebException("Registration token group and supplied gid do not match.")
 
         if params["email"] != key["email"]:
-            raise InternalException("Registration token email does not match the supplied one.")
+            raise WebException("Registration token email does not match the supplied one.")
 
         user_is_teacher = key["teacher"]
         user_was_invited = True
@@ -306,7 +306,7 @@ def create_simple_user_request(params):
         api.token.delete_token(key, "registration_token")
     else:
         if not verify_email_in_whitelist(params["email"], whitelist):
-            raise InternalException("Your email does not belong to the whitelist. Please see the registration form for details.")
+            raise WebException("Your email does not belong to the whitelist. Please see the registration form for details.")
 
     if api.config.get_settings()["captcha"]["enable_captcha"] and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
