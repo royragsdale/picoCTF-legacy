@@ -45,6 +45,7 @@ sudo service nginx restart
 
 # add shellinabox to cron
 crontab -u root /opt/hacksports/shellinabox/shellinabox_cron
+crontab -u root /vagrant/configs/isolate.cron
 
 # PAM module setup
 cp $ROOT/config/common-auth /etc/pam.d/common-auth
@@ -61,6 +62,17 @@ groupadd competitors
 # disable ASLR
 echo "kernel.randomize_va_space=0" >> /etc/sysctl.conf
 sysctl -p
+
+# Securing the shell server
+# limits
+cp /vagrant/configs/limits.conf /etc/security/limits.conf
+bash /vagrant/scripts/socket-limits.sh
+# isolate users
+mount -o remount,hidepid=2 /proc
+chmod 1733 /tmp /var/tmp /dev/shm
+chmod 1111 /home/
+chmod -R o-r /var/log
+chmod o-rw /proc
 
 # set hostname
 hostname shell
