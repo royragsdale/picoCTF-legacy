@@ -434,7 +434,7 @@ def generate_instance(problem_object, problem_directory, instance_number, stagin
         "service_file": service_file
     }
 
-def deploy_problem(problem_directory, instances=1, test=False, deployment_directory=None):
+def deploy_problem(problem_directory, instances=[0, 1], test=False, deployment_directory=None):
     """
     Deploys the problem specified in problem_directory.
 
@@ -453,7 +453,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
     instance_list = []
 
-    for instance_number in range(instances):
+    for instance_number in range(*instances):
         current_instance = instance_number
         print("Generating instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         staging_directory = generate_staging_directory()
@@ -576,13 +576,18 @@ def deploy_problems(args, config):
         with open(lock_file, "w") as f:
             f.write("1")
 
+    if args.instance:
+        instance_range = [args.instance, args.instance+1]
+    else:
+        instance_range = [0, args.num_instances]
+
     try:
         for path in problems:
             if args.dry and os.path.isdir(path):
-                deploy_problem(path, instances=args.num_instances, test=args.dry,
+                deploy_problem(path, instances=instance_range, test=args.dry,
                                 deployment_directory=args.deployment_directory)
             elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
-                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=args.num_instances,
+                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=instance_range,
                                 test=args.dry, deployment_directory=args.deployment_directory)
             else:
                 raise Exception("Problem path {} cannot be found".format(path))
