@@ -6,6 +6,7 @@ Shell Manager -- Tools for deploying and packaging problems.
 
 from argparse import ArgumentParser
 
+import shell_manager
 from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
@@ -14,8 +15,10 @@ from shell_manager.util import HACKSPORTS_ROOT
 from hacksport.deploy import deploy_problems
 from hacksport.status import clean, status, publish
 
-from os.path import join
-from os import sep
+from os.path import join, dirname
+from os import sep, chmod
+
+from shutil import copy2
 
 from imp import load_source
 
@@ -77,10 +80,17 @@ def main():
 
     args = parser.parse_args()
 
+    config_path = join(HACKSPORTS_ROOT, "config.py")
     try:
-        config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
-    except PermissionError as e:
+        config = load_source("config", config_path)
+    except PermissionError:
         print("You must run shell_manager with sudo.")
+        exit(1)
+    except FileNotFoundError:
+        default_config_path = join(dirname(shell_manager.__file__), "config.py")
+        copy2(default_config_path, HACKSPORTS_ROOT)
+        chmod(config_path, 0o640)
+        print("There is no config.py in {}. One has been created for you. Please edit it accordingly.".format(HACKSPORTS_ROOT))
         exit(1)
 
     #Call the default function
