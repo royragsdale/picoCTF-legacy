@@ -7,6 +7,7 @@ from os import path, makedirs
 from spur import LocalShell
 from time import time
 from signal import SIGTERM
+from hashlib import md5
 
 class TimeoutError(Exception):
     """
@@ -46,7 +47,7 @@ def execute(cmd, timeout=5, **kwargs):
 
     return process.wait_for_result()
 
-def create_user(username, home_directory_root="/home/"):
+def create_user(username, home_directory_root="/home/", obfuscate=True):
     """
     Creates a user with the given username
 
@@ -59,7 +60,12 @@ def create_user(username, home_directory_root="/home/"):
         The new user's home directory
     """
 
-    home_directory = path.join(home_directory_root, username)
+    directory_name = username
+
+    if obfuscate:
+        directory_name += md5(username.encode()).hexdigest()
+
+    home_directory = path.join(home_directory_root, directory_name)
 
     if not path.isdir(home_directory):
         makedirs(home_directory)
