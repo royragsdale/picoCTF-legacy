@@ -3,7 +3,7 @@ import pymongo
 import spur
 import json
 
-from api.common import validate, check, WebException
+from api.common import validate, check, WebException, InternalException, safe_fail
 from voluptuous import Schema, Required, Length
 
 server_schema = Schema({
@@ -74,7 +74,10 @@ def add_server(params):
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 
-    params["sid"] = api.common.token()
+    if safe_fail(get_server, name=params["name"]) is not None:
+        raise WebException("Shell server with this name already exists")
+
+    params["sid"] = api.common.hash(params["name"])
     db.shell_servers.insert(params)
 
     return params["sid"]
@@ -118,7 +121,7 @@ def remove_server(sid):
 
     db.shell_servers.remove({"sid": sid})
 
-def get_server(sid):
+def get_server(sid=None, name=None):
     """
     Returns the server object corresponding to the sid provided
 
@@ -130,9 +133,16 @@ def get_server(sid):
     """
 
     db = api.common.get_conn()
+
+    if sid is None:
+        if name is None:
+            raise InternalException("You must specify either an sid or name")
+        else:
+            sid = api.common.hash(name)
+
     server = db.shell_servers.find_one({"sid": sid})
     if server is None:
-        raise WebException("Server with sid '{}' does not exist".format(sid))
+        raise InternalException("Server with sid '{}' does not exist".format(sid))
 
     return server
 

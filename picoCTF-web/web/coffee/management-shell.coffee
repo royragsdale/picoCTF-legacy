@@ -53,7 +53,7 @@ ServerForm = React.createClass
 
   updateName: (e) ->
     copy = @state.shellServer
-    copy.namet = e.target.value
+    copy.name = e.target.value
     @setState {shellServer: copy}
 
   updatePort: (e) ->
@@ -99,7 +99,7 @@ ServerForm = React.createClass
         </ButtonToolbar>
 
     <div>
-      <TextEntry name="Name" type="text" value={@state.shellServer.name} onChange=@updateName description={nameDescription} />
+      {if @props.new then <TextEntry name="Name" type="text" value={@state.shellServer.name} onChange=@updateName description={nameDescription}/> else <span/>}
       <TextEntry name="Host" type="text" value={@state.shellServer.host} onChange=@updateHost description={hostDescription} />
       <TextEntry name="SSH Port" type="number" value={@state.shellServer.port.toString()} onChange=@updatePort description={portDescription} />
       <TextEntry name="Username" type="text" value={@state.shellServer.username} onChange=@updateUsername description={usernameDescription} />
