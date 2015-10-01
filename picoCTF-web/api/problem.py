@@ -68,8 +68,6 @@ instance_schema = Schema({
         ("The description must be a string.", [str])),
     Required("flag"): check(
         ("The flag must be a string.", [str])),
-    Required("iid"): check(
-        ("The iid must be a string", [str])),
     "port": check(
         ("The port must be an int", [int])),
     "server": check(
@@ -115,7 +113,16 @@ def get_all_categories(show_disabled=False):
 
     return db.problems.find(match).distinct("category")
 
-def insert_problem(problem):
+
+def set_instance_ids(problem, sid):
+    """
+    Generate the instance ids for a set of problems.
+    """
+
+    for instance in problem["instances"]:
+        instance["iid"] = api.common.hash(instance["instance_number"] + sid + problem["pid"])
+
+def insert_problem(problem, sid=None):
     """
     Inserts a problem into the database. Does sane validation.
 
@@ -138,12 +145,14 @@ def insert_problem(problem):
     db = api.common.get_conn()
     validate(problem_schema, problem)
 
-    for instance in problem["instances"]:
-        validate(instance_schema, instance)
-
     # initially disable problems
     problem["disabled"] = True
     problem["pid"] = api.common.hash("{}-{}".format(problem["name"], problem["author"]))
+
+    for instance in problem["instances"]:
+        validate(instance_schema, instance)
+
+    set_instance_ids(problem, sid)
 
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
@@ -846,7 +855,7 @@ def load_published(data):
         raise WebException("Please provide a problems list in your json.")
 
     for problem in data["problems"]:
-        insert_problem(problem)
+        insert_problem(problem, sid=data["sid"])
 
     if "bundles" in data:
         db = api.common.get_conn()
