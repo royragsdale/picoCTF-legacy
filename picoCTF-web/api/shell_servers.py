@@ -82,6 +82,7 @@ def add_server(params):
 
     return params["sid"]
 
+#Probably do not need/want the sid here anymore.
 def update_server(sid, params):
     """
     Update a shell server from the pool of servers.
@@ -96,7 +97,10 @@ def update_server(sid, params):
 
     db = api.common.get_conn()
 
-    if db.shell_servers.find_one({"sid": sid}) is None:
+    validate(server_schema, params)
+
+    server = safe_fail(get_server, name=params["name"])
+    if server is not None:
         raise WebException("Shell server with sid '{}' does not exist.".format(sid))
 
     validate(server_schema, params)
@@ -104,7 +108,7 @@ def update_server(sid, params):
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 
-    db.shell_servers.update({"sid": sid}, {"$set": params})
+    db.shell_servers.update({"sid": server["sid"]}, {"$set": params})
 
 def remove_server(sid):
     """
