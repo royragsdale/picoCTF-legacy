@@ -555,6 +555,10 @@ def deploy_problems(args, config):
     if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
         raise Exception("Cannot specify deployment directory if deploying multiple problems or instances.")
 
+    if args.secret:
+        deploy_config.DEPLOY_SECRET = args.secret
+        print("Overriding DEPLOY_SECRET with user supplied secret.")
+
     problems = args.problem_paths
 
     if args.bundle:
