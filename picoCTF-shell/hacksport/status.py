@@ -101,7 +101,7 @@ def status(args, config):
 
     def get_instance_status(instance):
         status = {
-            "iid": instance["iid"],
+            "instance_number": instance["instance_number"],
             "port": instance["port"] if "port" in instance else None,
             "flag": instance["flag"]
         }
@@ -142,7 +142,7 @@ def status(args, config):
 
         if args.all:
             for instance in problem["instances"]:
-                pprint("   - Instance ID: {}".format(instance["iid"]))
+                pprint("   - Instance {}".format(instance["instance_number"]))
                 pprint("       flag: {}".format(instance["flag"]))
                 pprint("       port: {}".format(instance["port"]))
                 pprint("       service: {}".format("active" if instance["service"] else "failed"))

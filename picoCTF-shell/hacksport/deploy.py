@@ -508,14 +508,12 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
         unique = problem_object["name"] + problem_object["author"] + str(instance_number) + deploy_config.DEPLOY_SECRET
 
-        iid = md5(unique.encode("utf-8")).hexdigest()
         deployment_info = {
             "user": problem.user,
             "service": os.path.basename(instance["service_file"]),
             "server": problem.server,
             "description": problem.description,
             "flag": problem.flag,
-            "iid": iid,
             "instance_number": instance_number,
             "files": [f.to_dict() for f in problem.files]
         }
