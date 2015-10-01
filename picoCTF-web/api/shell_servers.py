@@ -190,7 +190,6 @@ def load_problems_from_server(sid):
 
     server = get_server(sid)
     shell = get_connection(server['host'], server['port'], server['username'], server['password'])
-    ensure_setup(shell)
 
     result = shell.run(["sudo", "shell_manager", "publish"])
     data = json.loads(result.output.decode("utf-8"))
