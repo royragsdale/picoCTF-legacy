@@ -6,7 +6,7 @@ from random import randint, Random
 from os import path, makedirs
 from spur import LocalShell
 from time import time
-from signal import SIGTERM
+from signal import SIGKILL 
 
 class TimeoutError(Exception):
     """
@@ -41,7 +41,7 @@ def execute(cmd, timeout=5, **kwargs):
     while process.is_running():
         delta_time = time() - start_time
         if delta_time > timeout:
-            process.send_signal(SIGTERM)
+            process.send_signal(SIGKILL)
             raise TimeoutError(cmd, timeout)
 
     return process.wait_for_result()
