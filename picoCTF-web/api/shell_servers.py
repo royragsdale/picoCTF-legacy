@@ -4,17 +4,20 @@ import spur
 import json
 
 from api.common import validate, check, WebException
-from voluptuous import Schema, Required
+from voluptuous import Schema, Required, Length
 
 server_schema = Schema({
+    Required("name"): check(
+        ("Host must be a reasonable string.", [str, Length(min=1, max=128)])),
     Required("host"): check(
-        ("Host must be a string", [str])),
+        ("Host must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("port"): check(
-        ("Port must be a string", [str])),
+        ("You have to supply a valid integer for your port.", [int]),
+        ("Your port number must be in the valid range 1-65535.", [lambda x: 1 <= int(x) and int(x) <= 65535])),
     Required("username"): check(
-        ("Username must be a string", [str])),
+        ("Username must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("password"): check(
-        ("Username must be a string", [str])),
+        ("Username must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("protocol"): check(
         ("Protocol must be either HTTP or HTTPS", [lambda x: x in ['HTTP', 'HTTPS']]))
 }, extra=True)
