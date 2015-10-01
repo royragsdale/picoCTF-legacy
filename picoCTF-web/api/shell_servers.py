@@ -193,6 +193,15 @@ def get_problem_status_from_server(sid):
 
     return (all_online, data)
 
+def set_instance_ids(sid, problems):
+    """
+    Generate the instance ids for a set of problems.
+    """
+
+    for problem in problems:
+        for instance in problem["instances"]:
+            instance["iid"] = api.common.hash(instance["instance_number"] + sid + problem["name"])
+
 def load_problems_from_server(sid):
     """
     Connects to the server and loads the problems from its deployment state.
@@ -210,6 +219,8 @@ def load_problems_from_server(sid):
 
     result = shell.run(["sudo", "shell_manager", "publish"])
     data = json.loads(result.output.decode("utf-8"))
+
+    set_instance_ids(data["problems"])
     api.problem.load_published(data)
 
     return len(data["problems"])
