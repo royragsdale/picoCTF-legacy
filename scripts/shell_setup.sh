@@ -36,7 +36,7 @@ if [ -f /tmp/hacksports/config.py ]; then
     cp /tmp/hacksports/config.py /opt/hacksports/config.py
 fi
 
-# disable apache if it's running 
+# disable apache if it's running
 systemctl disable apache2
 
 # remove default config and restart nginx
@@ -60,15 +60,15 @@ pip2 install requests
 groupadd competitors
 
 # disable ASLR
-if [ $(grep "kernel.randomize_va_space=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then 
+if [ $(grep "kernel.randomize_va_space=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then
   echo "kernel.randomize_va_space=0" >> /etc/sysctl.conf
 fi
 # enable relative core paths
-if [ $(grep "fs.suid_dumpable=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then 
+if [ $(grep "fs.suid_dumpable=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then
   echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 fi
 # disable apport
-if [ $(grep "kernel.core_pattern=./%e.core.%t" /etc/sysctl.conf | wc -l) -eq "0" ]; then 
+if [ $(grep "kernel.core_pattern=./%e.core.%t" /etc/sysctl.conf | wc -l) -eq "0" ]; then
   echo "kernel.core_pattern=./%e.core.%t" >> /etc/sysctl.conf
 fi
 sysctl -p
@@ -94,7 +94,7 @@ sudo systemctl add-wants default.target shell_manager.target
 
 # END of what was previously in picoCTF-shell-manager-install.sh
 
-# modify config.py 
+# modify config.py
 DEPLOY_SECRET="@@@ChAnGeMe!@@@"
 echo -e "\nHOSTNAME = '192.168.2.3'\n" >> /opt/hacksports/config.py
 echo -e "\nWEB_SERVER = 'http://192.168.2.2'\n" >> /opt/hacksports/config.py
