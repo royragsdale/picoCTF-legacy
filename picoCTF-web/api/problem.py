@@ -120,7 +120,7 @@ def set_instance_ids(problem, sid):
     """
 
     for instance in problem["instances"]:
-        instance["iid"] = api.common.hash(instance["instance_number"] + sid + problem["pid"])
+        instance["iid"] = api.common.hash(str(instance["instance_number"]) + sid + problem["pid"])
 
 def insert_problem(problem, sid=None):
     """
