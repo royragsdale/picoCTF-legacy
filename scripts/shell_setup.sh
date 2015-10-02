@@ -60,7 +60,17 @@ pip2 install requests
 groupadd competitors
 
 # disable ASLR
-echo "kernel.randomize_va_space=0" >> /etc/sysctl.conf
+if [ $(grep "kernel.randomize_va_space=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then 
+  echo "kernel.randomize_va_space=0" >> /etc/sysctl.conf
+fi
+# enable relative core paths
+if [ $(grep "fs.suid_dumpable=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then 
+  echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
+fi
+# disable apport
+if [ $(grep "kernel.core_pattern=./%e.core.%t" /etc/sysctl.conf | wc -l) -eq "0" ]; then 
+  echo "kernel.core_pattern=./%e.core.%t" >> /etc/sysctl.conf
+fi
 sysctl -p
 
 # Securing the shell server
@@ -71,7 +81,7 @@ bash /vagrant/scripts/socket-limits.sh
 mount -o remount,hidepid=2 /proc
 chmod 1733 /tmp /var/tmp /dev/shm
 chmod 1111 /home/
-chmod -R o-r /var/log
+chmod -R o-r /var/log /var/crash
 chmod o-rw /proc
 
 # set hostname
