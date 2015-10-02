@@ -6,7 +6,8 @@ import api
 
 mail = None
 
-from api.common import check, validate, safe_fail, WebException
+from api.common import check, validate, safe_fail
+from api.common import WebException, InternalException
 from voluptuous import Required, Length, Schema
 from datetime import datetime
 
@@ -67,8 +68,7 @@ def request_password_reset(username):
 
     token_value = api.token.set_token({"uid": user['uid']}, "password_reset")
 
-    body = """We recently received a request to reset the password for the following {0} account:\n\n\t{2}\n\nOur records show that this is the email address used to register the above account.  If you did not request to reset the password for the above account then you need not take any further steps.  If you did request the password reset please follow the link below to set your new password. \n\n {1}/reset#{3} \n\n Best of luck! \n\n ~The {0} Team
-    """.format(api.config.competition_name, api.config.competition_urls[0], username, token_value)
+    body = """We recently received a request to reset the password for the following {0} account:\n\n\t{2}\n\nOur records show that this is the email address used to register the above account.  If you did not request to reset the password for the above account then you need not take any further steps.  If you did request the password reset please follow the link below to set your new password. \n\n {1}/reset#{3} \n\n Best of luck! \n The {0} Team""".format(api.config.competition_name, api.config.competition_urls[0], username, token_value)
 
     subject = "{} Password Reset".format(api.config.competition_name)
 
@@ -81,15 +81,38 @@ def send_user_verification_email(username):
     enabled in the config then the user won't be able to login until this step is completed.
     """
 
+    settings = api.config.get_settings()
+    db = api.common.get_conn()
+
     user = api.user.get_user(name=username)
 
-    token_value = api.token.set_token({"uid": user["uid"]}, "email_verification")
+    key_query  = {"$and": [{"uid": user["uid"]}, {"email_verification_count": {"$exists": True}}]}
+    previous_key = api.token.find_key(key_query)
+
+    if previous_key is None:
+        token_value = api.token.set_token({"uid": user["uid"], "email_verification_count": 1}, "email_verification")
+    else:
+        if previous_key["email_verification_count"] < settings["email"]["max_verification_emails"]:
+            token_value = previous_key["tokens"]["email_verification"]
+            db.tokens.find_and_modify(key_query, {"$inc": {"email_verification_count": 1}})
+        else:
+            raise InternalException("User has been sent the maximum number of verification emails.")
 
     #Is there a better way to do this without dragging url_for + app_context into it?
     verification_link = "{}/api/user/verify?uid={}&token={}".\
         format(api.config.competition_urls[0], user["uid"], token_value)
 
-    body = """Verification link: {}""".format(verification_link)
+    body = """
+Welcome to {0}!
+
+You will need to visit the verification link below to finalize your account's creation. If you believe this to be a mistake, and you haven't recently created an account for {0} then you can safely ignore this email.
+
+Verification link: {1}
+
+Good luck and have fun!
+The {0} Team.
+    """.format(api.config.competition_name, verification_link)
+
     subject = "{} Account Verification".format(api.config.competition_name)
 
     message = Message(body=body, recipients=[user['email']], subject=subject)
@@ -107,7 +130,18 @@ def send_email_invite(gid, email, teacher=False):
     registration_link = "{}/#g={}&r={}".\
         format(api.config.competition_urls[0], group["gid"], token_value)
 
-    body = """Registration link: {}""".format(registration_link)
+    body = """
+You have been invited by the staff of the {1} organization to compete in {0}.
+You will need to follow the registration link below to finish the account creation process.
+
+If you believe this to be a mistake you can safely ignore this email.
+
+Registration link: {2}
+
+Good luck!
+  The {0} Team.
+    """.format(api.config.competition_name, group["name"], registration_link)
+
     subject = "{} Registration".format(api.config.competition_name)
 
     message = Message(body=body, recipients=[email], subject=subject)

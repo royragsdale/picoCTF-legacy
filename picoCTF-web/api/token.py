@@ -50,6 +50,23 @@ def delete_token(key, token_name):
 
     db.tokens.update(key, {'$unset': {get_token_path(token_name): ''}})
 
+def find_key(query, multi=False):
+    """
+    Find a key based on a particular query.
+
+    Args:
+        query: the mongo query
+        multi: defaults to False, return at most one result
+    """
+
+    db = api.common.get_conn()
+
+    find_func = db.tokens.find_one
+    if multi:
+        find_func = db.tokens.find
+
+    return find_func(query)
+
 def find_key_by_token(token_name, token_value):
     """
     Searches the database for a user with a token_name token_value pair.
