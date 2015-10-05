@@ -296,9 +296,9 @@ def join_group_request(params, tid=None):
             tid: If omitted,the tid will be grabbed from the logged in user.
     """
 
-    owner_uid = api.user.get_user(name=params["group-owner"])["uid"]
 
     validate(join_group_schema, params)
+    owner_uid = api.user.get_user(name=params["group-owner"])["uid"]
     if safe_fail(get_group, name=params["group-name"], owner_uid=owner_uid) is None:
         raise WebException("No class exists with that name!")
 
@@ -306,6 +306,9 @@ def join_group_request(params, tid=None):
 
     #TODO: assumes teams of size 1
     user = api.user.get_user()
+
+    if tid is None:
+        tid = user["tid"]
 
     group_settings = get_group_settings(gid=group["gid"])
 
