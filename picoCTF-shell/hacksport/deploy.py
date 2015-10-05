@@ -130,6 +130,14 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
 
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
+
+def get_username(problem_name, instance_number):
+    """
+    Determine the username for a given problem instance.
+    """
+
+    return "{}_{}".format(sanitize_name(problem_name), instance_number)
+
 def create_service_file(problem, instance_number, path):
     """
     Creates a systemd service file for the given problem
@@ -157,11 +165,10 @@ WantedBy=shell_manager.target
 """
 
     problem_service_info = problem.service()
-    converted_name = sanitize_name(problem.name)
     content = template.format(problem.name, problem.user, problem.directory,
                               problem_service_info['Type'], problem_service_info['ExecStart'],
                               "no" if problem_service_info['Type'] == "oneshot" else "always")
-    service_file_path = join(path, "{}_{}.service".format(converted_name, instance_number))
+    service_file_path = join(path, "{}.service".format(problem.user))
 
     with open(service_file_path, "w") as f:
         f.write(content)
@@ -181,14 +188,22 @@ def create_instance_user(problem_name, instance_number):
     """
 
     converted_name = sanitize_name(problem_name)
-    username = "{}_{}".format(converted_name, instance_number)
+    username = get_username(converted_name, instance_number)
 
     try:
         #Check if the user already exists.
         user = getpwnam(username)
         return username, user.pw_dir
+
     except KeyError:
-        home_directory = create_user(username, deploy_config.HOME_DIRECTORY_ROOT)
+        problem_home = deploy_config.HOME_DIRECTORY_ROOT
+
+        if deploy_config.OBFUSCATE_PROBLEM_DIRECTORIES:
+            secret = md5((deploy_config.DEPLOY_SECRET + username).encode()).hexdigest()
+            problem_home = join(problem_home, secret) 
+
+        home_directory = create_user(username, home_directory_root=problem_home)
+
         return username, home_directory
 
 def generate_seed(*args):
@@ -330,7 +345,8 @@ def install_user_service(service_file):
     execute(["systemctl", "enable", service_name], timeout=60)
     execute(["systemctl", "restart", service_name], timeout=60)
 
-def generate_instance(problem_object, problem_directory, instance_number, staging_directory, deployment_directory=None):
+def generate_instance(problem_object, problem_directory, instance_number,
+                      staging_directory, deployment_directory=None):
     """
     Runs the setup functions of Problem in the correct order
 
@@ -434,7 +450,7 @@ def generate_instance(problem_object, problem_directory, instance_number, stagin
         "service_file": service_file
     }
 
-def deploy_problem(problem_directory, instances=1, test=False, deployment_directory=None):
+def deploy_problem(problem_directory, instances=[0, 1], test=False, deployment_directory=None):
     """
     Deploys the problem specified in problem_directory.
 
@@ -453,7 +469,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
 
     instance_list = []
 
-    for instance_number in range(instances):
+    for instance_number in range(*instances):
         current_instance = instance_number
         print("Generating instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         staging_directory = generate_staging_directory()
@@ -461,7 +477,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
             deployment_directory = os.path.join(staging_directory, "deployed")
 
         instance = generate_instance(problem_object, problem_directory, instance_number, staging_directory, deployment_directory=deployment_directory)
-        instance_list.append(instance)
+        instance_list.append((instance_number, instance))
 
     deployment_json_dir = os.path.join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
     if not os.path.isdir(deployment_json_dir):
@@ -471,7 +487,7 @@ def deploy_problem(problem_directory, instances=1, test=False, deployment_direct
     os.chmod(DEPLOYED_ROOT, 0o750)
 
     # all instances generated without issue. let's do something with them
-    for instance_number, instance in enumerate(instance_list):
+    for instance_number, instance in instance_list:
         print("Deploying instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         problem_path = os.path.join(instance["staging_directory"], PROBLEM_FILES_DIR)
         problem = instance["problem"]
@@ -544,6 +560,10 @@ def deploy_problems(args, config):
     if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
         raise Exception("Cannot specify deployment directory if deploying multiple problems or instances.")
 
+    if args.secret:
+        deploy_config.DEPLOY_SECRET = args.secret
+        print("Overriding DEPLOY_SECRET with user supplied secret.")
+
     problems = args.problem_paths
 
     if args.bundle:
@@ -576,13 +596,18 @@ def deploy_problems(args, config):
         with open(lock_file, "w") as f:
             f.write("1")
 
+    if args.instance:
+        instance_range = [args.instance, args.instance+1]
+    else:
+        instance_range = [0, args.num_instances]
+
     try:
         for path in problems:
             if args.dry and os.path.isdir(path):
-                deploy_problem(path, instances=args.num_instances, test=args.dry,
+                deploy_problem(path, instances=instance_range, test=args.dry,
                                 deployment_directory=args.deployment_directory)
             elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
-                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=args.num_instances,
+                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=instance_range,
                                 test=args.dry, deployment_directory=args.deployment_directory)
             else:
                 raise Exception("Problem path {} cannot be found".format(path))

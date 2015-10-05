@@ -20,6 +20,9 @@ WEB_ROOT = "/usr/share/nginx/html/"
 # the root of the home directories for the problem instances
 HOME_DIRECTORY_ROOT = "/home/problems/"
 
+# "obfuscate" problem directory names
+OBFUSCATE_PROBLEM_DIRECTORIES = False
+
 # list of ports that should not be assigned to any instances
 # this bans the first ports 0-999 and 4242 for shellinaboxd
 BANNED_PORTS = list(range(1000))+[4242]

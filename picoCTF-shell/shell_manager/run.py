@@ -6,6 +6,7 @@ Shell Manager -- Tools for deploying and packaging problems.
 
 from argparse import ArgumentParser
 
+import shell_manager
 from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
@@ -14,8 +15,10 @@ from shell_manager.util import HACKSPORTS_ROOT
 from hacksport.deploy import deploy_problems
 from hacksport.status import clean, status, publish
 
-from os.path import join
-from os import sep
+from os.path import join, dirname
+from os import sep, chmod
+
+from shutil import copy2
 
 from imp import load_source
 
@@ -55,7 +58,9 @@ def main():
 
     deploy_parser = subparsers.add_parser("deploy", help="problem deployment")
     deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate.")
+    deploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance ot generate.")
     deploy_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
+    deploy_parser.add_argument("-s", "--secret", action="store", type=str, help="use a different deployment secret for this invocation.")
     deploy_parser.add_argument("-D", "--deployment-directory", type=str, default=None, help="the directory to deploy to")
     deploy_parser.add_argument("-b", "--bundle", action="store_true", help="specify a bundle of problems to deploy.")
     deploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
@@ -77,10 +82,17 @@ def main():
 
     args = parser.parse_args()
 
+    config_path = join(HACKSPORTS_ROOT, "config.py")
     try:
-        config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
-    except PermissionError as e:
+        config = load_source("config", config_path)
+    except PermissionError:
         print("You must run shell_manager with sudo.")
+        exit(1)
+    except FileNotFoundError:
+        default_config_path = join(dirname(shell_manager.__file__), "config.py")
+        copy2(default_config_path, HACKSPORTS_ROOT)
+        chmod(config_path, 0o640)
+        print("There is no config.py in {}. One has been created for you. Please edit it accordingly.".format(HACKSPORTS_ROOT))
         exit(1)
 
     #Call the default function
