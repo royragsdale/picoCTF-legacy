@@ -187,14 +187,11 @@ ShellServerTab = React.createClass
     <Well>
       <Grid>
         <Row>
-          <h4>To add problems, either enter your shell server information on the left or paste your published JSON on the right.</h4>
+          <h4>To add problems, either enter your shell server information on the left.</h4>
         </Row>
         <Row>
           <Col md={6}>
             <ShellServerList />
-          </Col>
-          <Col md={6} className="pull-right">
-            <ProblemLoaderTab/>
           </Col>
         </Row>
       </Grid>
