@@ -47,7 +47,7 @@ def execute(cmd, timeout=5, **kwargs):
 
     return process.wait_for_result()
 
-def create_user(username, home_directory_root="/home/", obfuscate=True):
+def create_user(username, home_directory_root="/home/"):
     """
     Creates a user with the given username
 
@@ -60,12 +60,7 @@ def create_user(username, home_directory_root="/home/", obfuscate=True):
         The new user's home directory
     """
 
-    directory_name = username
-
-    if obfuscate:
-        directory_name += md5(username.encode()).hexdigest()
-
-    home_directory = path.join(home_directory_root, directory_name)
+    home_directory = path.join(home_directory_root, username)
 
     if not path.isdir(home_directory):
         makedirs(home_directory)

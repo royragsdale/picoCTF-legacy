@@ -21,7 +21,7 @@ WEB_ROOT = "/usr/share/nginx/html/"
 HOME_DIRECTORY_ROOT = "/home/problems/"
 
 # "obfuscate" problem directory names
-OBFUSCATE_PROBLEM_DIRECTORIES = True
+OBFUSCATE_PROBLEM_DIRECTORIES = False
 
 # list of ports that should not be assigned to any instances
 # this bans the first ports 0-999 and 4242 for shellinaboxd

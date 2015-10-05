@@ -194,10 +194,15 @@ def create_instance_user(problem_name, instance_number):
         #Check if the user already exists.
         user = getpwnam(username)
         return username, user.pw_dir
+
     except KeyError:
-        home_directory = create_user(username,
-                                     deploy_config.HOME_DIRECTORY_ROOT,
-                                     obfuscate=deploy_config.OBFUSCATE_PROBLEM_DIRECTORIES)
+        problem_home = deploy_config.HOME_DIRECTORY_ROOT
+
+        if deploy_config.OBFUSCATE_PROBLEM_DIRECTORIES:
+            secret = md5((deploy_config.DEPLOY_SECRET + username).encode()).hexdigest()
+            problem_home = join(problem_home, secret) 
+
+        home_directory = create_user(username, home_directory_root=problem_home)
 
         return username, home_directory
 
@@ -550,7 +555,7 @@ def deploy_problems(args, config):
         user = getpwnam(deploy_config.DEFAULT_USER)
     except KeyError as e:
         print("DEFAULT_USER {} does not exist. Creating now.".format(deploy_config.DEFAULT_USER))
-        create_user(deploy_config.DEFAULT_USER, obfuscated=False)
+        create_user(deploy_config.DEFAULT_USER)
 
     if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
         raise Exception("Cannot specify deployment directory if deploying multiple problems or instances.")
