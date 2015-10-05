@@ -76,7 +76,10 @@ sysctl -p
 # Securing the shell server
 # limits
 cp /vagrant/configs/limits.conf /etc/security/limits.conf
-bash /vagrant/scripts/socket-limits.sh
+sysctl net.ipv4.tcp_tw_recycle=1
+sysctl net.ipv4.tcp_tw_reuse=1
+sysctl net.core.somaxconn=1024
+
 # isolate users
 mount -o remount,hidepid=2 /proc
 chmod 1733 /tmp /var/tmp /dev/shm
