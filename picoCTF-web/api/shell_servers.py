@@ -3,18 +3,21 @@ import pymongo
 import spur
 import json
 
-from api.common import validate, check, WebException
-from voluptuous import Schema, Required
+from api.common import validate, check, WebException, InternalException, safe_fail
+from voluptuous import Schema, Required, Length
 
 server_schema = Schema({
+    Required("name"): check(
+        ("Host must be a reasonable string.", [str, Length(min=1, max=128)])),
     Required("host"): check(
-        ("Host must be a string", [str])),
+        ("Host must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("port"): check(
-        ("Port must be a string", [str])),
+        ("You have to supply a valid integer for your port.", [int]),
+        ("Your port number must be in the valid range 1-65535.", [lambda x: 1 <= int(x) and int(x) <= 65535])),
     Required("username"): check(
-        ("Username must be a string", [str])),
+        ("Username must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("password"): check(
-        ("Username must be a string", [str])),
+        ("Username must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("protocol"): check(
         ("Protocol must be either HTTP or HTTPS", [lambda x: x in ['HTTP', 'HTTPS']]))
 }, extra=True)
@@ -71,11 +74,15 @@ def add_server(params):
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 
-    params["sid"] = api.common.token()
+    if safe_fail(get_server, name=params["name"]) is not None:
+        raise WebException("Shell server with this name already exists")
+
+    params["sid"] = api.common.hash(params["name"])
     db.shell_servers.insert(params)
 
     return params["sid"]
 
+#Probably do not need/want the sid here anymore.
 def update_server(sid, params):
     """
     Update a shell server from the pool of servers.
@@ -90,7 +97,10 @@ def update_server(sid, params):
 
     db = api.common.get_conn()
 
-    if db.shell_servers.find_one({"sid": sid}) is None:
+    validate(server_schema, params)
+
+    server = safe_fail(get_server, name=params["name"])
+    if server is not None:
         raise WebException("Shell server with sid '{}' does not exist.".format(sid))
 
     validate(server_schema, params)
@@ -98,7 +108,7 @@ def update_server(sid, params):
     if isinstance(params["port"], str):
         params["port"] = int(params["port"])
 
-    db.shell_servers.update({"sid": sid}, {"$set": params})
+    db.shell_servers.update({"sid": server["sid"]}, {"$set": params})
 
 def remove_server(sid):
     """
@@ -115,7 +125,7 @@ def remove_server(sid):
 
     db.shell_servers.remove({"sid": sid})
 
-def get_server(sid):
+def get_server(sid=None, name=None):
     """
     Returns the server object corresponding to the sid provided
 
@@ -127,9 +137,16 @@ def get_server(sid):
     """
 
     db = api.common.get_conn()
+
+    if sid is None:
+        if name is None:
+            raise InternalException("You must specify either an sid or name")
+        else:
+            sid = api.common.hash(name)
+
     server = db.shell_servers.find_one({"sid": sid})
     if server is None:
-        raise WebException("Server with sid '{}' does not exist".format(sid))
+        raise InternalException("Server with sid '{}' does not exist".format(sid))
 
     return server
 
@@ -190,10 +207,13 @@ def load_problems_from_server(sid):
 
     server = get_server(sid)
     shell = get_connection(server['host'], server['port'], server['username'], server['password'])
-    ensure_setup(shell)
 
     result = shell.run(["sudo", "shell_manager", "publish"])
     data = json.loads(result.output.decode("utf-8"))
+
+    #Pass along the server
+    data["sid"] = sid
+
     api.problem.load_published(data)
 
     return len(data["problems"])
