@@ -221,8 +221,8 @@ def get_team_information(tid=None, gid=None):
 
     team_info["solved_problems"] = []
     for solved_problem in api.problem.get_solved_problems(tid=tid):
-        solved_problem.pop("instances")
-        solved_problem.pop("pkg_dependencies")
+        solved_problem.pop("instances", None)
+        solved_problem.pop("pkg_dependencies", None)
         team_info["solved_problems"].append(solved_problem)
 
     return team_info
