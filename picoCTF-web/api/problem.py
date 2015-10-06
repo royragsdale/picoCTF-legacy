@@ -314,6 +314,9 @@ def get_problem_instance(pid, tid):
     problem = deepcopy(get_problem(pid=pid, tid=tid))
     instance = get_instance_data(pid, tid)
 
+    db = api.common.get_conn()
+    problem['solves'] = db.submissions.find({'pid': pid, 'correct': True}).count()
+
     problem.pop("instances")
     problem.update(instance)
     return problem
