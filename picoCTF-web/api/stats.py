@@ -85,7 +85,7 @@ def get_all_team_scores(eligible=True):
         A list of dictionaries with name and score
     """
 
-    teams = api.team.get_all_teams()
+    teams = api.team.get_all_teams(show_ineligible=(not eligible))
     db = api.api.common.get_conn()
 
     result = []
@@ -225,7 +225,7 @@ def get_score_progression(tid=None, uid=None, category=None):
 
     return result
 
-def get_top_teams(gid=None):
+def get_top_teams(gid=None, eligible=True):
     """
     Finds the top teams
 
@@ -237,7 +237,7 @@ def get_top_teams(gid=None):
     """
 
     if gid is None:
-        all_teams = api.stats.get_all_team_scores()
+        all_teams = api.stats.get_all_team_scores(eligible=eligible)
     else:
         all_teams = api.stats.get_group_scores(gid=gid)
     return all_teams if len(all_teams) < top_teams else all_teams[:top_teams]
@@ -260,7 +260,7 @@ def get_top_teams_score_progressions(gid=None, eligible=True):
         "name": team["name"],
         "affiliation": team["affiliation"],
         "score_progression": get_score_progression(tid=team["tid"]),
-    } for team in get_top_teams(gid=gid) if team["eligible"] == eligible]
+    } for team in get_top_teams(gid=gid, eligible=eligible)]
 
 
 # Custom statistics not necessarily to be served publicly
