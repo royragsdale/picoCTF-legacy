@@ -11,7 +11,7 @@ load_teamscore = ->
           teamscore: resp.data.score
         })
       when 0
-        apiNotify(data)
+        apiNotify(resp)
 
 @reloadGraph = ->
   reload = ->
@@ -25,17 +25,17 @@ load_teamscore = ->
 
 load_scoreboard = ->
   apiCall "GET", "/api/stats/scoreboard", {}
-  .done (data) ->
-    switch data["status"]
+  .done (resp) ->
+    switch resp["status"]
       when 1
         $("#scoreboard-tabs").html renderScoreboardTabs({
-          data: data.data
+          data: resp.data
           renderScoreboard: renderScoreboard
         })
 
         reloadGraph()
       when 0
-        apiNotify(data)
+        apiNotify(resp)
 
 $ ->
   load_scoreboard()
