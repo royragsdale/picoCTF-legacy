@@ -227,7 +227,7 @@ def get_team_information(tid=None, gid=None):
 
     return team_info
 
-def get_all_teams(show_ineligible=False):
+def get_all_teams(ineligible=False, eligible=True, show_ineligible=False):
     """
     Retrieves all teams.
 
@@ -235,10 +235,15 @@ def get_all_teams(show_ineligible=False):
         A list of all of the teams.
     """
 
-    match = {}
-
-    if not show_ineligible:
-        match.update({"eligible": True})
+    if show_ineligible:
+        match = {}
+    else:
+        conditions = []
+        if ineligible:
+            conditions.append({"eligible": False})
+        elif eligible:
+            conditions.append({"eligible": True})
+        match = {"$or": conditions}
 
     db = api.common.get_conn()
     return list(db.teams.find(match, {"_id": 0}))
