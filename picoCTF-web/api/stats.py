@@ -248,6 +248,26 @@ def get_top_teams(gid=None, eligible=True):
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
+def get_problem_solves(name=None, pid=None):
+    """
+    Returns the number of solves for a particular problem.
+    Must supply eithe pid or name.
+
+    Args:
+        name: name of the problem
+        pid: pid of the problem
+    """
+
+    if not name and not pid:
+        raise InternalException("You must supply either a pid or name of the problem.")
+
+    db = api.common.get_conn()
+
+    problem = api.problem.get_problem(name=name, pid=pid)
+
+    return db.submissions.find({'pid': problem["pid"], 'correct': True}).count()
+
+@api.cache.memoize()
 def get_top_teams_score_progressions(gid=None, eligible=True):
     """
     Gets the score_progressions for the top teams
