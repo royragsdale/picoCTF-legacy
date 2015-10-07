@@ -58,6 +58,9 @@ def get_scoreboard_hook():
 @api_wrapper
 def get_top_teams_score_progressions_hook():
     eligible = request.args.get("eligible", True)
+
+    #I don't understand why we need to do this...
+    eligible = eligible != "false"
     return WebSuccess(data=api.stats.get_top_teams_score_progressions(eligible=eligible))
 
 @blueprint.route('/group/score_progression', methods=['GET'])

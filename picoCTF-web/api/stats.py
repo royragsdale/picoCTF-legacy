@@ -85,7 +85,11 @@ def get_all_team_scores(eligible=True):
         A list of dictionaries with name and score
     """
 
-    teams = api.team.get_all_teams(show_ineligible=(not eligible))
+    if eligible:
+        teams = api.team.get_all_teams(eligible=True, ineligible=False)
+    else:
+        teams = api.team.get_all_teams(eligible=False, ineligible=True)
+
     db = api.api.common.get_conn()
 
     result = []
