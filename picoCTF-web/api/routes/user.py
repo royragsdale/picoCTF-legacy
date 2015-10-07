@@ -43,13 +43,6 @@ def create_simple_user_hook():
 
     return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
 
-@blueprint.route('/create', methods=['POST'])
-@api_wrapper
-def create_user_hook():
-    new_uid = api.user.create_user_request(api.common.flat_multi(request.form))
-    session['uid'] = new_uid
-    return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
-
 @blueprint.route('/update_password', methods=['POST'])
 @api_wrapper
 @check_csrf
