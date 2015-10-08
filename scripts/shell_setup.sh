@@ -86,7 +86,7 @@ chmod 1733 /tmp /var/tmp /dev/shm
 chmod 1111 /home/
 chmod 700 /vagrant
 chmod -R o-r /var/log /var/crash
-chmod o-rw /proc
+chmod o-w /proc
 
 # set hostname
 hostname shell
