@@ -211,7 +211,7 @@ def get_score_progression(tid=None, uid=None, category=None):
         A list of dictionaries containing score and time
     """
 
-    solved = api.problem.get_solved_problems(tid=tid, uid=uid, categroy=category)
+    solved = api.problem.get_solved_problems(tid=tid, uid=uid, category=category)
 
     result = []
     score = 0
