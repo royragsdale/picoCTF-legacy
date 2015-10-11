@@ -35,12 +35,13 @@ def get_mongo_key(f, *args, **kwargs):
         The key.
     """
 
-    min_kwargs = dict(filter(lambda pair: pair[1] is not None, kwargs.items()))
+    min_kwargs = list(filter(lambda pair: pair[1] is not None, kwargs.items()))
 
     return {
         "function": "{}.{}".format(f.__module__, f.__name__),
         "args": args,
-        "kwargs": min_kwargs,
+        "ordered_kwargs": sorted(min_kwargs),
+        "kwargs": dict(min_kwargs)
     }
 
 def get_key(f, *args, **kwargs):
@@ -81,7 +82,11 @@ def get(key, fast=False):
 
     db = api.common.get_conn()
 
-    cached_result = db.cache.find_one(key)
+    # We aren't interested in matching the unordered kwargs.
+    partial_key = key.copy()
+    partial_key.pop("kwargs", None)
+
+    cached_result = db.cache.find_one(partial_key)
 
     if cached_result:
         return cached_result["value"]
