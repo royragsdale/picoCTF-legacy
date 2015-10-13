@@ -124,7 +124,7 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
               fillColor: fillColors[i % strokeColors.length]
 
           data =
-            labels: ("" for i in [1...numDataPoints])
+            labels: ("" for i in [1..numDataPoints])
             datasets: datasets
 
           $(div).empty()
@@ -176,7 +176,7 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
         ]
 
         data =
-          labels: ("" for i in [1...numDataPoints])
+          labels: ("" for i in [1..numDataPoints])
           datasets: datasets
 
         $(div).empty()
