@@ -32,7 +32,7 @@ def get_solved_problems_hook():
 
     for problem in solved_problems:
         problem.pop("instances")
-        problem.pop("pkg_dependencies")
+        problem.pop("pkg_dependencies", None)
 
     return WebSuccess(data=solved_problems)
 
