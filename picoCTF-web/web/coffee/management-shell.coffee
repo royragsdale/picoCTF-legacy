@@ -15,7 +15,7 @@ ServerForm = React.createClass
 
   getInitialState: ->
     if @props.new
-      server = {"host":"", "port":22, "username":"", "password":"", "protocol": "HTTP"}
+      server = {"host": "", "port":22, "username": "", "password": "", "protocol": "HTTP", "name": ""}
     else
       server = @props.server
 
@@ -51,6 +51,11 @@ ServerForm = React.createClass
     copy.host = e.target.value
     @setState {shellServer: copy}
 
+  updateName: (e) ->
+    copy = @state.shellServer
+    copy.name = e.target.value
+    @setState {shellServer: copy}
+
   updatePort: (e) ->
     copy = @state.shellServer
     copy.port = parseInt(e.target.value)
@@ -72,10 +77,11 @@ ServerForm = React.createClass
     @setState {shellServer: copy}
 
   render: ->
-    hostDescription = "The host name of your shell server"
-    portDescription = "The port that SSH is running on"
+    nameDescription = "A unique name given to this shell server."
+    hostDescription = "The host name of your shell server."
+    portDescription = "The port that SSH is running on."
     usernameDescription = "The username to connect as - Be sure that this user has sudo privileges!"
-    passwordDescription = "The password to use for authentication - Be sure that this is password is only used once"
+    passwordDescription = "The password to use for authentication - Be sure that this is password is only used once."
     protocolDescription = "The web protocol to access the problem files and shell server. This is most often just HTTP."
 
     if @state.new
@@ -93,6 +99,7 @@ ServerForm = React.createClass
         </ButtonToolbar>
 
     <div>
+      {if @props.new then <TextEntry name="Name" type="text" value={@state.shellServer.name} onChange=@updateName description={nameDescription}/> else <span/>}
       <TextEntry name="Host" type="text" value={@state.shellServer.host} onChange=@updateHost description={hostDescription} />
       <TextEntry name="SSH Port" type="number" value={@state.shellServer.port.toString()} onChange=@updatePort description={portDescription} />
       <TextEntry name="Username" type="text" value={@state.shellServer.username} onChange=@updateUsername description={usernameDescription} />
@@ -121,7 +128,7 @@ ShellServerList = React.createClass
       header = <div> New Shell Server </div>
     else
       shellServer = <ServerForm new={false} server={server} key={server.sid} refresh={@refresh}/>
-      header = <div> {server.host} </div>
+      header = <div>{server.name} - {server.host}</div>
 
     <Panel bsStyle={"default"} eventKey={i} key={i} header={header}>
       {shellServer}
@@ -180,14 +187,11 @@ ShellServerTab = React.createClass
     <Well>
       <Grid>
         <Row>
-          <h4>To add problems, either enter your shell server information on the left or paste your published JSON on the right.</h4>
+          <h4>To add problems, either enter your shell server information on the left.</h4>
         </Row>
         <Row>
           <Col md={6}>
             <ShellServerList />
-          </Col>
-          <Col md={6} className="pull-right">
-            <ProblemLoaderTab/>
           </Col>
         </Row>
       </Grid>

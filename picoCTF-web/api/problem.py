@@ -68,8 +68,6 @@ instance_schema = Schema({
         ("The description must be a string.", [str])),
     Required("flag"): check(
         ("The flag must be a string.", [str])),
-    Required("iid"): check(
-        ("The iid must be a string", [str])),
     "port": check(
         ("The port must be an int", [int])),
     "server": check(
@@ -115,7 +113,16 @@ def get_all_categories(show_disabled=False):
 
     return db.problems.find(match).distinct("category")
 
-def insert_problem(problem):
+
+def set_instance_ids(problem, sid):
+    """
+    Generate the instance ids for a set of problems.
+    """
+
+    for instance in problem["instances"]:
+        instance["iid"] = api.common.hash(str(instance["instance_number"]) + sid + problem["pid"])
+
+def insert_problem(problem, sid=None):
     """
     Inserts a problem into the database. Does sane validation.
 
@@ -138,18 +145,19 @@ def insert_problem(problem):
     db = api.common.get_conn()
     validate(problem_schema, problem)
 
-    for instance in problem["instances"]:
-        validate(instance_schema, instance)
-
     # initially disable problems
     problem["disabled"] = True
     problem["pid"] = api.common.hash("{}-{}".format(problem["name"], problem["author"]))
+
+    for instance in problem["instances"]:
+        validate(instance_schema, instance)
+
+    set_instance_ids(problem, sid)
 
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
         old_problem = get_problem(pid=problem["pid"])
         problem["disabled"] = old_problem["disabled"]
-        assert len(problem["instances"]) >= len(old_problem["instances"]), "Cannot update problem with fewer instances."
         update_problem(problem["pid"], problem)
         return
 
@@ -231,13 +239,14 @@ def search_problems(*conditions):
 
     return list(db.problems.find({"$or": list(conditions)}, {"_id":0}))
 
-def assign_instance_to_team(pid, tid=None):
+def assign_instance_to_team(pid, tid=None, reassign=False):
     """
     Assigns an instance of problem pid to team tid. Updates it in the database.
 
     Args:
         pid: the problem id
         tid: the team id
+        reassign: whether or not we should assign over an old assignment
 
     Returns:
         The iid that was assigned
@@ -246,8 +255,11 @@ def assign_instance_to_team(pid, tid=None):
     team = api.team.get_team(tid=tid)
     problem = get_problem(pid=pid)
 
-    if pid in team["instances"]:
+    if pid in team["instances"] and not reassign:
         raise InternalException("Team with tid {} already has an instance of pid {}.".format(tid, pid))
+
+    if len(problem["instances"]) == 0:
+        raise InternalException("Problem {} has no instances to assign.".format(pid))
 
     instance_number = randint(0, len(problem["instances"]) - 1)
     iid = problem["instances"][instance_number]["iid"]
@@ -283,7 +295,9 @@ def get_instance_data(pid, tid):
         if instance["iid"] == iid:
             return instance
 
-    raise SevereInternalException("Instance id {} for problem {} cannot be found!".format(iid, problem['name']))
+    # Cannot find assigned instance. Reassign instance and recurse.
+    assign_instance_to_team(pid, tid, reassign=True)
+    return get_instance_data(pid, tid)
 
 def get_problem_instance(pid, tid):
     """
@@ -841,7 +855,7 @@ def load_published(data):
         raise WebException("Please provide a problems list in your json.")
 
     for problem in data["problems"]:
-        insert_problem(problem)
+        insert_problem(problem, sid=data["sid"])
 
     if "bundles" in data:
         db = api.common.get_conn()
