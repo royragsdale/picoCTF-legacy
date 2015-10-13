@@ -327,6 +327,7 @@ def deploy_files(staging_directory, instance_directory, file_list, username, pro
         os.chmod(output_path, f.permissions)
 
     if issubclass(problem_class, Service):
+        os.chown(instance_directory, default.pw_uid, user.pw_gid)
         os.chmod(instance_directory, 0o750)
 
 def install_user_service(service_file):
