@@ -298,7 +298,7 @@ def template_staging_directory(staging_directory, problem, dont_template_files =
                 # tried templating binary file
                 pass
 
-def deploy_files(staging_directory, instance_directory, file_list, username):
+def deploy_files(staging_directory, instance_directory, file_list, username, problem_class):
     """
     Copies the list of files from the staging directory to the instance directory.
     Will properly set permissions and setgid files based on their type.
@@ -325,6 +325,9 @@ def deploy_files(staging_directory, instance_directory, file_list, username):
 
         # set the permissions appropriately
         os.chmod(output_path, f.permissions)
+
+    if issubclass(problem_class, Service):
+        os.chmod(instance_directory, 0o750)
 
 def install_user_service(service_file):
     """
@@ -493,7 +496,7 @@ def deploy_problem(problem_directory, instances=[0, 1], test=False, deployment_d
         problem = instance["problem"]
         deployment_directory = instance["deployment_directory"]
 
-        deploy_files(problem_path, deployment_directory, instance["files"], problem.user)
+        deploy_files(problem_path, deployment_directory, instance["files"], problem.user, problem.__class__)
 
         if test is True:
             print("Description: {}".format(problem.description))
