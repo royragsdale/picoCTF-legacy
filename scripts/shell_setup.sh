@@ -148,6 +148,3 @@ done
 
 # Fix dependencies
 shell_manager deploy -b challenge-sampler
-
-# Install software for users
-apt-get install gdb foremost vim-nox expect tmux screen tshark unzip bvi hexedit curl wget scalpel ipython -y
