@@ -99,6 +99,7 @@ sudo systemctl add-wants default.target shell_manager.target
 # END of what was previously in picoCTF-shell-manager-install.sh
 
 # modify config.py
+shell_manager status
 DEPLOY_SECRET="@@@ChAnGeMe!@@@"
 echo -e "\nHOSTNAME = '192.168.2.3'\n" >> /opt/hacksports/config.py
 echo -e "\nWEB_SERVER = 'http://192.168.2.2'\n" >> /opt/hacksports/config.py
