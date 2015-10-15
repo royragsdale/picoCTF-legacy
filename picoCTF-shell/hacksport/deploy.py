@@ -262,7 +262,7 @@ def template_file(in_file_path, out_file_path, **kwargs):
         **kwargs: Variables to use in templating
     """
 
-    env = Environment(loader=FileSystemLoader(os.path.dirname(in_file_path)))
+    env = Environment(loader=FileSystemLoader(os.path.dirname(in_file_path)), keep_trailing_newline=True)
     template = env.get_template(os.path.basename(in_file_path))
     output = template.render(**kwargs)
 
