@@ -40,7 +40,7 @@ for (firstname,lastname,email,username,password) in data[:100]:
     team = api.user.get_team(uid=uid)
 
 
-    api.group.join_group(team["tid"], random.choice(groups)["gid"])
+    api.group.join_group(random.choice(groups)["gid"], team["tid"])
 
 
 queue = sum([[user] * random.randint(0, 60) for user in api.user.get_all_users()], [])
