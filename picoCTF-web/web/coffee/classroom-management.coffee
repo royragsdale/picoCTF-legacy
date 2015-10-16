@@ -20,16 +20,14 @@ MemberManagementItem = React.createClass
       @props.refresh()
     ).bind this
 
-  switchUserRole: (uid, role) ->
-    apiCall "POST", "/api/group/teacher/role_switch", {gid: @props.gid, uid: uid, role: role}
+  switchUserRole: (tid, role) ->
+    apiCall "POST", "/api/group/teacher/role_switch", {gid: @props.gid, tid: tid, role: role}
     .done ((resp) ->
       apiNotify resp
       @props.refresh()
     ).bind this
 
   render: ->
-    user = _.first @props.members
-
     if @props.teacher
       userButton =
       <Button bsStyle="success" className="btn-sq">
@@ -44,9 +42,9 @@ MemberManagementItem = React.createClass
       </Button>
 
     if @props.teacher
-      switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "member")}>Make Member</Button>
+      switchUser = <Button onClick={@switchUserRole.bind(null, @props.tid, "member")}>Make Member</Button>
     else
-      switchUser = <Button onClick={@switchUserRole.bind(null, user.uid, "teacher")}>Make Teacher</Button>
+      switchUser = <Button onClick={@switchUserRole.bind(null, @props.tid, "teacher")}>Make Teacher</Button>
 
     <ListGroupItem>
       <Row>
@@ -54,11 +52,8 @@ MemberManagementItem = React.createClass
           {userButton}
         </Col>
         <Col xs={6}>
-          <h4>{user.username}</h4>
-          <p>
-            <strong>Name:</strong> {user.firstname} {user.lastname}
-          </p>
-          <p><strong>Email:</strong> {user.email}</p>
+          <h4>{@props.team_name}</h4>
+          <p><strong>Affiliation:</strong> {@props.affiliation}</p>
         </Col>
         <Col xs={4}>
           <ButtonGroup vertical>
