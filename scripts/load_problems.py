@@ -2,6 +2,7 @@ import sys, api
 
 try:
     sid = api.shell_servers.add_server({
+        "name": "Example Shell",
         "host": "192.168.2.3",
         "port": 22,
         "username": "vagrant",
