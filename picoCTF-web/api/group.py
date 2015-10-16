@@ -31,98 +31,49 @@ delete_group_schema = Schema({
     )
 }, extra=True)
 
-def is_teacher_of_group(gid, tid=None, uid=None):
+def get_roles_in_group(gid, tid=None, uid=None):
     """
-    Determine whether or not the current user is an owner of the group. gid must be specified.
-    Administrators will always be considered owners.
+    Determine what role the team plays in a group.
 
     Args:
         gid: the group id
-    Returns:
-        Whether or not the user is a teacher in the group
-    """
-
-    group = get_group(gid=gid)
-
-    if uid is not None:
-        user = api.user.get_user(uid=uid)
-    elif tid is not None:
-        team = api.team.get_team(tid=tid)
-        uids = api.team.get_team_uids(tid=team["tid"])
-        if len(uids) > 1:
-            raise InternalException("Non-singular team can not be an owner.")
-        user = api.user.get_user(uid=uids[0])
-    elif api.auth.is_logged_in():
-        user = api.user.get_user()
-    else:
-        raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
-
-    return user["admin"] or user["tid"] in group["teachers"]
-
-# Misleading, owner/teacher
-def is_owner_of_group(gid, tid=None, uid=None):
-    """
-    Determine whether or not the current user is an owner of the group. gid must be specified.
-    Administrators will always be considered owners.
-
-    Args:
-        gid: the group id
-    Returns:
-        Whether or not the user is a member of the group
-    """
-
-    group = get_group(gid=gid)
-
-    if uid is not None:
-        user = api.user.get_user(uid=uid)
-    elif tid is not None:
-        team = api.team.get_team(tid=tid)
-        uids = api.team.get_team_uids(tid=team["tid"])
-        if len(uids) > 1:
-            raise InternalException("Non-singular team can not be an owner.")
-        user = api.user.get_user(uid=uids[0])
-    elif api.auth.is_logged_in():
-        user = api.user.get_user()
-    else:
-        raise InternalException("cannot automatically retrieve tid if you aren't logged in.")
-
-    return user["admin"] or user["uid"] == group["owner"]
-
-def is_member_of_group(gid=None, name=None, owner_uid=None, tid=None, uid=None):
-    """
-    Determine whether or not a user is a member of the group. gid or name must be specified.
-
-    Args:
-        gid: the group id
-        name: the group name
-        owner_uid: uid of the group owner
         tid: the team id
-    Returns:
-        Whether or not the user is a member of the group
+        uid: optional uid
     """
 
-    group = get_group(gid=gid, name=name, owner_uid=owner_uid)
+    group = get_group(gid=gid)
 
     if uid is not None:
         user = api.user.get_user(uid=uid)
+
+        if user["admin"]:
+            return {
+                "owner": True,
+                "teacher": False,
+                "member": False
+            }
+        else:
+            # If the user isn't an admin we continue on as normal
+            team = api.user.get_team(uid=user["uid"])
     elif tid is not None:
         team = api.team.get_team(tid=tid)
-        uids = api.team.get_team_uids(tid=team["tid"])
-        if len(uids) > 1:
-            raise InternalException("Non-singular team can not be an owner.")
-        user = api.user.get_user(uid=uids[0])
+    else:
+        raise InternalException("Either tid or uid must be specified to determine role in group.")
 
-    return user["tid"] in group["members"]
+    return {
+        "owner": team["tid"] == group["owner"],
+        "teacher": team["tid"] in group["teachers"],
+        "member": team["tid"] in group["members"]
+    }
 
-
-def get_group(gid=None, name=None, owner_uid=None):
+def get_group(gid=None, name=None, owner_tid=None):
     """
     Retrieve a group based on its name or gid.
 
     Args:
         name: the name of the group
         gid: the gid of the group
-        owner_uid: the uid of the group owner
+        owner_tid: the tid of the group owner
     Returns:
         The group object.
     """
@@ -130,17 +81,17 @@ def get_group(gid=None, name=None, owner_uid=None):
     db = api.common.get_conn()
 
     match = {}
-    if name is not None and owner_uid is not None:
+    if name is not None and owner_tid is not None:
         match.update({"name": name})
-        match.update({"owner": owner_uid})
+        match.update({"owner": owner_tid})
     elif gid is not None:
         match.update({"gid": gid})
     else:
-        raise InternalException("Class name and owner or gid must be specified to look it up.")
+        raise InternalException("Group name and owner or gid must be specified to look up a group.")
 
     group = db.groups.find_one(match, {"_id": 0})
     if group is None:
-        raise InternalException("Could not find class!")
+        raise InternalException("Could not find that group!")
 
     return group
 
@@ -185,7 +136,7 @@ def get_member_information(gid):
     return member_information
 
 @log_action
-def create_group(uid, group_name):
+def create_group(tid, group_name):
     """
     Inserts group into the db. Assumes everything is validated.
 
@@ -202,7 +153,7 @@ def create_group(uid, group_name):
 
     db.groups.insert({
         "name": group_name,
-        "owner": uid,
+        "owner": tid,
         "teachers": [],
         "members": [],
         "settings": {
@@ -236,31 +187,6 @@ def change_group_settings(gid, settings):
     group = api.group.get_group(gid=gid)
     db.groups.update({"gid": group["gid"]}, {"$set": {"settings": settings}})
 
-
-def create_group_request(params, uid=None):
-    """
-    Creates a new group. Validates forms.
-    All required arguments are assumed to be keys in params.
-
-    Args:
-        group-name: The name of the group
-
-        Optional:
-            uid: The uid of the user creating the group. If omitted,
-            the uid will be grabbed from the logged in user.
-    Returns:
-        The new gid
-    """
-
-    if uid is None:
-        uid = api.user.get_user()["uid"]
-
-    validate(register_group_schema, params)
-
-    if safe_fail(get_group, name=params["group-name"], owner_uid=uid) is not None:
-        raise WebException("A class with that name already exists!")
-
-    return create_group(uid, params["group-name"])
 
 @log_action
 def join_group(tid, gid, teacher=False):
@@ -344,6 +270,8 @@ def leave_group(tid, gid):
 
     group = get_group(gid=gid)
     team = api.team.get_team(tid=tid)
+
+    roles = get_roles_in_group(gid, tid=team["tid"],)
 
     role = "members"
     if is_member_of_group(gid=group["gid"], tid=team["tid"]):
