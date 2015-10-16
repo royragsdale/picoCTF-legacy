@@ -2,34 +2,8 @@
 
 import api
 
-from voluptuous import Required, Length, Schema
-from api.common import check, validate, safe_fail, WebException, InternalException, SevereInternalException
-
 from api.annotations import log_action
-
-register_group_schema = Schema({
-    Required("group-name"): check(
-        ("Class name must be between 3 and 50 characters.", [str, Length(min=3, max=100)])
-    )
-}, extra=True)
-
-join_group_schema = Schema({
-    Required("group-name"): check(
-        ("Class name must be between 3 and 50 characters.", [str, Length(min=3, max=100)]),
-    )
-}, extra=True)
-
-leave_group_schema = Schema({
-    Required("group-name"): check(
-        ("Class name must be between 3 and 50 characters.", [str, Length(min=3, max=100)]),
-    )
-}, extra=True)
-
-delete_group_schema = Schema({
-    Required("group-name"): check(
-        ("Class name must be between 3 and 50 characters.", [str, Length(min=3, max=100)]),
-    )
-}, extra=True)
+from api.common import check, validate, safe_fail, InternalException
 
 def get_roles_in_group(gid, tid=None, uid=None):
     """
@@ -45,12 +19,13 @@ def get_roles_in_group(gid, tid=None, uid=None):
 
     if uid is not None:
         user = api.user.get_user(uid=uid)
+        team = api.user.get_team(uid=user["uid"])
 
         if user["admin"]:
             return {
                 "owner": True,
                 "teacher": True,
-                "member": False
+                "member": team["tid"] in group["members"]
             }
         else:
             # If the user isn't an admin we continue on as normal
@@ -190,7 +165,7 @@ def change_group_settings(gid, settings):
 
 
 @log_action
-def join_group(tid, gid, teacher=False):
+def join_group(gid, tid, teacher=False):
     """
     Adds a team to a group. Assumes everything is valid.
 
@@ -211,42 +186,6 @@ def join_group(tid, gid, teacher=False):
 
     db.groups.update({'gid': gid}, {'$push': {role_group: tid}})
 
-def join_group_request(params, tid=None):
-    """
-    Tries to place a team into a group. Validates forms.
-    All required arguments are assumed to be keys in params.
-
-    Args:
-        group-name: The name of the group to join.
-        group-owner: The name of the owner of the group
-        Optional:
-            tid: If omitted,the tid will be grabbed from the logged in user.
-    """
-
-
-    validate(join_group_schema, params)
-    owner_uid = api.user.get_user(name=params["group-owner"])["uid"]
-    if safe_fail(get_group, name=params["group-name"], owner_uid=owner_uid) is None:
-        raise WebException("No class exists with that name!")
-
-    group = get_group(name=params["group-name"], owner_uid=owner_uid)
-
-    #TODO: assumes teams of size 1
-    user = api.user.get_user()
-
-    if tid is None:
-        tid = user["tid"]
-
-    group_settings = get_group_settings(gid=group["gid"])
-
-    if not api.user.verify_email_in_whitelist(user["email"], group_settings["email_filter"]):
-        raise WebException("Your email does not belong to the whitelist for that group. You may not join it yourself.")
-
-    if tid in group['members'] or tid in group["teachers"]:
-        raise WebException("Your team is already a member of that class!")
-
-    join_group(tid, group["gid"])
-
 def sync_teacher_status(tid, uid):
     """
     Determine if the given user is still a teacher and update his status.
@@ -258,7 +197,7 @@ def sync_teacher_status(tid, uid):
     db.users.update({"uid": uid}, {"$set": {"teacher": active_teacher_roles > 0}})
 
 @log_action
-def leave_group(gid, tid=None, uid=None):
+def leave_group(gid, tid):
     """
     Removes a team from a group
 
@@ -272,50 +211,17 @@ def leave_group(gid, tid=None, uid=None):
     group = get_group(gid=gid)
     team = api.team.get_team(tid=tid)
 
-    roles = get_roles_in_group(gid, tid=team["tid"],)
+    roles = get_roles_in_group(gid, tid=team["tid"])
 
-    role = "members"
-    if is_member_of_group(gid=group["gid"], tid=team["tid"]):
-        role = "members"
-    elif is_teacher_of_group(gid=group["gid"], tid=team["tid"]):
-        role = "teachers"
-    elif is_owner_of_group(gid=group["gid"], tid=team["tid"]):
-        raise InternalException("Owners can not leave their group.")
-    else:
-        raise InternalException("That team does not belong to that group.")
+    if roles["owner"]:
+        raise InternalException("Owners can not leave their own group!")
+    elif roles["teacher"]:
+        db.groups.update({'gid': gid}, {'$pull': {"teachers": tid}})
 
-    db.groups.update({'gid': gid}, {'$pull': {role: tid}})
+    if roles["member"]:
+        db.groups.update({'gid': gid}, {'$pull': {"teachers": tid}})
 
-    #TODO: only works with team size of 1.
-    if team["size"] == 1:
-        uid = api.team.get_team_uids(tid=tid)[0]
-        sync_teacher_status(tid, uid)
-
-def leave_group_request(params, tid=None):
-    """
-    Tries to remove a team from a group. Validates forms.
-    All required arguments are assumed to be keys in params.
-
-    Args:
-        group-name: The name of the group to leave.
-        group-owner: The owner of the group to leave.
-        Optional:
-            tid: If omitted,the tid will be grabbed from the logged in user.
-    """
-
-    validate(leave_group_schema, params)
-    owner_uid = api.user.get_user(name=params["group-owner"])["uid"]
-    group = get_group(name=params["group-name"], owner_uid=owner_uid)
-
-    if tid is None:
-        tid = api.user.get_team()["tid"]
-
-    if tid not in group['members']:
-        raise WebException("Your team is not a member of that class!")
-
-    leave_group(tid, group["gid"])
-
-def switch_role(gid, uid, role):
+def switch_role(gid, tid, role):
     """
     Switch a user's given role in his group.
 
@@ -323,28 +229,26 @@ def switch_role(gid, uid, role):
     """
 
     db = api.common.get_conn()
+    team = api.team.get_team(tid=tid)
 
-    group = get_group(gid=gid)
-    user = api.user.get_user(uid=uid)
-    tid = api.user.get_team(uid=user["uid"])["tid"]
-
+    roles = get_roles_in_group(gid, tid=team["tid"])
     if role == "member":
-        if api.group.is_teacher_of_group(gid=gid, tid=tid) and not api.group.is_member_of_group(gid=gid, tid=tid):
+        if roles["teacher"] and not roles["member"]:
             db.groups.update({"gid": gid}, {"$pull": {"teachers": tid}, "$push": {"members": tid}})
         else:
-            raise InternalException("User is already a member of that group.")
+            raise InternalException("Team is already a member of that group.")
 
     elif role == "teacher":
-        if not api.group.is_teacher_of_group(gid=gid, tid=tid) and api.group.is_member_of_group(gid=gid, tid=tid):
+        if roles["member"] and not roles["teacher"]:
             db.groups.update({"gid": gid}, {"$push": {"teachers": tid}, "$pull": {"members": tid}})
         else:
-            raise InternalException("User is already a teacher of that group.")
+            raise InternalException("Team is already a teacher of that group.")
 
     else:
         raise InternalException("Only supported roles are member and teacher.")
 
-    #Keep teacher status up to date.
-    sync_teacher_status(tid, uid)
+    for uid in api.team.get_team_uids(tid=team["tid"]):
+        sync_teacher_status(tid, uid)
 
 @log_action
 def delete_group(gid):
@@ -358,33 +262,6 @@ def delete_group(gid):
     db = api.common.get_conn()
 
     db.groups.remove({'gid': gid})
-
-def delete_group_request(params, uid=None):
-    """
-    Tries to delete a group. Validates forms.
-    All required arguments are assumed to be keys in params.
-
-    Args:
-        group-name: The name of the group to join.
-        Optional:
-            uid: If omitted, the uid will be grabbed from the logged in user.
-    """
-
-    validate(delete_group_schema, params)
-
-    if uid is None:
-        uid = api.user.get_user()['uid']
-
-    if safe_fail(get_group, name=params['group-name'], owner_uid=uid) is None:
-        raise WebException("No class exists with that name!")
-
-    if uid is None:
-        uid = api.user.get_user()["uid"]
-
-    group = get_group(name=params["group-name"], owner_uid=uid)
-
-    delete_group(group['gid'])
-
 
 def get_all_groups():
     """
