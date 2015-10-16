@@ -140,6 +140,8 @@ done
 
 
 shell_manager bundle -s $USER_HOME -o $USER_HOME/bundles $EXAMPLE_PROBLEMS_ROOT/Bundles/challenge-sampler.json
+shell_manager bundle -s $USER_HOME -o $USER_HOME/bundles $EXAMPLE_PROBLEMS_ROOT/Bundles/challenge-sampler-tools.json
+
 for f in $USER_HOME/bundles/*
 do
     echo "Installing bundle: $f..."
