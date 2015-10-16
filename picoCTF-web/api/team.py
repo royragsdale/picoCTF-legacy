@@ -203,13 +203,14 @@ def get_team_information(tid=None, gid=None):
 
     if gid is not None:
         group = api.group.get_group(gid=gid)
+        roles = api.group.get_roles_in_group(group["gid"], tid=tid)
 
     team_info["score"] = api.stats.get_score(tid=tid)
     team_info["members"] = [{
         "username": member["username"], "firstname": member["firstname"],
         "lastname": member["lastname"], "email": member["email"],
         "uid": member["uid"], "affiliation": member.get("affiliation", "None"),
-        "teacher": api.group.is_teacher_of_group(group["gid"], uid=api.user.get_user(member["username"])["uid"]) if gid else False
+        "teacher": roles["teacher"] if gid else False
     } for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()
     team_info["progression"] = api.stats.get_score_progression(tid=tid)

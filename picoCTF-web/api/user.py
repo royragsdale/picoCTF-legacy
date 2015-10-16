@@ -343,7 +343,7 @@ def create_simple_user_request(params):
 
     # Join group after everything else has succeeded
     if params.get("gid", None):
-        api.group.join_group(team["tid"], params["gid"], teacher=user_is_teacher)
+        api.group.join_group(params["gid"], team["tid"], teacher=user_is_teacher)
 
     return uid
 
