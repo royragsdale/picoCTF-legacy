@@ -49,7 +49,7 @@ def get_roles_in_group(gid, tid=None, uid=None):
         if user["admin"]:
             return {
                 "owner": True,
-                "teacher": False,
+                "teacher": True,
                 "member": False
             }
         else:
@@ -60,11 +60,12 @@ def get_roles_in_group(gid, tid=None, uid=None):
     else:
         raise InternalException("Either tid or uid must be specified to determine role in group.")
 
-    return {
-        "owner": team["tid"] == group["owner"],
-        "teacher": team["tid"] in group["teachers"],
-        "member": team["tid"] in group["members"]
-    }
+    roles = {}
+    roles["owner"] = team["tid"] == group["owner"]
+    roles["teacher"] = roles["owner"] or team["tid"] in group["teachers"]
+    roles["member"] = team["tid"] in group["members"]
+
+    return roles
 
 def get_group(gid=None, name=None, owner_tid=None):
     """
@@ -257,7 +258,7 @@ def sync_teacher_status(tid, uid):
     db.users.update({"uid": uid}, {"$set": {"teacher": active_teacher_roles > 0}})
 
 @log_action
-def leave_group(tid, gid):
+def leave_group(gid, tid=None, uid=None):
     """
     Removes a team from a group
 
