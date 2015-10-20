@@ -45,7 +45,7 @@ def get_scoreboard_hook():
         user = api.user.get_user()
         if not api.team.get_team(tid=user["tid"])["eligible"]:
             result['ineligible'] = api.stats.get_all_team_scores(eligible=False)
-        for group in api.team.get_groups():
+        for group in api.team.get_groups(uid=user["uid"]):
             result['groups'].append({
                 'gid': group['gid'],
                 'name': group['name'],

@@ -131,7 +131,8 @@ def invite_email_to_group_hook():
 @api_wrapper
 @require_login
 def get_group_list_hook():
-    return WebSuccess(data=api.team.get_groups())
+    user = api.user.get_user()
+    return WebSuccess(data=api.team.get_groups(uid=user["uid"]))
 
 @blueprint.route('/teacher_information', methods=['GET'])
 @api_wrapper
@@ -214,7 +215,7 @@ def join_group_hook():
     params = api.common.flat_multi(request.form)
     validate(join_group_schema, params)
 
-    owner_team = api.user.get_team(name=params["group-owner"])
+    owner_team = api.team.get_team(name=params["group-owner"])
 
     if safe_fail(api.group.get_group, name=params["group-name"], owner_tid=owner_team["tid"]) is None:
         raise WebException("No class exists with that name!")
