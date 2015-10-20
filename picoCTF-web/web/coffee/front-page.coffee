@@ -283,11 +283,13 @@ AuthPanel = React.createClass
       </div>
     else
       <div>
-        <Col md={6} mdOffset={3}>
-          <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
-            onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
-            groupName={@state.groupName} rid={@state.rid} gid={@state.gid} {...links}/>
-        </Col>
+        <Row>
+            <Col md={6} mdOffset={3}>
+              <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
+                onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
+                groupName={@state.groupName} rid={@state.rid} gid={@state.gid} {...links}/>
+            </Col>
+        </Row>
       </div>
 
 $ ->
