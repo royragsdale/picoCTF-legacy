@@ -32,7 +32,9 @@ def bundle_to_control(bundle, debian_path):
         "Description": bundle["description"]
     })
 
-    control["Depends"] = ", ".join(bundle["problems"])
+    # Need to install problems and bundle dependencies.
+    pkg_dependencies = bundle["problems"] + bundle.get("pkg_dependencies", [])
+    control["Depends"] = ", ".join(pkg_dependencies)
 
     contents = ""
     for option, value in control.items():
