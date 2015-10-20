@@ -114,10 +114,16 @@ EmailTab = React.createClass
       $set:
         enable_email: !@state.enable_email
 
+  toggleEmailVerification: ->
+    @setState update @state,
+      $set:
+        email_verification: !@state.email_verification
+
   pushUpdates: (makeChange) ->
     pushData =
       email:
         enable_email: @state.enable_email
+        email_verification: @state.email_verification
         smtp_url: @state.smtp_url
         smtp_port: @state.smtp_port
         email_username: @state.email_username
@@ -140,6 +146,7 @@ EmailTab = React.createClass
 
   render: ->
     emailDescription = "Emails must be sent in order for users to reset their passwords."
+    emailVerificationDescription = "Mandate email verification for new users"
     SMTPDescription = "The URL of the STMP server you are using"
     SMTPPortDescription = "The port of the running SMTP server"
     usernameDescription = "The username of the email account"
@@ -185,6 +192,7 @@ EmailTab = React.createClass
           <TextEntry name="Email Password" value={@state.email_password} type="password" onChange=@updatePassword description={passwordDescription}/>
           <TextEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr description={fromAddressDescription}/>
           <TextEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName description={fromNameDescription}/>
+          <BooleanEntry name="Email Verification" value={@state.email_verification} onChange=@toggleEmailVerification description={emailVerificationDescription}/>
           {SMTPSecuritySelect}
           <Row>
             <div className="text-center">
@@ -209,6 +217,7 @@ SettingsTab = React.createClass
         $date: 0
       enable_feedback: true
       email:
+        email_verification: false
         enable_email: false
         from_addr: ""
         smtp_url: ""

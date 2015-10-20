@@ -125,7 +125,7 @@ def status_hook():
         "competition_active": api.utilities.check_competition_active(),
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else "",
         "tid": api.user.get_user()["tid"] if api.auth.is_logged_in() else "",
-        "email_verification": settings["email_verification"]
+        "email_verification": settings["email"]["email_verification"]
     }
 
     if api.auth.is_logged_in():

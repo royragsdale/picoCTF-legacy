@@ -204,12 +204,12 @@ def create_user(username, firstname, lastname, email, password_hash, tid,
         'admin': admin,
         'disabled': False,
         'country': country,
-        'verified': not settings["email_verification"] or verified,
+        'verified': not settings["email"]["email_verification"] or verified,
     }
 
     db.users.insert(user)
 
-    if settings["email_verification"] and not user["verified"]:
+    if settings["email"]["email_verification"] and not user["verified"]:
         api.email.send_user_verification_email(username)
 
     return uid
