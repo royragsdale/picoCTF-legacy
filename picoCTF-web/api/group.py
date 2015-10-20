@@ -219,7 +219,7 @@ def leave_group(gid, tid):
         db.groups.update({'gid': gid}, {'$pull': {"teachers": tid}})
 
     if roles["member"]:
-        db.groups.update({'gid': gid}, {'$pull': {"teachers": tid}})
+        db.groups.update({'gid': gid}, {'$pull': {"members": tid}})
 
 def switch_role(gid, tid, role):
     """

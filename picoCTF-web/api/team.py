@@ -75,19 +75,19 @@ def get_groups(tid=None, uid=None):
 
     groups = []
 
-    group_query = {"$or": [{'owner': tid}, {"teachers": tid}, {"members": tid}]}
     group_projection = {'name': 1, 'gid': 1, 'owner': 1, 'members': 1, '_id': 0}
+
+    admin = False
 
     if uid is not None:
         user = api.user.get_user(uid=uid)
+        admin = api.user.is_admin(uid=user["uid"])
         tid = user["tid"]
-
-        #Admins should be able to view all groups.
-        if api.user.is_admin(uid=user["uid"]):
-            group_query = {}
     else:
         tid = api.team.get_team(tid=tid)["tid"]
 
+    #Admins should be able to view all groups.
+    group_query = {"$or": [{'owner': tid}, {"teachers": tid}, {"members": tid}]} if not admin else {}
     associated_groups = db.groups.find(group_query, group_projection)
 
     for group in list(associated_groups):

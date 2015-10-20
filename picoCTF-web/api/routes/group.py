@@ -220,9 +220,9 @@ def join_group_hook():
     if safe_fail(api.group.get_group, name=params["group-name"], owner_tid=owner_team["tid"]) is None:
         raise WebException("No class exists with that name!")
 
-    group = get_group(name=params["group-name"], owner_tid=owner_team["tid"])
+    group = api.group.get_group(name=params["group-name"], owner_tid=owner_team["tid"])
 
-    group_settings = get_group_settings(gid=group["gid"])
+    group_settings = api.group.get_group_settings(gid=group["gid"])
 
     team = api.team.get_team()
     for member_uid in api.team.get_team_uids(tid=team["tid"]):
@@ -234,7 +234,7 @@ def join_group_hook():
     if roles["teacher"] or roles["member"]:
         raise WebException("Your team is already a member of that class!")
 
-    api.group.join_group(group["gid"], tid)
+    api.group.join_group(group["gid"], team["tid"])
 
     return WebSuccess("Successfully joined group")
 
@@ -253,10 +253,10 @@ def leave_group_hook():
     validate(leave_group_schema, params)
     owner_team = api.team.get_team(name=params["group-owner"])
 
-    group = get_group(name=params["group-name"], owner_tid=owner_team["tid"])
+    group = api.group.get_group(name=params["group-name"], owner_tid=owner_team["tid"])
 
     team = api.user.get_team()
-    roles = api.group.get_roles_in_group(gid, tid=team["tid"])
+    roles = api.group.get_roles_in_group(group["gid"], tid=team["tid"])
 
     if not roles["member"] and not roles["teacher"]:
         raise WebException("Your team is not a member of that class!")
@@ -280,13 +280,13 @@ def delete_group_hook():
     validate(delete_group_schema, params)
 
     owner_team = api.team.get_team(name=params["group-owner"])
-    group = get_group(name=params["group-name"], owner_tid=owner_team["tid"])
+    group = api.group.get_group(name=params["group-name"], owner_tid=owner_team["tid"])
 
     user = api.user.get_user()
     roles = api.group.get_roles_in_group(group["gid"], uid=user["uid"])
 
     if roles["owner"]:
-        delete_group(group["gid"])
+        api.group.delete_group(group["gid"])
     else:
         raise WebException("Only the owner of a group can delete it!")
 
