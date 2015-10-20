@@ -20,14 +20,14 @@ print("Created admin user")
 
 groups = []
 for group_name in group_names:
-    gid = api.group.create_group(admin["uid"], group_name)
+    gid = api.group.create_group(admin["tid"], group_name)
     groups.append(api.group.get_group(gid=gid))
     print("Created group: "+group_name)
 
-for (firstname,lastname,email,username,password) in data[:100]:
+for (firstname,lastname,email,username,_) in data[:100]:
     user_data = {
         "username": username,
-        "password": password,
+        "password": "password",
         "firstname": firstname,
         "lastname": lastname,
         "email": email,
@@ -52,4 +52,3 @@ for user in queue:
     iid = api.user.get_team(uid=user["uid"])["instances"][problem["pid"]]
     instance = api.problem.get_problem_instance(problem["pid"], team["tid"])
     api.problem.submit_key(team["tid"], problem["pid"], instance["flag"], uid=user["uid"])
-    #print("{} solved {}".format(user["username"], problem["name"]))
