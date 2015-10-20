@@ -122,8 +122,8 @@ def create_new_team_request(params, uid=None):
     desired_tid = create_team({
         "team_name": params["team_name"],
         "password": params["team_password"],
-        #TODO: fix
-        "affiliation": "None",
+        # The team's affiliation becomes the creator's affiliation.
+        "affiliation": user["affiliation"],
         "eligible": True
     })
 
