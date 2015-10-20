@@ -285,7 +285,16 @@ post_scripts:
             <div class="tab-pane tab-pane-outline" id="group-tab-<%- group.gid %>"></div>
           <% }); %>
         </div>
-    <% } %>
+        <% } else {  %>
+          <br/>
+          <div class="row">
+            <div class="col-md-12">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit" id="new-class-button">Create a New Classroom</button>
+                </span>
+            </div>
+          </div>
+        <% } %>
 </script>
 
 <script type="text/template" id="new-group-template">
