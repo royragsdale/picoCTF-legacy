@@ -800,15 +800,21 @@ def get_visible_problems(tid, category=None):
     solved_pids = get_solved_pids(tid=tid)
 
     result = []
-    locked = []
+
+    result = []
+    #locked = []
+
     for problem  in all_problems:
         if problem["pid"] in unlocked_pids:
             result.append(unlocked_filter(get_problem_instance(problem["pid"], tid), problem["pid"] in solved_pids))
-        else:
-            locked.append(locked_filter(problem))
+
+        # Disable locked problem display.
+        #else:
+            #locked.append(locked_filter(problem))
 
     # place locked problems at the end of the list
-    result.extend(locked)
+    #result.extend(locked)
+
     return result
 
 def get_unlocked_problems(tid, category=None):
