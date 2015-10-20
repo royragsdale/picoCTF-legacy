@@ -18,9 +18,14 @@ startup_functions:
 <script type="text/template" id="scoreboard-tabs-template">
   <ul class="nav nav-tabs" id="scoreboard-tabs">
     <li class="active" data-gid="public"><a data-toggle="tab" href="#public" onClick="window.reloadGraph()">Public</a></li>
+
     <% _.each(data.groups, function(group, index) { %>
       <li data-gid="<%= group.gid %>"><a data-toggle="tab" href="#<%= group.gid %>" onClick="window.reloadGraph()"><%- group.name %></a></li>
     <% }); %>
+
+    <% if(data.ineligible !== undefined) { %>
+      <li data-gid="ineligible"><a data-toggle="tab" href="#ineligible" onClick="window.reloadGraph()">Ineligible</a></li>
+    <% } %>
   </ul>
   <div class="tab-content">
     <div class="row">
@@ -36,7 +41,16 @@ startup_functions:
       <div id="<%= group.gid %>" class="tab-pane fade">
         <%= renderScoreboard({scoreboard: group.scoreboard}) %>
       </div>
-    <% }); %>
+     <% }); %>
+
+      <% if(data.ineligible !== undefined) { %>
+        <div class="row">
+          <div id="ineligible-progression" class="progression-graph"></div>
+        </div>
+        <div id="ineligible" class="tab-pane fade">
+          <%= renderScoreboard({scoreboard: data.ineligible}) %>
+        </div>
+     <% } %>
   </div>
 </script>
 
@@ -47,6 +61,7 @@ startup_functions:
         <tr>
           <th></th>
           <th>Team Name</th>
+          <th>Affiliation</th>
           <th>Score</th>
         </tr>
       </thead>
@@ -54,8 +69,9 @@ startup_functions:
         <% _.each(scoreboard, function(team, i) { %>
           <tr>
             <td><%= i+1 %>.</td>
-            <td><p><%- team.name %></p></td>
-            <td><strong><p><%= team.score %></p></strong></td>
+            <td><%- team.name %></td>
+            <td><%- team.affiliation %></td>
+            <td><strong><%= team.score %></strong></td>
           </tr>
         <% }); %>
       </tbody>

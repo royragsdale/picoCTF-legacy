@@ -2,7 +2,7 @@
 API functions relating to user management and registration.
 """
 
-import bcrypt, re, urllib.parse, urllib.request, flask, json, string
+import bcrypt, re, urllib.parse, urllib.request, flask, json, string, re
 
 import api
 
@@ -16,10 +16,32 @@ _check_email_format = lambda email: re.match(r".+@.+\..{2,}", email) is not None
 def _check_username(username):
     return all([c in string.digits + string.ascii_lowercase for c in username.lower()])
 
+def verify_email_in_whitelist(email, whitelist=None):
+    """
+    Verify that the email address passes the global whitelist if one exists.
+
+    Args:
+        email: The email address to verify
+    """
+
+    if whitelist is None:
+        settings = api.config.get_settings()
+        whitelist = settings["email_filter"]
+
+    #Nothing to check against!
+    if len(whitelist) == 0:
+        return True
+
+    for email_domain in whitelist:
+        if re.match(r".*?@{}$".format(email_domain), email) is not None:
+            return True
+
+    return False
+
 user_schema = Schema({
     Required('email'): check(
         ("Email must be between 5 and 50 characters.", [str, Length(min=5, max=50)]),
-        ("Your email does not look like an email address.", [_check_email_format])
+        ("Your email does not look like an email address.", [_check_email_format]),
     ),
     Required('firstname'): check(
         ("First Name must be between 1 and 50 characters.", [str, Length(min=1, max=50)])
@@ -40,6 +62,13 @@ user_schema = Schema({
     ),
     Required('password'):
         check(("Passwords must be between 3 and 20 characters.", [str, Length(min=3, max=20)])
+    ),
+    Required('affiliation'):
+        check(("You must specify an affiliation.", [str, Length(min=3, max=50)])
+    ),
+    Required('eligibility'):
+        check(("You must specify whether or not your account is eligibile.", [str,
+            lambda status: status in ["eligible", "ineligible"]])
     ),
 }, extra=True)
 
@@ -124,7 +153,8 @@ def get_user(name=None, uid=None):
 
     return user
 
-def create_user(username, firstname, lastname, email, password_hash, tid, teacher=False, country="US", admin=False):
+def create_user(username, firstname, lastname, email, password_hash, tid,
+                teacher=False, country="US", admin=False, verified=False):
     """
     This inserts a user directly into the database. It assumes all data is valid.
 
@@ -141,6 +171,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
     """
 
     db = api.common.get_conn()
+    settings = api.config.get_settings()
     uid = api.common.token()
 
     if safe_fail(get_user, name=username) is not None:
@@ -157,7 +188,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
         raise InternalException("There are too many users on this team!")
 
     #All teachers are admins.
-    if admin or teacher or db.users.count() == 0:
+    if admin or db.users.count() == 0:
         admin = True
         teacher = True
 
@@ -173,9 +204,13 @@ def create_user(username, firstname, lastname, email, password_hash, tid, teache
         'admin': admin,
         'disabled': False,
         'country': country,
+        'verified': not settings["email"]["email_verification"] or verified,
     }
 
     db.users.insert(user)
+
+    if settings["email"]["email_verification"] and not user["verified"]:
+        api.email.send_user_verification_email(username)
 
     return uid
 
@@ -233,10 +268,45 @@ def create_simple_user_request(params):
         firstname: user's first name
         lastname: user's first name
         email: user's email
+        eligibile: "eligibile" or "ineligibile"
+        affiliation: user's affiliation
+        gid: group registration
+        rid: registration id
     """
 
     params["country"] = "US"
     validate(user_schema, params)
+
+    whitelist = None
+
+    if params.get("gid", None):
+        group = api.group.get_group(gid=params["gid"])
+        group_settings = api.group.get_group_settings(gid=group["gid"])
+
+        #Force affiliation
+        params["affiliation"] = group["name"]
+
+        whitelist = group_settings["email_filter"]
+
+    user_is_teacher = False
+    user_was_invited = False
+
+    if params.get("rid", None):
+        key = api.token.find_key_by_token("registration_token", params["rid"])
+
+        if params.get("gid") != key["gid"]:
+            raise WebException("Registration token group and supplied gid do not match.")
+
+        if params["email"] != key["email"]:
+            raise WebException("Registration token email does not match the supplied one.")
+
+        user_is_teacher = key["teacher"]
+        user_was_invited = True
+
+        api.token.delete_token(key, "registration_token")
+    else:
+        if not verify_email_in_whitelist(params["email"], whitelist):
+            raise WebException("Your email does not belong to the whitelist. Please see the registration form for details.")
 
     if api.config.get_settings()["captcha"]["enable_captcha"] and not _validate_captcha(params):
         raise WebException("Incorrect captcha!")
@@ -244,13 +314,15 @@ def create_simple_user_request(params):
     team_params = {
         "team_name": params["username"],
         "password": api.common.token(),
-        "eligible": True
+        "eligible": params["eligibility"] == "eligible",
+        "affiliation": params["affiliation"]
     }
 
     tid = api.team.create_team(team_params)
 
     if tid is None:
         raise InternalException("Failed to create new team")
+
     team = api.team.get_team(tid=tid)
 
     # Create new user
@@ -262,80 +334,16 @@ def create_simple_user_request(params):
         hash_password(params["password"]),
         team["tid"],
         country=params["country"],
+        teacher=user_is_teacher,
+        verified=user_was_invited
     )
 
     if uid is None:
         raise InternalException("There was an error during registration.")
 
-    return uid
-
-@log_action
-def create_user_request(params):
-    """
-    Registers a new user and creates/joins a team. Validates all fields.
-    Assume arguments to be specified in a dict.
-
-    Args:
-        username: user's username
-        password: user's password
-        firstname: user's first name
-        lastname: user's first name
-        email: user's email
-        create-new-team:
-            boolean "true" indicating whether or not the user is creating a new team or
-            joining an already existing team.
-
-        team-name-existing: Name of existing team to join.
-        team-password-existing: Password of existing team to join.
-
-        team-name-new: Name of new team.
-        team-school-new: Name of the team's school.
-        team-password-new: Password to join team.
-
-    """
-
-    validate(user_schema, params)
-
-    if hasattr(api.config, "enable_captcha") and api.config.enable_captcha and not _validate_captcha(params):
-        raise WebException("Incorrect captcha!")
-
-    if params.get("create-new-team", "false") == "true":
-
-        validate(new_team_schema, params)
-
-        team_params = {
-            "team_name": params["team-name-new"],
-            "password": params["team-password-new"],
-            "eligible": True
-        }
-
-        tid = api.team.create_team(team_params)
-
-        if tid is None:
-            raise InternalException("Failed to create new team")
-        team = api.team.get_team(tid=tid)
-
-    else:
-        validate(existing_team_schema, params)
-
-        team = api.team.get_team(name=params["team-name-existing"])
-
-        if team['password'] != params['team-password-existing']:
-            raise WebException("Your team passphrase is incorrect.")
-
-    # Create new user
-    uid = create_user(
-        params["username"],
-        params["firstname"],
-        params["lastname"],
-        params["email"],
-        hash_password(params["password"]),
-        team["tid"],
-        country=params["country"],
-    )
-
-    if uid is None:
-        raise InternalException("There was an error during registration.")
+    # Join group after everything else has succeeded
+    if params.get("gid", None):
+        api.group.join_group(params["gid"], team["tid"], teacher=user_is_teacher)
 
     return uid
 
@@ -365,42 +373,31 @@ def is_admin(uid=None):
     user = get_user(uid=uid)
     return user.get('admin', False)
 
-def set_password_reset_token(uid, token):
+
+def verify_user(uid, token_value):
     """
-    Sets the password reset token for the user in mongo
+    Verify an unverified user account. Link should have been sent to the user's email.
 
     Args:
         uid: the user id
-        token: the token to set
+        token_value: the verification token value
+    Returns:
+        True if successful verification based on the (uid, token_value)
     """
 
     db = api.common.get_conn()
-    db.users.update({'uid': uid}, {'$set': {'password_reset_token': token}})
 
-def delete_password_reset_token(uid):
-    """
-    Removes the password reset token for the user in mongo
+    if uid is None:
+        raise InternalException("You must specify a uid.")
 
-    Args:
-        uid: the user id
-    """
+    token_user = api.token.find_key_by_token("email_verification", token_value)
 
-    db = api.common.get_conn()
-    db.users.update({'uid': uid}, {'$unset': {'password_reset_token': ''}})
-
-def find_user_by_reset_token(token):
-    """
-    Searches the database for a team with the given password reset token
-    """
-
-    db = api.common.get_conn()
-    user = db.users.find_one({'password_reset_token': token})
-
-    if user is None:
-        raise WebException("That is not a valid password reset token!")
-
-    return user
-
+    if token_user["uid"] == uid:
+        db.users.find_and_modify({"uid": uid}, {"$set": {"verified": True}})
+        api.token.delete_token({"uid": uid}, "email_verification")
+        return True
+    else:
+        raise InternalException("This is not a valid token for your user.")
 
 @log_action
 def update_password_request(params, uid=None, check_current=False):

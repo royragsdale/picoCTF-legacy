@@ -6,10 +6,12 @@ Panel = ReactBootstrap.Panel
 Glyphicon = ReactBootstrap.Glyphicon
 ButtonInput = ReactBootstrap.ButtonInput
 ButtonGroup = ReactBootstrap.ButtonGroup
+Alert = ReactBootstrap.Alert
 
 update = React.addons.update
 
 LoginForm = React.createClass
+
   render: ->
     userGlyph = <Glyphicon glyph="user"/>
     lockGlyph = <Glyphicon glyph="lock"/>
@@ -34,19 +36,47 @@ LoginForm = React.createClass
         </form>
       </Panel>
     else
+      showGroupMessage = (->
+        <Alert bsStyle="info">
+          You are registering as a member of <strong>{@props.groupName}</strong>.
+        </Alert>
+      ).bind this
+
+      showEmailFilter = (->
+        <Alert bsStyle="warning">
+          You can register provided you have an email for one of these domains: <strong>{@props.emailFilter.join ", "}</strong>.
+        </Alert>
+      ).bind this
+
       registrationForm = if @props.status == "Register" then \
         <span>
           <Row>
+            <div>
+              {if @props.groupName.length > 0 then showGroupMessage() else <span/>}
+              {if @props.emailFilter.length > 0 and not @props.rid then showEmailFilter() else <span/>}
+            </div>
             <Col md={6}>
-              <Input type="text" id="first-name" valueLink={@props.firstname} label="Firstname"/>
+              <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
             </Col>
             <Col md={6}>
-              <Input type="text" id="last-name" valueLink={@props.lastname} label="Lastname"/>
+              <Input type="text" id="last-name" valueLink={@props.lastname} label="Last Name"/>
             </Col>
           </Row>
           <Row>
             <Col md={12}>
               <Input type="email" id="email" valueLink={@props.email} label="E-mail"/>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Input type="text" id="affiliation" valueLink={@props.affiliation} label="Affiliation"/>
+            </Col>
+            <Col md={6}>
+              <Input type="select" label="Status" placeholder="Competitor" valueLink={@props.eligibility}>
+                <option value="eligible">Competitor</option>
+                <option value="ineligible">Instructor</option>
+                <option value="ineligible">Other</option>
+              </Input>
             </Col>
           </Row>
           <ButtonInput type="submit">Register</ButtonInput>
@@ -123,27 +153,78 @@ TeamManagementForm = React.createClass
 AuthPanel = React.createClass
   mixins: [React.addons.LinkedStateMixin]
   getInitialState: ->
+    params = $.deparam $.param.fragment()
+
     page: "Login"
     settings: {}
+    gid: params.g
+    rid: params.r
+    status: params.status
+    groupName: ""
+    eligibility: "eligible"
 
   componentWillMount: ->
-    apiCall "GET", "/api/team/settings"
-    .done ((req) ->
+    if @state.status == "verified"
+      apiNotify({status: 1, message: "Your account has been successfully verified. Please login."})
+    if @state.gid
+      apiCall "GET", "/api/group/settings", {gid: @state.gid}
+      .done ((resp) ->
+        switch resp.status
+          when 0
+            apiNotify resp
+          when 1
+            @setState update @state,
+              groupName: $set: resp.data.name
+              affiliation: $set: resp.data.name
+              settings: $merge: resp.data.settings
+              page: $set: "Register"
+      ).bind this
+    else
+      apiCall "GET", "/api/team/settings"
+      .done ((resp) ->
+        @setState update @state,
+          settings: $merge: resp.data
+      ).bind this
+
+    apiCall "GET", "/api/user/status"
+    .done ((resp) ->
       @setState update @state,
-        settings: $set: req.data
+        settings: $merge: resp.data
      ).bind this
 
   onRegistration: (e) ->
     e.preventDefault()
+
     apiCall "POST", "/api/user/create_simple", @state
     .done ((resp) ->
-      apiNotify resp
       switch resp.status
+        when 0
+          apiNotify resp
         when 1
+          verificationAlert =
+            status: 1
+            message: "You have been sent a verification email. You will need to complete this step before logging in."
+
           if @state.settings.max_team_size > 1
-            @setPage "Team Management"
+            if @state.settings.email_verification and not @state.rid
+              apiNotify verificationAlert
+              @setPage "Login"
+              document.location.hash = "#team-builder"
+            else
+              apiNotify resp
+              @setPage "Team Management"
           else
-            document.location.href = "/profile"
+            if @state.settings.email_verification
+              if not @state.rid or @state.rid.length == 0
+                apiNotify verificationAlert
+              else
+                apiNotify resp, "/profile"
+              @setPage "Login"
+              if @state.settings.max_team_size > 1
+                document.location.hash = "#team-builder"
+            else
+             apiNotify resp, "/profile"
+
     ).bind this
 
   onPasswordReset: (e) ->
@@ -158,15 +239,19 @@ AuthPanel = React.createClass
   onLogin: (e) ->
     e.preventDefault()
     apiCall "POST", "/api/user/login", {username: @state.username, password: @state.password}
-    .done (resp) ->
+    .done ((resp) ->
       switch resp.status
         when 0
             apiNotify resp
         when 1
+          if document.location.hash == "#team-builder"
+            @setPage "Team Management"
+          else
             if resp.data.teacher
               document.location.href = "/classroom"
             else
               document.location.href = "/profile"
+    ).bind this
 
   setPage: (page) ->
     @setState update @state,
@@ -185,6 +270,8 @@ AuthPanel = React.createClass
     lastname: @linkState "lastname"
     firstname: @linkState "firstname"
     email: @linkState "email"
+    affiliation: @linkState "affiliation"
+    eligibility: @linkState "eligibility"
 
     if @state.page == "Team Management"
       <div>
@@ -197,10 +284,11 @@ AuthPanel = React.createClass
     else
       <div>
         <Row>
-          <Col md={6} mdOffset={3}>
-            <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
-              onLogin={@onLogin} onPasswordReset={@onPasswordReset} {...links}/>
-          </Col>
+            <Col md={6} mdOffset={3}>
+              <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
+                onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
+                groupName={@state.groupName} rid={@state.rid} gid={@state.gid} {...links}/>
+            </Col>
         </Row>
       </div>
 

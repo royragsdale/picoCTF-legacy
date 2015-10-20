@@ -42,8 +42,8 @@ startup_functions:
     var panel = {
     className: problem.solved ? "solved" : "",
     collapseClass: problem.solved ? "" : "in",
-    title: problem.name + " - " + problem.score,
-    status: (problem.unlocked ? (problem.solved ? "Solved" : "Unsolved") : "Locked")
+    title: problem.name + " - Points: " + problem.score + " - (Solves: " + problem.solves + ")",
+    status: (problem.unlocked ? (problem.solved ? "Solved" : "Unsolved") : "Locked"),
     };
 
     var pill = {

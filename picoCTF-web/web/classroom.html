@@ -2,14 +2,13 @@
 layout: default
 title: Classroom
 post_scripts:
+  - js/libs/jquery.bbq.js
+  - js/libs/Chart.min.js
+  - js/libs/download.js
   - js/progression_graphs.js
   - js/classroom.js
-startup_functions:
- - redirectIfNotLoggedIn()
+  - js/classroom-management.js
 ---
-
-<script type="text/javascript" src="/js/libs/Chart.min.js"></script>
-<script type="text/javascript" src="/js/libs/download.js"></script>
 
 <div class="container">
     <div class="row">
@@ -17,20 +16,29 @@ startup_functions:
             <div class="row">
                 <div class="col-md-12">
                     <p>
-                        You are logged into an administrator account, which allows you to manage multiple students grouped together in classes.
-                        On this page, you can create new class groups, check which users are in which class groups, and see more detailed information about
-                        each of your students.
+                        You are logged into a teacher account, which allows you to manage multiple students grouped together in classes.
                     </p>
                     <p>
-                        Note that you cannot automatically add users to a class. Instead, you provide your username and the name of the class to your students, who
-                        join the class on their account on the "Profile" page.
+                        You can also provide your username and the name of the class to your students, who join the class on their account on the "Profile" page.
                     </p>
                 </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <div id="group-management"></div>
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#group-overview-tab" data-toggle="tab">Overview</a></li>
+            <li><a href="#group-management-tab" data-toggle="tab">Management</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="group-overview-tab">
+                <div id="group-overview"></div>
+            </div>
+            <div class="tab-pane" id="group-management-tab">
+                <br/>
+                <div id="group-management"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -42,15 +50,17 @@ startup_functions:
                 <div class="panel-body">
                     <div style="margin-left: 5px">
                         <p>Students can join this class by visiting the "Profile" page, and entering the following under "Class Membership":</p>
-                        <div><p><strong>Class Name</strong>: <%- groupName %><br/>
-                            <strong>Teacher Username</strong>: <%- owner %></p></div>
-                        <p> Student can also join by following this link: </p>
-                        <span>
-                            <% var link = document.location.href.split("/classroom")[0]+"/profile#joinclass?class="+encodeURIComponent(groupName)+"&teacher="+encodeURIComponent(owner); %>
-                            <code>
-                              <%= link %>
-                            </code>
-                        </span>
+                        <div>
+                            <p>
+                                <strong>Class Name</strong>: <%- groupName %>
+                            </p>
+                            <p>
+                                <strong>Teacher Username</strong>: <%- owner %>
+                            </p>
+                        </div>
+                        <% var registrationLink = document.location.origin + "/#g=" + gid; %>
+                        <p>Or register with this link to automatically join:</p>
+                        <a href="<%= registrationLink %>"><%= registrationLink %></a>
                     </div>
                 </div>
               </div>
@@ -251,6 +261,7 @@ startup_functions:
 
 <script type="text/template" id="group-info-template">
     <% if (data.length > 0 ) { %>
+        <br/>
         <ul class="nav nav-tabs nav-tabs-outline" role="tablist" id="class-tabs">
           <% _.each(data, function(group, index) { %>
             <li><a href="#group-tab-<%- group.gid %>"
@@ -258,25 +269,32 @@ startup_functions:
                    data-gid="<%- group.gid %>"
                    data-group-name="<%- group.name %>"
                    role="tab" data-toggle="tab">
-                        <%- group.name %>
-                        <span data-group-name="<%- group.name %>" class="glyphicon glyphicon-remove delete-group-span"></span>
+                  <%- group.name %>
+                  <% if(window.userStatus && window.userStatus.admin) { %>
+                    <span data-group-name="<%- group.name %>" class="glyphicon glyphicon-remove delete-group-span"></span>
+                  <% } %>
                 </a>
             </li>
-          <% }); %>
+        <% }); %>
+        <% if(window.userStatus && window.userStatus.admin) { %>
           <li><a href="#" id="new-class-tab">New Class</a></li>
+        <% } %>
         </ul>
         <div class="tab-content">
           <% _.each(data, function(group, index) { %>
             <div class="tab-pane tab-pane-outline" id="group-tab-<%- group.gid %>"></div>
           <% }); %>
         </div>
-    <% } else { %>
-     <div class="col-md-12">
-        <span class="input-group-btn">
-            <button class="btn btn-primary" type="submit" id="new-class-button">Create a New Class</button>
-        </span>
-     </div>
-    <% } %>
+        <% } else {  %>
+          <br/>
+          <div class="row">
+            <div class="col-md-12">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit" id="new-class-button">Create a New Classroom</button>
+                </span>
+            </div>
+          </div>
+        <% } %>
 </script>
 
 <script type="text/template" id="new-group-template">

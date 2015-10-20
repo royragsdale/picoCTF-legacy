@@ -8,7 +8,8 @@ from voluptuous import Schema, Required, Length
 
 from api.user import check
 from api.annotations import log_action
-from api.common import WebException, validate, safe_fail
+from api.common import WebException, InternalException
+from api.common import validate, safe_fail
 
 log = api.logger.use(__name__)
 
@@ -52,7 +53,17 @@ def login(username, password):
     if user.get("disabled", False):
         raise WebException("This account has been disabled.")
 
+    if not user["verified"]:
+        raise WebException("This account has not been verified yet.")
+
     if confirm_password(password, user['password_hash']):
+        if not user["verified"]:
+            try:
+                api.email.send_user_verification_email(username)
+                raise WebException("This account is not verified. An additional email has been sent to {}.".format(user["email"]))
+            except InternalException as e:
+                raise WebException("You have hit the maximum number of verification emails. Please contact support.")
+
         if debug_disable_general_login:
             if session.get('debugaccount', False):
                 raise WebException("Correct credentials! But the game has not started yet...")

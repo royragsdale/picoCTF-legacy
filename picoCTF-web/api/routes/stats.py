@@ -42,7 +42,10 @@ def get_scoreboard_hook():
     result['groups'] = []
 
     if api.auth.is_logged_in():
-        for group in api.team.get_groups():
+        user = api.user.get_user()
+        if not api.team.get_team(tid=user["tid"])["eligible"]:
+            result['ineligible'] = api.stats.get_all_team_scores(eligible=False)
+        for group in api.team.get_groups(uid=user["uid"]):
             result['groups'].append({
                 'gid': group['gid'],
                 'name': group['name'],
@@ -54,10 +57,15 @@ def get_scoreboard_hook():
 @blueprint.route('/top_teams/score_progression', methods=['GET'])
 @api_wrapper
 def get_top_teams_score_progressions_hook():
-    return WebSuccess(data=api.stats.get_top_teams_score_progressions())
+    eligible = request.args.get("eligible", True)
+
+    #I don't understand why we need to do this...
+    eligible = eligible != "false"
+    return WebSuccess(data=api.stats.get_top_teams_score_progressions(eligible=eligible))
 
 @blueprint.route('/group/score_progression', methods=['GET'])
 @api_wrapper
 def get_group_top_teams_score_progressions_hook():
     gid = request.args.get("gid", None)
-    return WebSuccess(data=api.stats.get_top_teams_score_progressions(gid=gid))
+    eligible = request.args.get("eligible", True)
+    return WebSuccess(data=api.stats.get_top_teams_score_progressions(gid=gid, eligible=eligible))

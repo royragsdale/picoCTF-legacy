@@ -46,23 +46,6 @@ def get_conn():
     return __connection
 
 
-def esc(s):
-    """
-    Escapes a string to prevent html injection
-
-    Returns a string with special HTML characters replaced.
-    Used to sanitize output to prevent XSS. We looked at 
-    alternatives but there wasn't anything of an appropriate 
-    scope that we could find. In the long-term this should be 
-    replaced with a proper sanitization function written by 
-    someone else."""
-    return s\
-        .replace('&', '&amp;')\
-        .replace('<', '&lt;')\
-        .replace('>', '&gt;')\
-        .replace('"', '&quot;')\
-        .replace("'", '&#39;')
-
 def token():
     """
     Generate a token, should be random but does not have to be secure necessarily. Speed is a priority.

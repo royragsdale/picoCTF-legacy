@@ -53,6 +53,8 @@ def get_group_scores(gid=None, name=None):
         result.append({
             "name": team['team_name'],
             "tid": team['tid'],
+            "affiliation": team["affiliation"],
+            "eligible": team["eligible"],
             "score": get_score(tid=team['tid'])
         })
 
@@ -75,7 +77,7 @@ def get_group_average_score(gid=None, name=None):
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
-def get_all_team_scores():
+def get_all_team_scores(eligible=True):
     """
     Gets the score for every team in the database.
 
@@ -83,12 +85,16 @@ def get_all_team_scores():
         A list of dictionaries with name and score
     """
 
-    teams = api.team.get_all_teams()
+    if eligible:
+        teams = api.team.get_all_teams(eligible=True, ineligible=False)
+    else:
+        teams = api.team.get_all_teams(eligible=False, ineligible=True)
+
     db = api.api.common.get_conn()
 
     result = []
     for team in teams:
-        team_query = db.submissions.find({'tid': team['tid'], 'eligible': True, 'correct': True})
+        team_query = db.submissions.find({'tid': team['tid'], 'eligible': eligible, 'correct': True})
         if team_query.count() > 0:
             lastsubmit = team_query.sort('timestamp', direction=pymongo.DESCENDING)[0]['timestamp']
         else:
@@ -99,10 +105,12 @@ def get_all_team_scores():
                 "name": team['team_name'],
                 "tid": team['tid'],
                 "score": score,
+                "affiliation": team["affiliation"],
+                "eligible": team["eligible"],
                 "lastsubmit": lastsubmit
             })
     time_ordered = sorted(result, key=lambda entry: entry['lastsubmit'])
-    time_ordered_time_removed = [{'name': x['name'], 'tid': x['tid'], 'score': x['score']} for x in time_ordered]
+    time_ordered_time_removed = [{'name': x['name'], 'eligible': x['eligible'], 'tid': x['tid'], 'score': x['score'], 'affiliation': x['affiliation']} for x in time_ordered]
     return sorted(time_ordered_time_removed, key=lambda entry: entry['score'], reverse=True)
 
 
@@ -203,7 +211,7 @@ def get_score_progression(tid=None, uid=None, category=None):
         A list of dictionaries containing score and time
     """
 
-    solved = api.problem.get_solved_problems(tid=tid, uid=uid, categroy=category)
+    solved = api.problem.get_solved_problems(tid=tid, uid=uid, category=category)
 
     result = []
     score = 0
@@ -221,7 +229,7 @@ def get_score_progression(tid=None, uid=None, category=None):
 
     return result
 
-def get_top_teams(gid=None):
+def get_top_teams(gid=None, eligible=True):
     """
     Finds the top teams
 
@@ -233,14 +241,34 @@ def get_top_teams(gid=None):
     """
 
     if gid is None:
-        all_teams = api.stats.get_all_team_scores()
+        all_teams = api.stats.get_all_team_scores(eligible=eligible)
     else:
         all_teams = api.stats.get_group_scores(gid=gid)
     return all_teams if len(all_teams) < top_teams else all_teams[:top_teams]
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
-def get_top_teams_score_progressions(gid=None):
+def get_problem_solves(name=None, pid=None):
+    """
+    Returns the number of solves for a particular problem.
+    Must supply eithe pid or name.
+
+    Args:
+        name: name of the problem
+        pid: pid of the problem
+    """
+
+    if not name and not pid:
+        raise InternalException("You must supply either a pid or name of the problem.")
+
+    db = api.common.get_conn()
+
+    problem = api.problem.get_problem(name=name, pid=pid)
+
+    return db.submissions.find({'pid': problem["pid"], 'correct': True}).count()
+
+@api.cache.memoize()
+def get_top_teams_score_progressions(gid=None, eligible=True):
     """
     Gets the score_progressions for the top teams
 
@@ -254,8 +282,9 @@ def get_top_teams_score_progressions(gid=None):
 
     return [{
         "name": team["name"],
+        "affiliation": team["affiliation"],
         "score_progression": get_score_progression(tid=team["tid"]),
-    } for team in get_top_teams(gid=gid)]
+    } for team in get_top_teams(gid=gid, eligible=eligible)]
 
 
 # Custom statistics not necessarily to be served publicly

@@ -1,30 +1,46 @@
 from flask import Flask, request, session, send_from_directory, render_template
-from flask import Blueprint
+from flask import Blueprint, redirect, abort
 import api
 import json
 import mimetypes
 import os.path
 
 from datetime import datetime
-from api.common import WebSuccess, WebError
+from api.common import WebSuccess, WebError, safe_fail
 from api.annotations import api_wrapper, require_login, require_teacher, require_admin, check_csrf
 from api.annotations import block_before_competition, block_after_competition
 from api.annotations import log_action
 
 blueprint = Blueprint("user_api", __name__)
 
+@blueprint.route("/authorize/<role>")
+def authorize_role(role=None):
+    """
+    This route is used to ensure sensitive static content is witheld from withheld from clients.
+    """
+
+    if role == "user" and safe_fail(api.user.get_user):
+        return "Client is logged in.", 200
+    elif role == "teacher" and safe_fail(api.user.is_teacher):
+        return "Client is a teacher.", 200
+    elif role == "admin" and safe_fail(api.user.is_admin):
+        return "Client is an administrator.", 200
+    elif role == "anonymous":
+        return "Client is authorized.", 200
+    else:
+        return "Client is not authorized.", 401
+
 @blueprint.route('/create_simple', methods=['POST'])
 @api_wrapper
 def create_simple_user_hook():
-    new_uid = api.user.create_simple_user_request(api.common.flat_multi(request.form))
-    session['uid'] = new_uid
-    return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
+    settings = api.config.get_settings()
 
-@blueprint.route('/create', methods=['POST'])
-@api_wrapper
-def create_user_hook():
-    new_uid = api.user.create_user_request(api.common.flat_multi(request.form))
-    session['uid'] = new_uid
+    new_uid = api.user.create_simple_user_request(api.common.flat_multi(request.form))
+
+    #Only automatically login if we don't have to verify
+    if api.user.get_user(uid=new_uid)["verified"]:
+        session['uid'] = new_uid
+
     return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
 
 @blueprint.route('/update_password', methods=['POST'])
@@ -48,7 +64,7 @@ def disable_account_hook():
 def reset_password_hook():
     username = request.form.get("username", None)
 
-    api.utilities.request_password_reset(username)
+    api.email.request_password_reset(username)
     return WebSuccess("A password reset link has been sent to the email address provided during registration.")
 
 @blueprint.route('/confirm_password_reset', methods=['POST'])
@@ -56,10 +72,25 @@ def reset_password_hook():
 def confirm_password_reset_hook():
     password = request.form.get("new-password")
     confirm = request.form.get("new-password-confirmation")
-    token = request.form.get("reset-token")
+    token_value = request.form.get("reset-token")
 
-    api.utilities.reset_password(token, password, confirm)
+    api.email.reset_password(token_value, password, confirm)
     return WebSuccess("Your password has been reset")
+
+@blueprint.route('/verify', methods=['GET'])
+#@api_wrapper
+def verify_user_hook():
+    uid = request.args.get("uid")
+    token = request.args.get("token")
+
+    # Needs to be more telling of success
+    if api.common.safe_fail(api.user.verify_user, uid, token):
+        if api.config.get_settings()["max_team_size"] > 1:
+            return redirect("/#team-builder")
+        else:
+            return redirect("/#status=verified")
+    else:
+        return redirect("/")
 
 @blueprint.route('/login', methods=['POST'])
 @api_wrapper
@@ -92,7 +123,9 @@ def status_hook():
         "enable_captcha": settings["captcha"]["enable_captcha"],
         "reCAPTCHA_public_key": settings["captcha"]["reCAPTCHA_public_key"],
         "competition_active": api.utilities.check_competition_active(),
-        "username": api.user.get_user()['username'] if api.auth.is_logged_in() else ""
+        "username": api.user.get_user()['username'] if api.auth.is_logged_in() else "",
+        "tid": api.user.get_user()["tid"] if api.auth.is_logged_in() else "",
+        "email_verification": settings["email"]["email_verification"]
     }
 
     if api.auth.is_logged_in():

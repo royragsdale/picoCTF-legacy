@@ -4,6 +4,7 @@ divFromSelector = (selector) ->
   _.first($(selector))
 
 strokeColors = [
+  "rgba(156,99,169,1)"
   "rgba(151,187,205,1)"
   "rgba(230,22,22,1)",
   "rgba(22,230,57,1)",
@@ -13,6 +14,7 @@ strokeColors = [
 ]
 
 fillColors = [
+  "rgba(156,99,169,0.2)",
   "rgba(151,187,205,0.2)",
   "rgba(230,22,22,0.2)",
   "rgba(22,230,57,0.2)",
@@ -141,6 +143,9 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
   if gid == "public"
     apiCall "GET", "/api/stats/top_teams/score_progression", {}
     .done drawgraph
+  else if gid == "ineligible"
+    apiCall "GET", "/api/stats/top_teams/score_progression", {eligible: false}
+    .done drawgraph
   else
     apiCall "GET", "/api/stats/group/score_progression", {gid:gid}
     .done drawgraph
@@ -189,6 +194,8 @@ progressionDataToPoints = (data, dataPoints, currentDate = 0) ->
 
       else
           $(selector).html("<p>You have not solved any enabled problems.</p>")
+    else
+        $(selector).html("<p>You have not solved any enabled problems.</p>")
 
 @drawTeamProgressionGraph = (selector, container_selector) ->
   apiCall "GET", "/api/stats/team/score_progression", {}

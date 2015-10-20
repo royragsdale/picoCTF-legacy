@@ -6,6 +6,9 @@
   .fail (jqXHR, text) ->
     ga('send', 'event', 'Error', 'APIOffline', url)
     $.notify "The server is currently down. We will work to fix this error right away.", "error"
+  .success (resp) ->
+    if url == "/api/user/status" and resp.status == 1
+      window.userStatus = resp.data
 
 @redirectIfNotLoggedIn = ->
   apiCall "GET", "/api/user/status", {}
@@ -33,6 +36,14 @@
         if data.data["teacher"]
           ga('send', 'event', 'Redirect', 'Teacher')
           window.location.href = "/classroom"
+
+@redirectIfNotTeacher = ->
+  apiCall "GET", "/api/user/status", {}
+  .done (data) ->
+    switch data["status"]
+      when 1
+        if not data.data["teacher"]
+          window.location.href = "/"
 
 @redirectIfNotAdmin = ->
   apiCall "GET", "/api/user/status", {}

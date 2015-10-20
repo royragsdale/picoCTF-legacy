@@ -40,7 +40,7 @@ testing_mongo_port = 27017
 
 """ SETUP """
 competition_name = "ctf"
-competition_urls = ["127.0.0.1:8080"]
+competition_urls = ["http://192.168.2.2"]
 
 
 # Helper class for timezones
@@ -62,25 +62,38 @@ into the database if no settings are already loaded.
 default_settings = {
     "enable_teachers": True,
     "enable_feedback": True,
-    # start and end times!
+
+
+    # TIME WINDOW
     "start_time": datetime.datetime.utcnow(),
     "end_time": datetime.datetime.utcnow(),
+
+    # EMAIL WHITELIST
+    "email_filter": [],
+
     # TEAMS
     "max_team_size": 1,
+
     # ACHIEVEMENTS
     "achievements": {
         "enable_achievements": True,
         "processor_base_path": "./achievements",
     },
+
     # EMAIL (SMTP)
     "email":{
         "enable_email": False,
+        "email_verification": False,
         "smtp_url":"",
+        "smtp_port": 587,
         "email_username": "",
         "email_password":  "",
         "from_addr": "",
         "from_name": "",
+        "max_verification_emails": 3,
+        "smtp_security": "TLS"
     },
+
     # CAPTCHA
     "captcha": {
         "enable_captcha": False,
@@ -88,6 +101,7 @@ default_settings = {
         "reCAPTCHA_public_key":  "",
         "reCAPTCHA_private_key": "",
     },
+
     # LOGGING
     # Will be emailed any severe internal exceptions!
     # Requires email block to be setup.

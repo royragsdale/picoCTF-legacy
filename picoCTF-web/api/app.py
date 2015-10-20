@@ -4,6 +4,7 @@ Flask routing
 
 from flask import Flask, request, session, send_from_directory, render_template
 from werkzeug.contrib.fixers import ProxyFix
+from flask_mail import Mail
 
 app = Flask(__name__, static_path="/")
 app.wsgi_app = ProxyFix(app.wsgi_app)
@@ -19,7 +20,6 @@ from api.annotations import api_wrapper, require_login, require_teacher, require
 from api.annotations import block_before_competition, block_after_competition
 from api.annotations import log_action
 
-import api.routes.autogen
 import api.routes.user
 import api.routes.team
 import api.routes.stats
@@ -42,12 +42,24 @@ def config_app(*args, **kwargs):
     This needed to be done for gunicorn.
     """
 
+    settings = api.config.get_settings()
+
     app.secret_key = secret_key
     app.config["SESSION_COOKIE_DOMAIN"] = session_cookie_domain
     app.config["SESSION_COOKIE_PATH"] = session_cookie_path
     app.config["SESSION_COOKIE_NAME"] = session_cookie_name
 
-    app.register_blueprint(api.routes.autogen.blueprint, url_prefix="/api/autogen")
+    if settings["email"]["enable_email"]:
+        app.config["MAIL_SERVER"] = settings["email"]["smtp_url"]
+        app.config["MAIL_PORT"] = settings["email"]["smtp_port"]
+        app.config["MAIL_USERNAME"] = settings["email"]["email_username"]
+        app.config["MAIL_PASSWORD"] = settings["email"]["email_password"]
+        app.config["MAIL_DEFAULT_SENDER"] = settings["email"]["from_addr"]
+        app.config["MAIL_USE_TLS"] = settings["email"]["smtp_security"] == "TLS"
+        app.config["MAIL_USE_SSL"] = settings["email"]["smtp_security"] == "SSL"
+
+        api.email.mail = Mail(app)
+
     app.register_blueprint(api.routes.user.blueprint, url_prefix="/api/user")
     app.register_blueprint(api.routes.team.blueprint, url_prefix="/api/team")
     app.register_blueprint(api.routes.stats.blueprint, url_prefix="/api/stats")

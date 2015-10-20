@@ -39,8 +39,8 @@ createGroupSetup = () ->
       download(csvData, "#{groupName}.csv", "text/csv")
   )
 
-loadGroupManagement = (groups, showFirstTab, callback) ->
-  $("#group-management").html renderGroupInformation({data: groups})
+loadGroupOverview = (groups, showFirstTab, callback) ->
+  $("#group-overview").html renderGroupInformation({data: groups})
 
   $("#new-class-tab").on "click", (e) ->
     createGroupSetup()
@@ -57,7 +57,7 @@ loadGroupManagement = (groups, showFirstTab, callback) ->
         ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
         for group in groups
           if group.name == groupName
-            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
+            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner, gid: group.gid})
         $(".team-visualization-enabler").on "click", (e) ->
           tid = $(e.target).data("tid")
           for team in teamData.data
@@ -69,6 +69,12 @@ loadGroupManagement = (groups, showFirstTab, callback) ->
 
   if showFirstTab
     $('#class-tabs a:first').tab('show')
+
+
+  $("ul.nav-tabs a").click ( (e) ->
+    e.preventDefault();
+    $(this).tab 'show'
+  );
 
   $("#group-request-form").on "submit", groupRequest
   $(".delete-group-span").on "click", (e) ->
@@ -86,7 +92,7 @@ loadGroupInfo = (showFirstTab, callback) ->
         ga('send', 'event', 'Group', 'GroupListLoadFailure', data.message)
       when 1
         window.groupListCache = data.data
-        loadGroupManagement data.data, showFirstTab, callback
+        loadGroupOverview data.data, showFirstTab, callback
 
 createGroup = (groupName) ->
   apiCall "POST",  "/api/group/create", {"group-name": groupName}
@@ -123,5 +129,17 @@ groupRequest = (e) ->
   createGroup groupName
 
 $ ->
+  if not window.userStatus
+    apiCall "GET", "/api/user/status"
+    .done () ->
+      if not window.userStatus.teacher
+        apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
+  else if not window.userStatus.teacher
+      apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
+
   loadGroupInfo(true)
+
+  $(document).on 'shown.bs.tab', 'a[href="#group-overview-tab"]', () ->
+    loadGroupInfo(true)
+
   return

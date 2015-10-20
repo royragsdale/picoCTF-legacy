@@ -24,6 +24,20 @@ def give_admin_role(name=None, uid=None):
     user = api.user.get_user(name=name, uid=uid)
     db.users.update({"uid": user["uid"]}, {"$set": {"admin": True, "teacher": True}})
 
+def give_teacher_role(name=None, uid=None):
+    """
+    Give a particular user teacher privileges if they weren't created with them.
+
+    Args:
+        name: the user's name
+        uid: the user's id
+    """
+
+    db = api.common.get_conn()
+
+    user = api.user.get_user(name=name, uid=uid)
+    db.users.update({"uid": user["uid"]}, {"$set": {"teacher": True}})
+
 def set_problem_availability(pid, disabled):
     """
     Updates a problem's availability.
