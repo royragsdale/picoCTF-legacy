@@ -53,7 +53,7 @@ LoginForm = React.createClass
           <Row>
             <div>
               {if @props.groupName.length > 0 then showGroupMessage() else <span/>}
-              {if @props.emailFilter.length > 0 then showEmailFilter() else <span/>}
+              {if @props.emailFilter.length > 0 and not @props.rid then showEmailFilter() else <span/>}
             </div>
             <Col md={6}>
               <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
@@ -65,6 +65,18 @@ LoginForm = React.createClass
           <Row>
             <Col md={12}>
               <Input type="email" id="email" valueLink={@props.email} label="E-mail"/>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Input type="text" id="affiliation" valueLink={@props.affiliation} label="Affiliation"/>
+            </Col>
+            <Col md={6}>
+              <Input type="select" label="Status" placeholder="Competitor" valueLink={@props.eligibility}>
+                <option value="eligible">Competitor</option>
+                <option value="ineligible">Instructor</option>
+                <option value="ineligible">Other</option>
+              </Input>
             </Col>
           </Row>
           <ButtonInput type="submit">Register</ButtonInput>
@@ -146,35 +158,43 @@ AuthPanel = React.createClass
     page: "Login"
     settings: {}
     gid: params.g
+    rid: params.r
     status: params.status
     groupName: ""
+    eligibility: "eligible"
 
   componentWillMount: ->
     if @state.status == "verified"
       apiNotify({status: 1, message: "Your account has been successfully verified. Please login."})
     if @state.gid
       apiCall "GET", "/api/group/settings", {gid: @state.gid}
-      .done ((req) ->
-        @setState update @state,
-          groupName: $set: req.data.name
-          settings: $merge: req.data.settings
-          page: $set: "Register"
+      .done ((resp) ->
+        switch resp.status
+          when 0
+            apiNotify resp
+          when 1
+            @setState update @state,
+              groupName: $set: resp.data.name
+              affiliation: $set: resp.data.name
+              settings: $merge: resp.data.settings
+              page: $set: "Register"
       ).bind this
     else
       apiCall "GET", "/api/team/settings"
-      .done ((req) ->
+      .done ((resp) ->
         @setState update @state,
-          settings: $merge: req.data
+          settings: $merge: resp.data
       ).bind this
 
     apiCall "GET", "/api/user/status"
-    .done ((req) ->
+    .done ((resp) ->
       @setState update @state,
-        settings: $merge: req.data
+        settings: $merge: resp.data
      ).bind this
 
   onRegistration: (e) ->
     e.preventDefault()
+
     apiCall "POST", "/api/user/create_simple", @state
     .done ((resp) ->
       switch resp.status
@@ -186,14 +206,19 @@ AuthPanel = React.createClass
             message: "You have been sent a verification email. You will need to complete this step before logging in."
 
           if @state.settings.max_team_size > 1
-            if @state.settings.email_verification
+            if @state.settings.email_verification and not @state.rid
               apiNotify verificationAlert
+              @setPage "Login"
+              document.location.hash = "#team-builder"
             else
               apiNotify resp
-            @setPage "Team Management"
+              @setPage "Team Management"
           else
             if @state.settings.email_verification
-              apiNotify verificationAlert
+              if not @state.rid or @state.rid.length == 0
+                apiNotify verificationAlert
+              else
+                apiNotify resp, "/profile"
               @setPage "Login"
               if @state.settings.max_team_size > 1
                 document.location.hash = "#team-builder"
@@ -245,19 +270,23 @@ AuthPanel = React.createClass
     lastname: @linkState "lastname"
     firstname: @linkState "firstname"
     email: @linkState "email"
+    affiliation: @linkState "affiliation"
+    eligibility: @linkState "eligibility"
 
     if @state.page == "Team Management"
       <div>
-        <Col md={6} mdOffset={3}>
-          <TeamManagementForm/>
-        </Col>
+        <Row>
+          <Col md={6} mdOffset={3}>
+            <TeamManagementForm/>
+          </Col>
+        </Row>
       </div>
     else
       <div>
         <Col md={6} mdOffset={3}>
           <LoginForm setPage={@setPage} status={@state.page} onRegistration={@onRegistration}
             onLogin={@onLogin} onPasswordReset={@onPasswordReset} emailFilter={@state.settings.email_filter}
-            groupName={@state.groupName}{...links}/>
+            groupName={@state.groupName} rid={@state.rid} gid={@state.gid} {...links}/>
         </Col>
       </div>
 

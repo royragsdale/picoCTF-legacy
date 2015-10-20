@@ -55,9 +55,11 @@ ExceptionTab = React.createClass
     occurencesBadge =
     <Badge>{exception.count}</Badge>
 
+    apiDescription = if exception.request then <span>{exception.request.api_endpoint_method} <b>{exception.request.api_endpoint}</b></span> else <span>Internal Exception</span>
+
     exceptionHeader =
     <div>
-      {exception.request.api_endpoint_method} <b>{exception.request.api_endpoint}</b>
+      {apiDescription}
       <div className="pull-right">
           {occurencesBadge} {time} {deleteButton}
       </div>

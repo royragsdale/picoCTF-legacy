@@ -21,6 +21,9 @@ sudo jekyll build
 # Make sure everything is in UNIX format.
 sudo dos2unix -q /srv/http/ctf/*.html
 
+# Copy config over
+sudo cp $ROOT/config/ctf.nginx /etc/nginx/sites-enabled/ctf
+
 # Make sure everything is readable
 sudo chmod -R +r /srv/http/ctf/*
 

@@ -63,7 +63,6 @@ default_settings = {
     "enable_teachers": True,
     "enable_feedback": True,
 
-    "email_verification": False,
 
     # TIME WINDOW
     "start_time": datetime.datetime.utcnow(),
@@ -84,12 +83,15 @@ default_settings = {
     # EMAIL (SMTP)
     "email":{
         "enable_email": False,
+        "email_verification": False,
         "smtp_url":"",
         "smtp_port": 587,
         "email_username": "",
         "email_password":  "",
         "from_addr": "",
         "from_name": "",
+        "max_verification_emails": 3,
+        "smtp_security": "TLS"
     },
 
     # CAPTCHA

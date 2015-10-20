@@ -1,17 +1,34 @@
 from flask import Flask, request, session, send_from_directory, render_template
-from flask import Blueprint, redirect
+from flask import Blueprint, redirect, abort
 import api
 import json
 import mimetypes
 import os.path
 
 from datetime import datetime
-from api.common import WebSuccess, WebError
+from api.common import WebSuccess, WebError, safe_fail
 from api.annotations import api_wrapper, require_login, require_teacher, require_admin, check_csrf
 from api.annotations import block_before_competition, block_after_competition
 from api.annotations import log_action
 
 blueprint = Blueprint("user_api", __name__)
+
+@blueprint.route("/authorize/<role>")
+def authorize_role(role=None):
+    """
+    This route is used to ensure sensitive static content is witheld from withheld from clients.
+    """
+
+    if role == "user" and safe_fail(api.user.get_user):
+        return "Client is logged in.", 200
+    elif role == "teacher" and safe_fail(api.user.is_teacher):
+        return "Client is a teacher.", 200
+    elif role == "admin" and safe_fail(api.user.is_admin):
+        return "Client is an administrator.", 200
+    elif role == "anonymous":
+        return "Client is authorized.", 200
+    else:
+        return "Client is not authorized.", 401
 
 @blueprint.route('/create_simple', methods=['POST'])
 @api_wrapper
@@ -24,13 +41,6 @@ def create_simple_user_hook():
     if api.user.get_user(uid=new_uid)["verified"]:
         session['uid'] = new_uid
 
-    return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
-
-@blueprint.route('/create', methods=['POST'])
-@api_wrapper
-def create_user_hook():
-    new_uid = api.user.create_user_request(api.common.flat_multi(request.form))
-    session['uid'] = new_uid
     return WebSuccess("User '{}' registered successfully!".format(request.form["username"]))
 
 @blueprint.route('/update_password', methods=['POST'])
@@ -114,7 +124,8 @@ def status_hook():
         "reCAPTCHA_public_key": settings["captcha"]["reCAPTCHA_public_key"],
         "competition_active": api.utilities.check_competition_active(),
         "username": api.user.get_user()['username'] if api.auth.is_logged_in() else "",
-        "email_verification": settings["email_verification"]
+        "tid": api.user.get_user()["tid"] if api.auth.is_logged_in() else "",
+        "email_verification": settings["email"]["email_verification"]
     }
 
     if api.auth.is_logged_in():

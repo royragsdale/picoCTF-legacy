@@ -19,6 +19,7 @@ import api.problem_feedback
 import api.admin
 import api.shell_servers
 import api.email
+import api.token
 
 # MUST BE LAST
 import api.config

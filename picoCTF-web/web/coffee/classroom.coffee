@@ -57,7 +57,7 @@ loadGroupOverview = (groups, showFirstTab, callback) ->
         ga('send', 'event', 'Group', 'LoadTeacherGroupInformation', 'Success')
         for group in groups
           if group.name == groupName
-            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner})
+            $(tabBody).html renderTeamSelection({teams: teamData.data, groupName: groupName, owner: group.owner, gid: group.gid})
         $(".team-visualization-enabler").on "click", (e) ->
           tid = $(e.target).data("tid")
           for team in teamData.data
@@ -69,6 +69,12 @@ loadGroupOverview = (groups, showFirstTab, callback) ->
 
   if showFirstTab
     $('#class-tabs a:first').tab('show')
+
+
+  $("ul.nav-tabs a").click ( (e) ->
+    e.preventDefault();
+    $(this).tab 'show'
+  );
 
   $("#group-request-form").on "submit", groupRequest
   $(".delete-group-span").on "click", (e) ->
@@ -123,5 +129,17 @@ groupRequest = (e) ->
   createGroup groupName
 
 $ ->
+  if not window.userStatus
+    apiCall "GET", "/api/user/status"
+    .done () ->
+      if not window.userStatus.teacher
+        apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
+  else if not window.userStatus.teacher
+      apiNotify {status: 1, message: "You are no longer a teacher."}, "/profile"
+
   loadGroupInfo(true)
+
+  $(document).on 'shown.bs.tab', 'a[href="#group-overview-tab"]', () ->
+    loadGroupInfo(true)
+
   return

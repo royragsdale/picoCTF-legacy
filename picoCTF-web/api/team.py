@@ -71,28 +71,27 @@ def get_groups(tid=None, uid=None):
         List of group objects the team is a member of.
     """
 
-    groups = []
     db = api.common.get_conn()
 
-    tid = get_team(tid=tid)["tid"]
-    if uid is None:
-        user = api.user.get_user()
+    groups = []
 
-        uid = user["uid"]
+    group_projection = {'name': 1, 'gid': 1, 'owner': 1, 'members': 1, '_id': 0}
 
-    # if admin, you can own all groups
-    if user["admin"] is True:
-        for group in list(db.groups.find({}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
-            owner = api.user.get_user(uid=group['owner'])['username']
-            groups.append({'name': group['name'],
-                            'gid': group['gid'],
-                            'members': group['members'],
-                            'owner': owner,
-                            'score': api.stats.get_group_average_score(gid=group['gid'])})
-        return groups
+    admin = False
 
-    for group in list(db.groups.find({"$or": [{'owner': uid}, {"teachers": tid}, {"members": tid}]}, {'name': 1, 'gid': 1, 'owner': 1, 'members': 1})):
-        owner = api.user.get_user(uid=group['owner'])['username']
+    if uid is not None:
+        user = api.user.get_user(uid=uid)
+        admin = api.user.is_admin(uid=user["uid"])
+        tid = user["tid"]
+    else:
+        tid = api.team.get_team(tid=tid)["tid"]
+
+    #Admins should be able to view all groups.
+    group_query = {"$or": [{'owner': tid}, {"teachers": tid}, {"members": tid}]} if not admin else {}
+    associated_groups = db.groups.find(group_query, group_projection)
+
+    for group in list(associated_groups):
+        owner = api.team.get_team(tid=group['owner'])['team_name']
         groups.append({'name': group['name'],
                        'gid': group['gid'],
                        'members': group['members'],
@@ -123,6 +122,8 @@ def create_new_team_request(params, uid=None):
     desired_tid = create_team({
         "team_name": params["team_name"],
         "password": params["team_password"],
+        # The team's affiliation becomes the creator's affiliation.
+        "affiliation": user["affiliation"],
         "eligible": True
     })
 
@@ -166,7 +167,7 @@ def get_team_members(tid=None, name=None, show_disabled=True):
 
     tid = get_team(name=name, tid=tid)["tid"]
 
-    users = list(db.users.find({"tid": tid}, {"_id": 0, "uid": 1, "username": 1, "firstname": 1, "lastname": 1, "disabled": 1}))
+    users = list(db.users.find({"tid": tid}, {"_id": 0, "uid": 1, "username": 1, "firstname": 1, "lastname": 1, "disabled": 1, "email": 1}))
     return [user for user in users if show_disabled or not user.get("disabled", False)]
 
 def get_team_uids(tid=None, name=None, show_disabled=True):
@@ -182,7 +183,7 @@ def get_team_uids(tid=None, name=None, show_disabled=True):
 
     return [user['uid'] for user in get_team_members(tid=tid, name=name, show_disabled=show_disabled)]
 
-def get_team_information(tid=None):
+def get_team_information(tid=None, gid=None):
     """
     Retrieves the information of a team.
 
@@ -199,13 +200,18 @@ def get_team_information(tid=None):
     if tid is None:
         tid = team_info["tid"]
 
+    if gid is not None:
+        group = api.group.get_group(gid=gid)
+        roles = api.group.get_roles_in_group(group["gid"], tid=tid)
+
     team_info["score"] = api.stats.get_score(tid=tid)
     team_info["members"] = [{
         "username": member["username"], "firstname": member["firstname"],
-        "lastname": member["lastname"]
+        "lastname": member["lastname"], "email": member["email"],
+        "uid": member["uid"], "affiliation": member.get("affiliation", "None"),
+        "teacher": roles["teacher"] if gid else False
     } for member in get_team_members(tid=tid, show_disabled=False)]
     team_info["competition_active"] = api.utilities.check_competition_active()
-    team_info["solved_problems"] = api.problem.get_solved_problems(tid=tid)
     team_info["progression"] = api.stats.get_score_progression(tid=tid)
     team_info["flagged_submissions"] = [sub for sub in api.stats.check_invalid_instance_submissions() if sub['tid'] == tid]
     team_info["max_team_size"] = api.config.get_settings()["max_team_size"]
@@ -213,9 +219,15 @@ def get_team_information(tid=None):
     if api.config.get_settings()["achievements"]["enable_achievements"]:
         team_info["achievements"] = api.achievement.get_earned_achievements(tid=tid)
 
+    team_info["solved_problems"] = []
+    for solved_problem in api.problem.get_solved_problems(tid=tid):
+        solved_problem.pop("instances", None)
+        solved_problem.pop("pkg_dependencies", None)
+        team_info["solved_problems"].append(solved_problem)
+
     return team_info
 
-def get_all_teams(show_ineligible=False):
+def get_all_teams(ineligible=False, eligible=True, show_ineligible=False):
     """
     Retrieves all teams.
 
@@ -223,10 +235,15 @@ def get_all_teams(show_ineligible=False):
         A list of all of the teams.
     """
 
-    match = {}
-
-    if not show_ineligible:
-        match.update({"eligible": True})
+    if show_ineligible:
+        match = {}
+    else:
+        conditions = []
+        if ineligible:
+            conditions.append({"eligible": False})
+        elif eligible:
+            conditions.append({"eligible": True})
+        match = {"$or": conditions}
 
     db = api.common.get_conn()
     return list(db.teams.find(match, {"_id": 0}))

@@ -100,7 +100,7 @@ FormEntry = React.createClass
 
     <Row>
       <Col md={4}>
-        <h4 className="pull-right">
+        <h4 className="pull-left">
           {hint}
           {@props.name}
         </h4>
