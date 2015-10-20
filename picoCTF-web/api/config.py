@@ -90,7 +90,8 @@ default_settings = {
         "email_password":  "",
         "from_addr": "",
         "from_name": "",
-        "max_verification_emails": 3
+        "max_verification_emails": 3,
+        "smtp_security": "TLS"
     },
 
     # CAPTCHA

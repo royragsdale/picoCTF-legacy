@@ -80,6 +80,10 @@ EmailTab = React.createClass
       $set:
         smtp_url: e.target.value
 
+  updateSMTPSecurity: (e) ->
+    @setState update @state,
+      $set: smtp_security: e.target.value
+
   updateSMTPPort: (e) ->
     @setState update @state,
       $set:
@@ -120,6 +124,7 @@ EmailTab = React.createClass
         email_password: @state.email_password
         from_addr: @state.from_addr
         from_name: @state.from_name
+        smtp_security: @state.smtp_security
       logging:
         admin_emails: @state.admin_emails
       email_filter: @state.email_filter
@@ -141,6 +146,34 @@ EmailTab = React.createClass
     passwordDescription = "The password of the email account"
     fromAddressDescription = "The address that the emails should be sent from"
     fromNameDescription = "The name to use for sending emails"
+    SMTPSecurityDescription = "Security employed by the SMTP server"
+
+    # This is pretty bad. Much of this file needs reworked.
+    if @state.smtp_security == "TLS"
+        securityOptions =
+        <Input type="select" onChange={@updateSMTPSecurity} key="TLS">
+          <option value="TLS">TLS</option>
+          <option value="SSL">SSL</option>
+        </Input>
+    else
+        securityOptions =
+        <Input type="select" onChange={@updateSMTPSecurity} key="SSL">
+          <option value="SSL">SSL</option>
+          <option value="TLS">TLS</option>
+        </Input>
+
+    SMTPSecuritySelect =
+    <Row>
+      <Col md={4}>
+        <h4 className="pull-left">
+          <Hint text={SMTPSecurityDescription}/>
+          Security
+        </h4>
+      </Col>
+      <Col md={8}>
+        {securityOptions}
+      </Col>
+    </Row>
 
     <Well>
       <Row>
@@ -152,6 +185,7 @@ EmailTab = React.createClass
           <TextEntry name="Email Password" value={@state.email_password} type="password" onChange=@updatePassword description={passwordDescription}/>
           <TextEntry name="From Address" value={@state.from_addr} type="text" onChange=@updateFromAddr description={fromAddressDescription}/>
           <TextEntry name="From Name" value={@state.from_name} type="text" onChange=@updateFromName description={fromNameDescription}/>
+          {SMTPSecuritySelect}
           <Row>
             <div className="text-center">
               <ButtonToolbar>

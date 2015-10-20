@@ -55,7 +55,8 @@ def config_app(*args, **kwargs):
         app.config["MAIL_USERNAME"] = settings["email"]["email_username"]
         app.config["MAIL_PASSWORD"] = settings["email"]["email_password"]
         app.config["MAIL_DEFAULT_SENDER"] = settings["email"]["from_addr"]
-        app.config["MAIL_USE_TLS"] = True
+        app.config["MAIL_USE_TLS"] = settings["email"]["smtp_security"] == "TLS"
+        app.config["MAIL_USE_SSL"] = settings["email"]["smtp_security"] == "SSL"
 
         api.email.mail = Mail(app)
 
