@@ -188,7 +188,7 @@ def create_user(username, firstname, lastname, email, password_hash, tid,
         raise InternalException("There are too many users on this team!")
 
     #All teachers are admins.
-    if admin or teacher or db.users.count() == 0:
+    if admin or db.users.count() == 0:
         admin = True
         teacher = True
 
