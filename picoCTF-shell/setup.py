@@ -100,8 +100,7 @@ setup(
     data_files=[("/lib/security/", ['config/pam_auth.py']),
                 ("/etc/nginx/sites-enabled/", ['config/shell-nginx']),
                 ("/etc/systemd/system/", ['config/shell_manager.target']),
-                ("/opt/hacksports/shellinabox/", ['config/ShellInABox.js',
-                                                  'config/shellinabox_cron',
+                ("/opt/hacksports/shellinabox/", ['config/shellinabox_cron',
                                                   'config/deploy_shellinabox.sh'])],
 
     # To provide executable scripts, use entry points in preference to the
