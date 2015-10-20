@@ -182,12 +182,12 @@ def problem_builder(args, config):
             """
 
             raw_package_name = "{}-{}-{}.deb".format(
-                problem.get("organization", "ctf"),
-                problem.get("pkg_name", problem["name"]),
-                problem.get("version", "1.0-0")
+                sanitize_name(problem.get("organization", "ctf")),
+                sanitize_name(problem.get("pkg_name", problem["name"])),
+                sanitize_name(problem.get("version", "1.0-0"))
             )
 
-            return sanitize_name(raw_package_name)
+            return raw_package_name
 
         deb_path = join(deb_directory, format_deb_file_name(problem))
 

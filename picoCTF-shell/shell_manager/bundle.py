@@ -94,12 +94,12 @@ def bundle_problems(args, config):
         """
 
         raw_package_name = "{}-{}-bundle-{}.deb".format(
-            bundle.get("organization", "ctf"),
-            bundle["name"],
-            bundle.get("version", "1.0-0")
+            sanitize_name(bundle.get("organization", "ctf")),
+            sanitize_name(bundle["name"]),
+            sanitize_name(bundle.get("version", "1.0-0"))
         )
 
-        return sanitize_name(raw_package_name)
+        return raw_package_name
 
     deb_path = join(paths["working"], format_deb_file_name(bundle))
 
