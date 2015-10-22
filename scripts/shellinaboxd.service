@@ -1,0 +1,10 @@
+[Unit]
+Description=ShellInABox
+
+[Service]
+Type=forking
+ExecStart=/bin/bash -c 'shellinaboxd -p 4242 -u nobody -t -b -s /:SSH:localhost --static-file=shell/ShellInABox.js:/opt/hacksports/shellinabox/ShellInABox.js --static-file=ShellInABox.js:/opt/hacksports/shellinabox/ShellInABox.js'
+User=root
+
+[Install]
+WantedBy=multi-user.target
