@@ -81,6 +81,7 @@ cp /vagrant/configs/limits.conf /etc/security/limits.conf
 sysctl net.ipv4.tcp_tw_recycle=1
 sysctl net.ipv4.tcp_tw_reuse=1
 sysctl net.core.somaxconn=1024
+(crontab -l ; cat /vagrant/configs/isolate.cron)| crontab -
 
 # isolate users
 mount -o remount,hidepid=2 /proc
