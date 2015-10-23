@@ -221,7 +221,7 @@ class FlaskApp(Service):
         assert os.path.isfile(self.app_file), "module must exist"
 
         self.service_files = [File(self.app_file)]
-        self.start_cmd = "gunicorn --bind 0.0.0.0:{} -w 1 {}".format(self.port, self.app)
+        self.start_cmd = "uwsgi --http 0.0.0.0:{} -w {}".format(self.port, self.app)
 
 class PHPApp(Service):
     """
