@@ -35,6 +35,33 @@ def server_user_exists(user):
     result = run_login(user, "`&/")
     return result == "Incorrect password"
 
+def secure_user(user):
+    home = pwd.getpwnam(user).pw_dir
+
+    # Secure home folder
+    subprocess.check_output(["chmod", "-R", "1710", home])
+
+    # Append only bash history
+    subprocess.check_output(['touch', os.path.join(home, '.bash_history')])
+    subprocess.check_output(['chown', user + ':' + user, os.path.join(home, '.bash_history')])
+    subprocess.check_output(['chmod', '600', os.path.join(home, '.bash_history')])
+    subprocess.check_output(['chattr', '+a', os.path.join(home, '.bash_history')])
+
+    # Secure bashrc
+    subprocess.check_output(['cp', '/opt/hacksports/config/securebashrc', os.path.join(home, '.bashrc')])
+    subprocess.check_output(['chown', 'root:' + user, os.path.join(home, '.bashrc')])
+    subprocess.check_output(['chmod', '755', os.path.join(home, '.bashrc')])
+    subprocess.check_output(['chattr', '+a', os.path.join(home, '.bashrc')])
+
+    # Secure profile
+    subprocess.check_output(['chown', 'root:' + user, os.path.join(home, '.profile')])
+    subprocess.check_output(['chmod', '755', os.path.join(home, '.profile')])
+    subprocess.check_output(['chattr', '+a', os.path.join(home, '.profile')])
+
+    # USer should not own their home directory
+    subprocess.check_output(["chown", "root:" + user, home])
+    subprocess.check_output(["chmod", "1770", home])
+
 def pam_sm_authenticate(pam_handle, flags, argv):
     global pamh
     pamh = pam_handle
@@ -62,7 +89,8 @@ def pam_sm_authenticate(pam_handle, flags, argv):
         try:
             if server_user_exists(user):
                 subprocess.check_output(["/usr/sbin/useradd", "-m", "-G", COMPETITORS_GROUP, "-s", "/bin/bash", user])
-                subprocess.check_output(["chmod", "-R", "1710", pwd.getpwnam(user).pw_dir])
+                secure_user(user)
+
                 display("Welcome {}!".format(user))
                 display("Your shell server account has been created.")
                 prompt("Please press enter and reconnect.")
