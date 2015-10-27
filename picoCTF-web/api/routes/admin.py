@@ -72,15 +72,10 @@ def change_problem_availability_hook():
     pid = request.form.get("pid", None)
     desired_state = request.form.get("state", None)
 
-    state = None
-
-    # This feels really bad. Why doesn't Flask serialize it to the correct type?
-    if desired_state == "true":
-        state = True
-    elif desired_state == "false":
-        state = False
-    else:
+    if desired_state == None:
         return WebError("Problems are either enabled or disabled.")
+    else:
+        state = bson.json_util.loads(desired_state)
 
     api.admin.set_problem_availability(pid, state)
     return WebSuccess(data="Problem state changed successfully.")
@@ -165,10 +160,7 @@ def bundle_dependencies():
     if state is None:
         return WebError("Must provide a state to set.")
 
-    if state == "true":
-        state = True
-    elif state == "false":
-        state = False
+    state = bson.json_util.loads(state)
 
     api.problem.set_bundle_dependencies_enabled(bid, state)
 
