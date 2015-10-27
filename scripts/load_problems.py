@@ -3,6 +3,8 @@ from api.common import safe_fail
 
 SHELL_NAME = "Example Shell"
 
+shell_password = "vagrant" if len(sys.argv) <= 1 else sys.argv[1]
+
 try:
     if safe_fail(api.shell_servers.get_server, name=SHELL_NAME) is None:
         sid = api.shell_servers.add_server({
@@ -10,7 +12,7 @@ try:
             "host": "192.168.2.3",
             "port": 22,
             "username": "vagrant",
-            "password": "vagrant",
+            "password": shell_password,
             "protocol": "HTTP"
         })
 except Exception as e:
