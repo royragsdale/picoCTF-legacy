@@ -60,6 +60,7 @@ def main():
     deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate.")
     deploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance ot generate.")
     deploy_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
+    deploy_parser.add_argument("-r", "--redeploy", action="store_true", help="redeploy instances that have already been deployed")
     deploy_parser.add_argument("-s", "--secret", action="store", type=str, help="use a different deployment secret for this invocation.")
     deploy_parser.add_argument("-D", "--deployment-directory", type=str, default=None, help="the directory to deploy to")
     deploy_parser.add_argument("-b", "--bundle", action="store_true", help="specify a bundle of problems to deploy.")

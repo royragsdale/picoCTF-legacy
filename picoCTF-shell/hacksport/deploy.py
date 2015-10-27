@@ -454,7 +454,7 @@ def generate_instance(problem_object, problem_directory, instance_number,
         "service_file": service_file
     }
 
-def deploy_problem(problem_directory, instances=[0, 1], test=False, deployment_directory=None):
+def deploy_problem(problem_directory, instances=[0], test=False, deployment_directory=None):
     """
     Deploys the problem specified in problem_directory.
 
@@ -473,7 +473,7 @@ def deploy_problem(problem_directory, instances=[0, 1], test=False, deployment_d
 
     instance_list = []
 
-    for instance_number in range(*instances):
+    for instance_number in instances:
         current_instance = instance_number
         print("Generating instance {} of \"{}\".".format(instance_number, problem_object["name"]))
         staging_directory = generate_staging_directory()
@@ -583,9 +583,12 @@ def deploy_problems(args, config):
                     raise Exception("Could not get bundle.")
         problems = bundle_problems
 
-    # before deploying problems, load in port_map
+    # before deploying problems, load in port_map and already_deployed instances
+    already_deployed = {}
     for path, problem in get_all_problems().items():
+        already_deployed[path] = []
         for instance in get_all_problem_instances(path):
+            already_deployed[path].append(instance["instance_number"])
             if "port" in instance:
                 port_map[instance["port"]] = (problem["name"], instance["instance_number"])
 
@@ -599,17 +602,24 @@ def deploy_problems(args, config):
             f.write("1")
 
     if args.instance:
-        instance_range = [args.instance, args.instance+1]
+        instance_range = list(range(args.instance, args.instance+1))
     else:
-        instance_range = [0, args.num_instances]
+        instance_range = list(range(0, args.num_instances))
+
 
     try:
         for path in problems:
+            if args.redeploy:
+                instance_list = instance_range
+            else:
+                # remove already deployed instances
+                instance_list = list(set(instance_range) - set(already_deployed.get(path, [])))
+
             if args.dry and os.path.isdir(path):
-                deploy_problem(path, instances=instance_range, test=args.dry,
+                deploy_problem(path, instances=instance_list, test=args.dry,
                                 deployment_directory=args.deployment_directory)
             elif os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
-                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=instance_range,
+                deploy_problem(os.path.join(get_problem_root(path, absolute=True)), instances=instance_list,
                                 test=args.dry, deployment_directory=args.deployment_directory)
             else:
                 raise Exception("Problem path {} cannot be found".format(path))
