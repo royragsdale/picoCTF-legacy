@@ -11,7 +11,7 @@ startup_functions:
     <% _.each(servers, function(server){ %>
       <% var url = server.protocol.toLowerCase() + "://" + server.host + "/shell"; %>
       <div class="well">
-        <h3 class="text-center"><%- server.host %></h3>
+        <h3 class="text-center"><%- server.host %> - <a href="<%- url %>">Full Screen</a> </h3>
         <iframe src="<%- url %>" width="100%" height="600px"></iframe>
       </div>
     <% }); %>
