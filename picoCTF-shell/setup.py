@@ -100,7 +100,8 @@ setup(
     data_files=[("/lib/security/", ['config/pam_auth.py']),
                 ("/etc/nginx/sites-enabled/", ['config/shell-nginx']),
                 ("/etc/systemd/system/", ['config/shell_manager.target']),
-                ("/opt/hacksports/shellinabox/", ['config/ShellInABox.js'])],
+                ("/opt/hacksports/shellinabox/", ['config/ShellInABox.js']),
+                ("/opt/hacksports/config/", ['config/securebashrc'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
