@@ -187,7 +187,7 @@ ShellServerTab = React.createClass
     <Well>
       <Grid>
         <Row>
-          <h4>To add problems, either enter your shell server information on the left.</h4>
+          <h4>To add problems, enter your shell server information below.</h4>
         </Row>
         <Row>
           <Col md={6}>
