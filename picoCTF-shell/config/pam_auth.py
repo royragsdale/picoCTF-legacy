@@ -38,12 +38,9 @@ def server_user_exists(user):
 def secure_user(user):
     home = pwd.getpwnam(user).pw_dir
 
-    # Secure home folder
-    subprocess.check_output(["chmod", "-R", "1710", home])
-
     # Append only bash history
     subprocess.check_output(['touch', os.path.join(home, '.bash_history')])
-    subprocess.check_output(['chown', user + ':' + user, os.path.join(home, '.bash_history')])
+    subprocess.check_output(['chown', 'root:' + user, os.path.join(home, '.bash_history')])
     subprocess.check_output(['chmod', '600', os.path.join(home, '.bash_history')])
     subprocess.check_output(['chattr', '+a', os.path.join(home, '.bash_history')])
 
@@ -58,7 +55,7 @@ def secure_user(user):
     subprocess.check_output(['chmod', '755', os.path.join(home, '.profile')])
     subprocess.check_output(['chattr', '+a', os.path.join(home, '.profile')])
 
-    # USer should not own their home directory
+    # User should not own their home directory
     subprocess.check_output(["chown", "root:" + user, home])
     subprocess.check_output(["chmod", "1770", home])
 
