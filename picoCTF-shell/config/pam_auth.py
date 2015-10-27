@@ -41,7 +41,7 @@ def secure_user(user):
     # Append only bash history
     subprocess.check_output(['touch', os.path.join(home, '.bash_history')])
     subprocess.check_output(['chown', 'root:' + user, os.path.join(home, '.bash_history')])
-    subprocess.check_output(['chmod', '600', os.path.join(home, '.bash_history')])
+    subprocess.check_output(['chmod', '660', os.path.join(home, '.bash_history')])
     subprocess.check_output(['chattr', '+a', os.path.join(home, '.bash_history')])
 
     # Secure bashrc
