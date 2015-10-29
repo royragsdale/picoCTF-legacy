@@ -8,7 +8,7 @@ from voluptuous import Schema, Required, Length
 
 server_schema = Schema({
     Required("name"): check(
-        ("Host must be a reasonable string.", [str, Length(min=1, max=128)])),
+        ("Name must be a reasonable string.", [str, Length(min=1, max=128)])),
     Required("host"): check(
         ("Host must be a reasonable string", [str, Length(min=1, max=128)])),
     Required("port"): check(
@@ -99,9 +99,11 @@ def update_server(sid, params):
 
     validate(server_schema, params)
 
-    server = safe_fail(get_server, name=params["name"])
-    if server is not None:
+    server = safe_fail(get_server, sid=sid)
+    if server is None:
         raise WebException("Shell server with sid '{}' does not exist.".format(sid))
+
+    params["name"] = server["name"]
 
     validate(server_schema, params)
 
