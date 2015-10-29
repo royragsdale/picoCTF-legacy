@@ -12,7 +12,7 @@ from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
 from shell_manager.util import HACKSPORTS_ROOT
-from hacksport.deploy import deploy_problems
+from hacksport.deploy import deploy_problems, undeploy_problems
 from hacksport.status import clean, status, publish
 
 from os.path import join, dirname
@@ -58,7 +58,7 @@ def main():
 
     deploy_parser = subparsers.add_parser("deploy", help="problem deployment")
     deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate.")
-    deploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance ot generate.")
+    deploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance to generate.")
     deploy_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
     deploy_parser.add_argument("-r", "--redeploy", action="store_true", help="redeploy instances that have already been deployed")
     deploy_parser.add_argument("-s", "--secret", action="store", type=str, help="use a different deployment secret for this invocation.")
@@ -66,6 +66,13 @@ def main():
     deploy_parser.add_argument("-b", "--bundle", action="store_true", help="specify a bundle of problems to deploy.")
     deploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
     deploy_parser.set_defaults(func=deploy_problems)
+
+    undeploy_parser = subparsers.add_parser("undeploy", help="problem undeployment. cannot guarantee full removal of problem files")
+    undeploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to undeploy.")
+    undeploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance to undeploy.")
+    undeploy_parser.add_argument("-b", "--bundle", action="store_true", help="specify a bundle of problems to undeploy.")
+    undeploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
+    undeploy_parser.set_defaults(func=undeploy_problems)
 
     clean_parser = subparsers.add_parser("clean", help="Clean up the intermediate staging data stored during deployments")
     clean_parser.set_defaults(func=clean)
