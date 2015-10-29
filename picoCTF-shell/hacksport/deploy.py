@@ -530,6 +530,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
 
         deployment_info = {
             "user": problem.user,
+            "deployment_directory": deployment_directory,
             "service": os.path.basename(instance["service_file"]),
             "server": problem.server,
             "description": problem.description,
@@ -629,3 +630,81 @@ def deploy_problems(args, config):
     finally:
         if not args.dry:
             os.remove(lock_file)
+
+def remove_instances(path, instance_list):
+    """ Remove all files under deployment directory and metdata for a given list of instances """
+
+    problem_instances = get_all_problem_instances(path)
+    deployment_json_dir = join(DEPLOYED_ROOT, path)
+
+    for instance in problem_instances:
+        instance_number = instance["instance_number"]
+        if instance["instance_number"] in instance_list:
+            print("Removing instance {} of {}".format(instance_number, path))
+            directory = instance["deployment_directory"]
+            user = instance["user"]
+            service = instance["service"]
+            deployment_json_path = join(deployment_json_dir, "{}.json".format(instance_number))
+
+            execute(["systemctl", "stop", service], timeout=60)
+            execute(["systemctl", "disable", service], timeout=60)
+            shutil.rmtree(directory)
+            os.remove(join(SYSTEMD_SERVICE_PATH, service))
+            os.remove(deployment_json_path)
+            execute(["userdel", user])
+
+
+def undeploy_problems(args, config):
+    """ Main entrypoint for problem undeployment """
+
+    problems = args.problem_paths
+
+    if args.bundle:
+        bundle_problems = []
+        for bundle_path in args.problem_paths:
+            if os.path.isfile(bundle_path):
+                bundle = get_bundle(bundle_path)
+                bundle_problems.extend(bundle["problems"])
+            else:
+                bundle_sources_path = get_bundle_root(bundle_path, absolute=True)
+                if os.path.isdir(bundle_sources_path):
+                    bundle = get_bundle(bundle_sources_path)
+                    bundle_problems.extend(bundle["problems"])
+                else:
+                    raise Exception("Could not get bundle.")
+        problems = bundle_problems
+
+    # before deploying problems, load in already_deployed instances
+    already_deployed = {}
+    for path, problem in get_all_problems().items():
+        already_deployed[path] = []
+        for instance in get_all_problem_instances(path):
+            already_deployed[path].append(instance["instance_number"])
+
+    lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
+    if os.path.isfile(lock_file):
+        raise Exception("Cannot undeploy while other deployment in progress. If you believe this is an error, "
+                         "run 'shell_manager clean'")
+
+    with open(lock_file, "w") as f:
+        f.write("1")
+
+    if args.instance:
+        instance_range = list(range(args.instance, args.instance+1))
+    else:
+        instance_range = list(range(0, args.num_instances))
+
+    try:
+        for path in problems:
+            assert all(instance in already_deployed[path] for instance in instance_range), \
+                    "Not all specified instances are deployed for problem \"{}\"".format(path)
+
+            if os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
+                remove_instances(path, instance_range)
+            else:
+                raise Exception("Problem path {} cannot be found".format(path))
+
+    except Exception as e:
+        traceback.print_exc()
+    finally:
+        os.remove(lock_file)
