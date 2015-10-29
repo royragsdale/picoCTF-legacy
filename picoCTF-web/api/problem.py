@@ -121,6 +121,7 @@ def set_instance_ids(problem, sid):
 
     for instance in problem["instances"]:
         instance["iid"] = api.common.hash(str(instance["instance_number"]) + sid + problem["pid"])
+        instance["sid"] = sid
 
 def insert_problem(problem, sid=None):
     """
@@ -156,8 +157,17 @@ def insert_problem(problem, sid=None):
 
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
-        old_problem = get_problem(pid=problem["pid"])
+        old_problem = copy(get_problem(pid=problem["pid"]))
         problem["disabled"] = old_problem["disabled"]
+
+        # leave all instances from different shell server
+        instances = list(filter(lambda i: i["sid"] != sid, old_problem["instances"]))
+
+        # add instances from this shell server
+        instances.extend(problem["instances"])
+        problem["instances"] = instances
+
+        # run the update
         update_problem(problem["pid"], problem)
         return
 
@@ -201,14 +211,6 @@ def update_problem(pid, updated_problem):
     db = api.common.get_conn()
 
     problem = get_problem(pid=pid).copy()
-
-    if "instances" in updated_problem:
-        instances = {instance["iid"]: instance for instance in problem["instances"]}
-        for instance in updated_problem["instances"]:
-            instances[instance["iid"]] = instance
-
-        problem["instances"] = [instance for iid,instance in instances.items()]
-        updated_problem.pop("instances")
 
     problem.update(updated_problem)
 
