@@ -122,6 +122,7 @@ GroupManagement = React.createClass
     name: ""
     settings:
       email_filter: []
+      hidden: false
     member_information: []
     teacher_information: []
     current_user: {}
@@ -171,8 +172,41 @@ GroupManagement = React.createClass
           memberInformation={@state.member_information} gid={@props.gid} refresh={@refreshSettings}/>
       </Col>
       <Col xs={6}>
+        <GroupOptions pushUpdates={@pushUpdates} settings={@state.settings} gid={@props.gid}/>
         <GroupEmailWhitelist emails={@state.settings.email_filter} pushUpdates={@pushUpdates} gid={@props.gid}/>
       </Col>
+    </div>
+
+GroupOptions = React.createClass
+  propTypes:
+    settings: React.PropTypes.object.isRequired
+    pushUpdates: React.PropTypes.func.isRequired
+    gid: React.PropTypes.string.isRequired
+
+  promptGroupHide: ->
+    window.confirmDialog "Hiding your group from the scoreboard is an irrevocable change. You won't be able to change this later.", "Hidden Group Change",
+    "Okay", "Cancel", (() ->
+      @props.pushUpdates ((data) -> update data, {hidden: {$set: true}})
+    ).bind this, () -> false
+
+  render: ->
+    if @props.settings.hidden
+      hiddenGroupDisplay =
+        <p>This group is <b>hidden</b> from the general scoreboard.</p>
+    else
+      hiddenGroupDisplay =
+        <p>
+          This group is <b>visible</b> on the scoreboard.
+          Click <a href="#" onClick={@promptGroupHide}>here</a> to hide it.
+        </p>
+
+    <div>
+      <h4>Group Options</h4>
+      <Panel>
+        <form>
+          {hiddenGroupDisplay}
+        </form>
+      </Panel>
     </div>
 
 EmailWhitelistItem = React.createClass
@@ -232,14 +266,12 @@ GroupEmailWhitelist = React.createClass
 
     <div>
       <h4>Email Domain Whitelist</h4>
-      <form onSubmit={@addEmailDomain}>
-        <Row>
-          <Input type="text" addonBefore="@ Domain" valueLink={@linkState "emailDomain"}/>
-        </Row>
-        <Row>
-          {if @props.emails.length > 0 then @createItemDisplay() else emptyItemDisplay}
-        </Row>
-      </form>
+        <Panel>
+          <form onSubmit={@addEmailDomain}>
+            <Input type="text" addonBefore="@ Domain" valueLink={@linkState "emailDomain"}/>
+            {if @props.emails.length > 0 then @createItemDisplay() else emptyItemDisplay}
+          </form>
+        </Panel>
     </div>
 
 TeacherManagement = React.createClass
