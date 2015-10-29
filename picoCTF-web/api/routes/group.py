@@ -37,9 +37,6 @@ leave_group_schema = Schema({
 delete_group_schema = Schema({
     Required("group-name"): check(
         ("Class name must be between 3 and 50 characters.", [str, Length(min=3, max=100)]),
-    ),
-    Required("group-owner"): check(
-        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
     )
 }, extra=True)
 
@@ -276,7 +273,11 @@ def delete_group_hook():
 
     validate(delete_group_schema, params)
 
-    owner_team = api.team.get_team(name=params["group-owner"])
+    if params.get("group-owner"):
+        owner_team = api.team.get_team(name=params["group-owner"])
+    else:
+        owner_team = api.team.get_team()
+
     group = api.group.get_group(name=params["group-name"], owner_tid=owner_team["tid"])
 
     user = api.user.get_user()
