@@ -1,0 +1,14 @@
+language: python
+
+# versions of python to test on
+python:
+  - "3.4"
+  - "3.5"
+
+services:
+  - mongodb
+
+install:
+  - ./install.sh
+
+script: py.test unit_tests
