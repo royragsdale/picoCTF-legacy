@@ -94,21 +94,27 @@ def get_all_team_scores(eligible=True):
 
     result = []
     for team in teams:
-        team_query = db.submissions.find({'tid': team['tid'], 'eligible': eligible, 'correct': True})
-        if team_query.count() > 0:
-            lastsubmit = team_query.sort('timestamp', direction=pymongo.DESCENDING)[0]['timestamp']
-        else:
-            lastsubmit = datetime.datetime.now()
-        score = get_score(tid=team['tid'])
-        if score > 0:
-            result.append({
-                "name": team['team_name'],
-                "tid": team['tid'],
-                "score": score,
-                "affiliation": team["affiliation"],
-                "eligible": team["eligible"],
-                "lastsubmit": lastsubmit
-            })
+        # Get the full version of the group.
+        groups = [api.group.get_group(group["gid"]) for group in api.team.get_groups(tid=team["tid"])]
+
+        # Determine if the user is exclusively a member of hidden groups.
+        # If they are, they won't be processed.
+        if len(groups) == 0 or any([not(group["settings"]["hidden"]) for group in groups]):
+            team_query = db.submissions.find({'tid': team['tid'], 'eligible': eligible, 'correct': True})
+            if team_query.count() > 0:
+                lastsubmit = team_query.sort('timestamp', direction=pymongo.DESCENDING)[0]['timestamp']
+            else:
+                lastsubmit = datetime.datetime.now()
+            score = get_score(tid=team['tid'])
+            if score > 0:
+                result.append({
+                    "name": team['team_name'],
+                    "tid": team['tid'],
+                    "score": score,
+                    "affiliation": team["affiliation"],
+                    "eligible": team["eligible"],
+                    "lastsubmit": lastsubmit
+                })
     time_ordered = sorted(result, key=lambda entry: entry['lastsubmit'])
     time_ordered_time_removed = [{'name': x['name'], 'eligible': x['eligible'], 'tid': x['tid'], 'score': x['score'], 'affiliation': x['affiliation']} for x in time_ordered]
     return sorted(time_ordered_time_removed, key=lambda entry: entry['score'], reverse=True)
