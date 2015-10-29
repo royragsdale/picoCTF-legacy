@@ -13,9 +13,6 @@ from api.common import check, validate, safe_fail, WebException
 register_group_schema = Schema({
     Required("group-name"): check(
         ("Class name must be between 3 and 50 characters.", [str, Length(min=3, max=100)]),
-    ),
-    Required("group-owner"): check(
-        ("The team name must be between 3 and 40 characters.", [str, Length(min=3, max=40)]),
     )
 }, extra=True)
 
