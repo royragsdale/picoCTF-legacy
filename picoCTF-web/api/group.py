@@ -5,6 +5,15 @@ import api
 from api.annotations import log_action
 from api.common import check, validate, safe_fail, InternalException
 
+from voluptuous import Required, Length, Schema
+
+group_settings_schema = Schema({
+    Required("email_filter"): check(
+        ("Email filter must be a list of emails.", lambda emails: type(emails) == list)),
+    Required("hidden"): check(
+        ("Hidden property of a group is a boolean.", bool))
+})
+
 def get_roles_in_group(gid, tid=None, uid=None):
     """
     Determine what role the team plays in a group.
@@ -133,7 +142,8 @@ def create_group(tid, group_name):
         "teachers": [],
         "members": [],
         "settings": {
-          "email_filter": []
+            "email_filter": [],
+            "hidden": False
         },
         "gid": gid
     })
@@ -160,6 +170,7 @@ def change_group_settings(gid, settings):
 
     db = api.common.get_conn()
 
+    validate(group_settings_schema, settings)
     group = api.group.get_group(gid=gid)
     db.groups.update({"gid": group["gid"]}, {"$set": {"settings": settings}})
 
