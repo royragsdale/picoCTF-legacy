@@ -11,7 +11,7 @@ group_settings_schema = Schema({
     Required("email_filter"): check(
         ("Email filter must be a list of emails.", [lambda emails: type(emails) == list])),
     Required("hidden"): check(
-        ("Hidden property of a group is a boolean.", [bool]))})
+        ("Hidden property of a group is a boolean.", [lambda hidden: type(hidden) == bool]))})
 
 def get_roles_in_group(gid, tid=None, uid=None):
     """
@@ -172,6 +172,9 @@ def change_group_settings(gid, settings):
     validate(group_settings_schema, settings)
 
     group = api.group.get_group(gid=gid)
+    if group["settings"]["hidden"] and not settings["hidden"]:
+        raise InternalException("You can not change a hidden group back to a public group.")
+
     db.groups.update({"gid": group["gid"]}, {"$set": {"settings": settings}})
 
 
