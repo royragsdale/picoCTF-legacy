@@ -27,7 +27,9 @@ new_team_user = {
     "country": "US",
     "team-school-new": "hacker edu",
     "team-name-new": base_team['team_name'],
-    "team-password-new": base_team['password']
+    "team-password-new": base_team['password'],
+    "eligibility": "eligible",
+    "affiliation": base_team['team_name']
 }
 
 base_user = {
