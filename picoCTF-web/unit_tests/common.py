@@ -43,7 +43,9 @@ base_user = {
     "background": "student_hs",
     "country": "US",
     "team-name-existing": base_team['team_name'],
-    "team-password-existing": base_team['password']
+    "team-password-existing": base_team['password'],
+    "eligibility": "eligible",
+    "affiliation": base_team['team_name']
 }
 
 def clear_cache():
