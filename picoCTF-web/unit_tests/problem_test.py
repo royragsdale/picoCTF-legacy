@@ -20,6 +20,7 @@ class TestProblems(object):
     # test keys
     correct = "test"
     wrong = "wrong"
+    fake_sid = "acdb6a09cd2bae5f1bf53ed186a17248"
 
     def generate_base_problems(correct):
         """A workaround for python3's list comprehension scoping"""
@@ -38,7 +39,8 @@ class TestProblems(object):
                         "description": "Base problem " + str(i),
                         "flag": correct,
                         "iid": 0,
-                        "server": "hack.com"
+                        "server": "hack.com",
+                        "instance_number": 0
                     }
                 ]
             }
@@ -66,7 +68,8 @@ class TestProblems(object):
                         "description": "disabled problem " + str(i),
                         "flag": correct,
                         "iid": 0,
-                        "server": "hack.com"
+                        "server": "hack.com",
+                        "instance_number": 0
                     }
                 ]
             }
@@ -95,7 +98,8 @@ class TestProblems(object):
                         "description": "Level1 problem " + str(i),
                         "flag": correct,
                         "iid": 0,
-                        "server": "hack.com"
+                        "server": "hack.com",
+                        "instance_number": 0
                     }
                 ]
             }
@@ -139,25 +143,25 @@ class TestProblems(object):
         setup_db()
 
         # initialization code
-        self.uid = api.user.create_user_request(new_team_user)
+        self.uid = api.user.create_simple_user_request(new_team_user)
         self.tid = api.user.get_team(uid=self.uid)['tid']
 
         # insert all problems
         self.base_pids = []
         for problem in self.base_problems:
-            pid = api.problem.insert_problem(problem)
+            pid = api.problem.insert_problem(problem,self.fake_sid)
             api.problem.update_problem(pid, {"disabled": False})
             self.base_pids.append(pid)
 
         self.enabled_pids = self.base_pids[:]
         for problem in self.level1_problems:
-            pid = api.problem.insert_problem(problem)
+            pid = api.problem.insert_problem(problem,self.fake_sid)
             api.problem.update_problem(pid, {"disabled": False})
             self.enabled_pids.append(pid)
 
         self.disabled_pids = []
         for problem in self.disabled_problems:
-            pid = api.problem.insert_problem(problem)
+            pid = api.problem.insert_problem(problem,self.fake_sid)
             self.disabled_pids.append(pid)
 
         self.all_pids = self.enabled_pids + self.disabled_pids
@@ -187,7 +191,7 @@ class TestProblems(object):
         # problems were inserted in initialization - try to insert the problems again
         for problem in self.all_problems:
             with pytest.raises(APIException):
-                api.problem.insert_problem(problem)
+                api.problem.insert_problem(problem,self.fake_sid)
                 api.problem.update_problem(problem["pid"], {"disabled": False})
                 assert False, "Was able to insert a problem twice."
 
