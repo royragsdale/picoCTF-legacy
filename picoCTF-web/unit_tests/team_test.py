@@ -23,8 +23,7 @@ class TestNewStyleTeams(object):
         """
         Tests the newer and simplified user creation.
         """
-
-        user = dict_filter(base_user.copy(), ["username", "firstname", "lastname", "email"])
+        user = dict_filter(base_user.copy(), ["username", "firstname", "lastname", "email","eligibility","affiliation"])
         user["password"] = "test"
         uid = api.user.create_simple_user_request(user)
 
@@ -89,17 +88,22 @@ class TestTeams(object):
 
         Covers:
             team.create_team
-            user.create_user_request
+            user.create_simple_user_request
             team.get_team_uids
         """
 
-        tid = api.team.create_team(base_team.copy())
+        team = base_team.copy()
+        tid = api.team.create_team(team)
 
         uids = []
         for i in range(api.config.get_settings()["max_team_size"]):
             test_user = base_user.copy()
             test_user['username'] += str(i)
-            uids.append(api.user.create_user_request(test_user))
+            uid = api.user.create_simple_user_request(test_user)
+            uids.append(uid)
+
+            # join a real team
+            api.team.join_team(team["team_name"],team["password"],uid) 
 
         team_uids = api.team.get_team_uids(tid)
         assert len(team_uids) == api.config.get_settings()["max_team_size"], "Team does not have correct number of members"
@@ -107,7 +111,7 @@ class TestTeams(object):
 
     @ensure_empty_collections("teams", "users")
     @clear_collections("teams", "users")
-    def te_st_create_user_request_team_size_validation(self):
+    def test_create_user_request_team_size_validation(self):
         """
         Tests the team size restriction
 
@@ -116,16 +120,21 @@ class TestTeams(object):
             user.create_user_request
         """
 
-        api.team.create_team(base_team.copy())
+        team = base_team.copy()
+        tid = api.team.create_team(team)
 
         uid = None
         for i in range(api.config.get_settings()["max_team_size"]):
             test_user = base_user.copy()
             test_user['username'] += str(i)
-            uid = api.user.create_user_request(test_user)
+            uid = api.user.create_simple_user_request(test_user)
+            # join a real team
+            api.team.join_team(team["team_name"],team["password"],uid) 
 
-        with pytest.raises(WebException):
-            api.user.create_user_request(base_user.copy())
+        with pytest.raises(InternalException):
+            uid_fail  = api.user.create_simple_user_request(base_user.copy())
+            # join a real team
+            api.team.join_team(team["team_name"],team["password"],uid_fail)
             assert False, "Team has too many users"
 
         api.user.disable_account(uid)
@@ -133,4 +142,5 @@ class TestTeams(object):
         #Should be able to add another user after disabling one.
         test_user = base_user.copy()
         test_user['username'] += "addition"
-        api.user.create_user_request(test_user)
+        uid = api.user.create_simple_user_request(test_user)
+        api.team.join_team(team["team_name"],team["password"],uid) 
