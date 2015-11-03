@@ -2,7 +2,7 @@
 from Crypto.Cipher import AES
 import os, sys
 
-flag = open("flag", "r").read()
+flag = open("flag", "r").read().strip()
 key = open("key", "r").read().strip()
 
 welcome = """
