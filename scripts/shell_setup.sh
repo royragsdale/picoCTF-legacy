@@ -61,35 +61,17 @@ easy_install pip
 pip2 install requests
 groupadd competitors
 
-# disable ASLR
-if [ $(grep "kernel.randomize_va_space=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then
-  echo "kernel.randomize_va_space=0" >> /etc/sysctl.conf
-fi
-# enable relative core paths
-if [ $(grep "fs.suid_dumpable=0" /etc/sysctl.conf | wc -l) -eq "0" ]; then
-  echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
-fi
-# disable apport
-if [ $(grep "kernel.core_pattern=./%e.core.%t" /etc/sysctl.conf | wc -l) -eq "0" ]; then
-  echo "kernel.core_pattern=./%e.core.%t" >> /etc/sysctl.conf
-fi
-sysctl -p
 
 # Securing the shell server
 # limits
-cp /vagrant/configs/limits.conf /etc/security/limits.conf
-sysctl net.ipv4.tcp_tw_recycle=1
-sysctl net.ipv4.tcp_tw_reuse=1
-sysctl net.core.somaxconn=1024
-(crontab -l ; cat /vagrant/configs/isolate.cron)| crontab -
+cp /vagrant/configs/security/limits.conf /etc/security/limits.conf
 
-# isolate users
-mount -o remount,hidepid=2 /proc
-chmod 1733 /tmp /var/tmp /dev/shm
-chmod 1111 /home/
-chmod 700 /vagrant
-chmod -R o-r /var/log /var/crash
-chmod o-w /proc
+cp /vagrant/configs/security/sysctl.conf /etc/sysctl.conf
+sysctl -p
+
+cp /vagrant/configs/security/isolate-users.service /lib/systemd/system
+systemctl enable isolate-users.service
+systemctl start isolate-users.service
 
 # set hostname
 hostname shell
