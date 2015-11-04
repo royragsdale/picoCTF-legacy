@@ -40,7 +40,7 @@ class TestGroups(object):
         for team in self.base_teams:
             self.tids.append(api.team.create_team(team))
 
-        self.owner_uid = api.user.create_user_request(new_team_user)
+        self.owner_uid = api.user.create_simple_user_request(new_team_user)
         api.admin.give_admin_role(new_team_user['username'])
         self.owner_tid = api.user.get_team(uid=self.owner_uid)['tid']
 
@@ -54,7 +54,7 @@ class TestGroups(object):
         Tests group creation and lookups
 
         Covers:
-            group.create_group_request
+            group.create_group
             group.get_group
 
         """
@@ -63,7 +63,8 @@ class TestGroups(object):
         for i in range(groups):
             group = self.base_group.copy()
             group["group-name"] += str(i)
-            gids.append(api.group.create_group_request(group, uid=self.owner_uid))
+            
+            gids.append(api.group.create_group(self.owner_tid, group["group-name"]))
 
         assert len(api.team.get_groups(uid=self.owner_uid, tid=self.owner_tid)) \
             == len(gids), "Not all groups were created."
@@ -83,26 +84,28 @@ class TestGroups(object):
         Tests leaving and joining groups
 
         Covers:
-            group.create_group_request
+            group.create_group
             group.get_group
             group.join_group
             group.leave_group
         """
 
-        gid = api.group.create_group_request(self.base_group, self.owner_uid)
+        group = self.base_group.copy()
+        gid = api.group.create_group(self.owner_tid, group["group-name"])
+
         name = api.group.get_group(gid=gid)["name"]
 
         params = {"group-name": name, "group-owner": new_team_user["username"]}
 
         for tid in self.tids:
             if tid is not self.owner_tid:
-                api.group.join_group_request(params, tid)
+                api.group.join_group(gid, tid)
                 assert tid in api.group.get_group(gid=gid)['members']
 
         for tid in self.tids:
-            api.group.leave_group_request(params, tid)
+            api.group.leave_group(gid, tid)
             assert tid not in api.group.get_group(gid=gid)['members']
 
-        with pytest.raises(WebException):
-            api.group.leave_group_request(params, self.owner_tid)
+        with pytest.raises(InternalException):
+            api.group.leave_group(gid, self.owner_tid)
             assert False, "Was able to leave group twice!"

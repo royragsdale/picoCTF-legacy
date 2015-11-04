@@ -27,7 +27,9 @@ new_team_user = {
     "country": "US",
     "team-school-new": "hacker edu",
     "team-name-new": base_team['team_name'],
-    "team-password-new": base_team['password']
+    "team-password-new": base_team['password'],
+    "eligibility": "eligible",
+    "affiliation": "Test"
 }
 
 base_user = {
@@ -41,7 +43,9 @@ base_user = {
     "background": "student_hs",
     "country": "US",
     "team-name-existing": base_team['team_name'],
-    "team-password-existing": base_team['password']
+    "team-password-existing": base_team['password'],
+    "eligibility": "eligible",
+    "affiliation": "Test"
 }
 
 def clear_cache():
