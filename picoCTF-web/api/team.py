@@ -123,7 +123,7 @@ def create_new_team_request(params, uid=None):
         "team_name": params["team_name"],
         "password": params["team_password"],
         # The team's affiliation becomes the creator's affiliation.
-        "affiliation": user["affiliation"],
+        "affiliation": current_team["affiliation"],
         "eligible": True
     })
 
