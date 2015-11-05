@@ -536,7 +536,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
             "description": problem.description,
             "flag": problem.flag,
             "instance_number": instance_number,
-            "files": [f.to_dict() for f in problem.files]
+            "files": [f.to_dict() for f in instance["files"]]
         }
 
         if isinstance(problem, Service):
