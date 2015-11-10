@@ -1,6 +1,7 @@
 from flask import Flask, request, session, send_from_directory, render_template
 from flask import Blueprint
 import api
+import bson
 
 from api.common import WebSuccess, WebError
 from api.annotations import api_wrapper, require_login, require_teacher, require_admin, check_csrf
