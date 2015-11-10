@@ -38,7 +38,7 @@ def get_team_score_progression():
 @block_before_competition(WebError("The competition has not begun yet!"))
 def get_scoreboard_hook():
     result = {}
-    result['public'] = api.stats.get_all_team_scores()
+    result['public'] = api.stats.get_all_team_scores(eligible=True)
     result['groups'] = []
 
     if api.auth.is_logged_in():
@@ -57,10 +57,10 @@ def get_scoreboard_hook():
 @blueprint.route('/top_teams/score_progression', methods=['GET'])
 @api_wrapper
 def get_top_teams_score_progressions_hook():
-    eligible = request.args.get("eligible", True)
+    eligible = request.args.get("eligible", "true")
 
-    #I don't understand why we need to do this...
-    eligible = eligible != "false"
+    eligible = bson.json_util.loads(eligible)
+
     return WebSuccess(data=api.stats.get_top_teams_score_progressions(eligible=eligible))
 
 @blueprint.route('/group/score_progression', methods=['GET'])
