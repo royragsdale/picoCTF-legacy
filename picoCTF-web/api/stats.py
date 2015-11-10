@@ -7,6 +7,8 @@ import statistics
 from collections import defaultdict
 from hashlib import sha1
 
+from api.common import InternalException
+
 _get_problem_names = lambda problems: [problem['name'] for problem in problems]
 top_teams = 5
 
@@ -77,13 +79,19 @@ def get_group_average_score(gid=None, name=None):
 
 # Stored by the cache_stats daemon
 @api.cache.memoize()
-def get_all_team_scores(eligible=True):
+def get_all_team_scores(eligible=None):
     """
     Gets the score for every team in the database.
+
+    Args:
+        eligible: required boolean field
 
     Returns:
         A list of dictionaries with name and score
     """
+
+    if eligible is None:
+        raise InternalException("Eligible must be set to either true or false")
 
     if eligible:
         teams = api.team.get_all_teams(eligible=True, ineligible=False)
@@ -235,18 +243,21 @@ def get_score_progression(tid=None, uid=None, category=None):
 
     return result
 
-def get_top_teams(gid=None, eligible=True):
+def get_top_teams(gid=None, eligible=None):
     """
     Finds the top teams
 
     Args:
         gid: if specified, return the top teams from this group only
+        eligible: required boolean field
 
     Returns:
         The top teams and their scores
     """
 
     if gid is None:
+        if eligible is None:
+            raise InternalException("Eligible must be set to either true or false")
         all_teams = api.stats.get_all_team_scores(eligible=eligible)
     else:
         all_teams = api.stats.get_group_scores(gid=gid)
