@@ -67,5 +67,4 @@ def get_top_teams_score_progressions_hook():
 @api_wrapper
 def get_group_top_teams_score_progressions_hook():
     gid = request.args.get("gid", None)
-    eligible = request.args.get("eligible", True)
-    return WebSuccess(data=api.stats.get_top_teams_score_progressions(gid=gid, eligible=eligible))
+    return WebSuccess(data=api.stats.get_top_teams_score_progressions(gid=gid, eligible=True))
