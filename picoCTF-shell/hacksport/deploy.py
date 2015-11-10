@@ -696,8 +696,7 @@ def undeploy_problems(args, config):
 
     try:
         for path in problems:
-            assert all(instance in already_deployed[path] for instance in instance_range), \
-                    "Not all specified instances are deployed for problem \"{}\"".format(path)
+            instances = list(filter(lambda x : x in already_deployed, instance_range))
 
             if os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
                 remove_instances(path, instance_range)
