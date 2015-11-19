@@ -4,9 +4,10 @@
 Shell Manager -- Tools for deploying and packaging problems.
 """
 
-from argparse import ArgumentParser
-
+import logging, coloredlogs
 import shell_manager
+
+from argparse import ArgumentParser
 from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
@@ -22,8 +23,15 @@ from shutil import copy2
 
 from imp import load_source
 
+coloredlogs.DEFAULT_LOG_FORMAT = "%(asctime)s %(name)s %(levelname)s: %(message)s"
+coloredlogs.DEFAULT_DATE_FORMAT = "%H:%M:%S"
+
+logger = logging.getLogger(__name__)
+
 def main():
     parser = ArgumentParser(description="Shell Manager")
+    parser.add_argument("-d", "--debug", action="store_true", default=False, help="show debug information")
+    parser.add_argument("--colorize", default="auto", choices=["auto", "never"], help="support colored output")
     subparsers = parser.add_subparsers(help="package problem for distribution")
 
     problem_package_parser = subparsers.add_parser("package", help="problem package management")
@@ -89,6 +97,15 @@ def main():
     publish_parser.set_defaults(func=publish)
 
     args = parser.parse_args()
+
+    if args.colorize == "never":
+        coloredlogs.DEFAULT_LEVEL_STYLES = {}
+        coloredlogs.DEFAULT_FIELD_STYLES = {}
+
+    coloredlogs.install()
+
+    if args.debug:
+        coloredlogs.set_level(logging.DEBUG)
 
     config_path = join(HACKSPORTS_ROOT, "config.py")
     try:
