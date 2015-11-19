@@ -535,7 +535,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
 
     Args:
         problem_directory: The directory storing the problem
-        instances: The number of instances to deploy. Defaults to 1.
+        instances: The list of instances to deploy. Defaults to [0]
         test: Whether the instances are test instances or not. Defaults to False.
         deployment_directory: If not None, the challenge will be deployed here instead of their home directory
     """
@@ -630,7 +630,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
 
         logger.debug("The instance deployment information can be found at '%s'.", instance_info_path)
 
-    logger.info("Problem '%s' deployed successfully.", problem_object["name"])
+    logger.info("Problem instances %s were successfully deployed for '%s'.", instances, problem_object["name"])
 
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
@@ -668,7 +668,7 @@ def deploy_problems(args, config):
                 else:
                     logger.error("Could not find bundle at '%s'.", bundle_path)
                     raise FatalException
-        problem_namess = bundle_problems
+        problem_names = bundle_problems
 
     # before deploying problems, load in port_map and already_deployed instances
     already_deployed = {}
@@ -745,12 +745,9 @@ def remove_instances(path, instance_list):
             execute(["systemctl", "disable", service], timeout=60)
             os.remove(join(SYSTEMD_SERVICE_PATH, service))
 
-            shutil.rmtree(directory)
-            os.remove(deployment_json_path)
-
-
             logger.debug("...Removing deployment directory '%s'.", directory)
             shutil.rmtree(directory)
+            os.remove(deployment_json_path)
 
             logger.debug("...Removing problem user '%s'.", user)
             execute(["userdel", user])
