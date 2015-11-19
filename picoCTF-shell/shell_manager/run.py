@@ -4,14 +4,15 @@
 Shell Manager -- Tools for deploying and packaging problems.
 """
 
-from argparse import ArgumentParser
-
+import logging, coloredlogs
 import shell_manager
+
+from argparse import ArgumentParser
 from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
-from shell_manager.util import HACKSPORTS_ROOT
+from shell_manager.util import HACKSPORTS_ROOT, FatalException
 from hacksport.deploy import deploy_problems, undeploy_problems
 from hacksport.status import clean, status, publish
 
@@ -22,8 +23,15 @@ from shutil import copy2
 
 from imp import load_source
 
+coloredlogs.DEFAULT_LOG_FORMAT = "%(asctime)s %(name)s %(levelname)s: %(message)s"
+coloredlogs.DEFAULT_DATE_FORMAT = "%H:%M:%S"
+
+logger = logging.getLogger(__name__)
+
 def main():
     parser = ArgumentParser(description="Shell Manager")
+    parser.add_argument("-d", "--debug", action="store_true", default=False, help="show debug information")
+    parser.add_argument("--colorize", default="auto", choices=["auto", "never"], help="support colored output")
     subparsers = parser.add_subparsers(help="package problem for distribution")
 
     problem_package_parser = subparsers.add_parser("package", help="problem package management")
@@ -90,24 +98,35 @@ def main():
 
     args = parser.parse_args()
 
-    config_path = join(HACKSPORTS_ROOT, "config.py")
-    try:
-        config = load_source("config", config_path)
-    except PermissionError:
-        print("You must run shell_manager with sudo.")
-        exit(1)
-    except FileNotFoundError:
-        default_config_path = join(dirname(shell_manager.__file__), "config.py")
-        copy2(default_config_path, HACKSPORTS_ROOT)
-        chmod(config_path, 0o640)
-        print("There is no config.py in {}. One has been created for you. Please edit it accordingly.".format(HACKSPORTS_ROOT))
-        exit(1)
+    if args.colorize == "never":
+        coloredlogs.DEFAULT_LEVEL_STYLES = {}
+        coloredlogs.DEFAULT_FIELD_STYLES = {}
 
-    #Call the default function
-    if "func" in args:
-        args.func(args, config)
-    else:
-        parser.print_help()
+    coloredlogs.install()
+
+    if args.debug:
+        coloredlogs.set_level(logging.DEBUG)
+    try:
+        config_path = join(HACKSPORTS_ROOT, "config.py")
+        try:
+            config = load_source("config", config_path)
+        except PermissionError:
+            logger.error("You must run shell_manager with sudo.")
+            raise FatalException
+        except FileNotFoundError:
+            default_config_path = join(dirname(shell_manager.__file__), "config.py")
+            copy2(default_config_path, HACKSPORTS_ROOT)
+            chmod(config_path, 0o640)
+            logger.info("There is no config.py in '%s'. One has been created for you. Please edit it accordingly.", HACKSPORTS_ROOT)
+            raise FatalException
+
+        #Call the default function
+        if "func" in args:
+            args.func(args, config)
+        else:
+            parser.print_help()
+    except FatalException:
+        exit(1)
 
 if __name__ == "__main__":
     main()

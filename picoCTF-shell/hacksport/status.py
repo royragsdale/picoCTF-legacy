@@ -67,14 +67,10 @@ def publish(args, config):
     for path, problem in problems.items():
         problem["instances"] = get_all_problem_instances(path)
         problem["sanitized_name"] = path
-        if len(problem["instances"]) > 0:
-            output["problems"].append(problem)
+        output["problems"].append(problem)
 
     for _, bundle in bundles.items():
-        for problem in output["problems"]:
-            if problem["sanitized_name"] in bundle["problems"]:
-                output["bundles"].append(bundle)
-                break
+        output["bundles"].append(bundle)
 
     print(json.dumps(output, indent=2))
 
