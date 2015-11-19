@@ -5,7 +5,7 @@
   "categories": ["Binary Exploitation", "Cryptography", "Web Exploitation"],
   "problems": ["buffer-overflow-1", "ecb-1", "sql-injection-1"],
   "dependencies": {
-    "ecb-encryption": {
+    "ecb-1": {
       "threshold": 1,
       "weightmap": {
         "buffer-overflow-1": 1
@@ -15,7 +15,7 @@
       "threshold": 1,
       "weightmap": {
         "buffer-overflow-1": 1,
-        "ecb-encryption": 1
+        "ecb-1": 1
       }
     }
   }
