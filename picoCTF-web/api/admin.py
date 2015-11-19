@@ -49,8 +49,12 @@ def set_problem_availability(pid, disabled):
         The updated problem object.
     """
 
-    result = api.problem.update_problem(pid, {"disabled": disabled})
-    api.cache.clear_all()
+    problem = api.problem.get_problem(pid=pid)
+    if len(problem["instances"]) > 0:
+        result = api.problem.update_problem(pid, {"disabled": disabled})
+        api.cache.clear_all()
+    else:
+        raise WebException("You cannnot change the availability of \"{}\".".format(problem["name"]))
     return result
 
 def get_api_exceptions(result_limit=50, sort_direction=pymongo.DESCENDING):

@@ -218,4 +218,5 @@ def load_problems_from_server(sid):
 
     api.problem.load_published(data)
 
-    return len(data["problems"])
+    has_instances = lambda p : len(p["instances"]) > 0
+    return len(list(filter(has_instances, data["problems"])))

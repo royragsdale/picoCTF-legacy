@@ -90,7 +90,9 @@ bundle_schema = Schema({
     "dependencies": check(
         ("The bundle dependencies must be a dict.", [dict])),
     "dependencies_enabled": check(
-        ("The dependencies enabled state must be a bool.", [lambda x: type(x) == bool]))
+        ("The dependencies enabled state must be a bool.", [lambda x: type(x) == bool])),
+    "pkg_dependencies": check(
+        ("The package dependencies must be a list.", [lambda x: type(x) == list]))
 })
 
 DEBUG_KEY = None
@@ -158,7 +160,6 @@ def insert_problem(problem, sid=None):
     if safe_fail(get_problem, pid=problem["pid"]) is not None:
         # problem is already inserted, so update instead
         old_problem = copy(get_problem(pid=problem["pid"]))
-        problem["disabled"] = old_problem["disabled"]
 
         # leave all instances from different shell server
         instances = list(filter(lambda i: i["sid"] != sid, old_problem["instances"]))
@@ -166,6 +167,9 @@ def insert_problem(problem, sid=None):
         # add instances from this shell server
         instances.extend(problem["instances"])
         problem["instances"] = instances
+
+        # disable problems with zero instances
+        problem["disabled"] = old_problem["disabled"] or len(problem["instances"]) == 0
 
         # run the update
         update_problem(problem["pid"], problem)

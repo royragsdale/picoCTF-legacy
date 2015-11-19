@@ -13,7 +13,8 @@ blueprint = Blueprint("admin_api", __name__)
 @api_wrapper
 @require_admin
 def get_problem_data_hook():
-    problems =  api.problem.get_all_problems(show_disabled=True)
+    has_instances = lambda p : len(p["instances"]) > 0
+    problems = list(filter(has_instances, api.problem.get_all_problems(show_disabled=True)))
 
     for problem in problems:
         problem["reviews"] = api.problem_feedback.get_problem_feedback(pid=problem["pid"])
