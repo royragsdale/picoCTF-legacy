@@ -7,7 +7,8 @@ from copy import copy
 import os
 
 def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None,
-                        is_32_bit=True, executable_stack=True, no_stack_protector=True, compiler_flags=copy([]),
+                        is_32_bit=True, executable_stack=True, no_stack_protector=True,
+                        aslr=False, compiler_flags=copy([]),
                         flag_file=None, static_flag=None, share_source=False, remote=False):
     """
     Creates a challenge for a compiled binary. User must specify either a makefile
@@ -29,6 +30,8 @@ def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None
                           Defaults to True.
         no_stack_protector: Specifies if the output binary should opt out of stack canaries. Only works nicely with gcc as the compiler.
                             Defaults to True.
+        aslr: Specifies if the output binary should have aslr or not. Only used if the challenge is remote.
+                            Defaults to False.
         compiler_flags: The list of any additional compiler flags to be passed. Defaults to [].
         flag_file: The name of the flag file. If it does not exist, it will be created. Defaults to flag.txt
         static_flag: A string containing the static flag. If specified, the flag generation will always return this. Defaults to None.
@@ -57,6 +60,8 @@ def CompiledBinary(makefile=None, compiler="gcc", sources=None, binary_name=None
 
     class Problem(*base_classes):
         files = copy([])
+
+        remove_aslr = not aslr
 
         if share_source:
             files = copy([File(source) for source in sources])

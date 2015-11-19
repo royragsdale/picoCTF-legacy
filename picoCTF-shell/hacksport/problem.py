@@ -7,7 +7,11 @@ from hashlib import md5
 from hacksport.operations import execute
 from hacksport.deploy import give_port
 
+from shell_manager.util import EXTRA_ROOT
+from shutil import copy2
+
 import os
+from os.path import join
 
 class File(object):
     """
@@ -63,7 +67,7 @@ def files_from_directory(directory, recurse=True, permissions=0o664):
 
     for root, dirnames, filenames in os.walk(directory):
         for filename in filenames:
-            result.append(File(os.path.join(root, filename), permissions))
+            result.append(File(join(root, filename), permissions))
         if not recurse:
             break
 
@@ -77,6 +81,8 @@ class Challenge(metaclass=ABCMeta):
     """
 
     files = []
+
+    remove_aslr = False
 
     def generate_flag(self, random):
         """
@@ -117,6 +123,19 @@ class Challenge(metaclass=ABCMeta):
             "ExecStart": "/bin/bash -c 'echo started'"
         }
 
+    def make_no_aslr_wrapper(self, exec_path, output="no_aslr_wrapper"):
+        """
+        Compiles a setgid wrapper to remove aslr.
+        Returns the name of the file generated
+        """
+
+        source_path = "no_aslr_wrapper.c"
+        execute(["gcc", "-o", output, "-DBINARY_PATH=\"{}\"".format(exec_path), join(EXTRA_ROOT, source_path)])
+        self.files.append(ExecutableFile(output))
+
+        return output
+
+
 class Compiled(Challenge):
     """
     Sensible behavior for compiled challenges.
@@ -151,7 +170,10 @@ class Compiled(Challenge):
             compile_cmd += ["-o", self.program_name]
             execute(compile_cmd)
 
-        self.compiled_files = [ExecutableFile(self.program_name)]
+        if not isinstance(self, Remote):
+            # only add the setgid executable if Remote is not handling it
+            self.compiled_files = [ExecutableFile(self.program_name)]
+
 
 class Service(Challenge):
     """
@@ -199,10 +221,16 @@ class Remote(Service):
         if self.program_name is None:
             raise Exception("Must specify program_name for remote challenge.")
 
-        self.service_files = [ExecutableFile(self.program_name)]
+        if self.remove_aslr:
+            # do not setgid if being wrapped
+            self.service_files = [File(self.program_name, permissions=0o755)]
 
-        program_path = os.path.join(self.directory, self.program_name)
-        self.start_cmd = "{}".format(program_path)
+            self.program_name = self.make_no_aslr_wrapper(join(self.directory, self.program_name),
+                                                          output="{}_no_aslr".format(self.program_name))
+        else:
+            self.service_files = [ExecutableFile(self.program_name)]
+
+        self.start_cmd = join(self.directory, self.program_name)
 
 class FlaskApp(Service):
     """
@@ -234,5 +262,5 @@ class PHPApp(Service):
         Setup for php apps
         """
 
-        web_root = os.path.join(self.directory, self.php_root)
+        web_root = join(self.directory, self.php_root)
         self.start_cmd = "uwsgi --protocol=http --plugin php --force-cwd {0} --http-socket-modifier1 14 --php-index index.html --php-index index.php --check-static {0} --static-skip-ext php --logto /dev/null".format(web_root)

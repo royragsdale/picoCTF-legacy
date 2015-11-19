@@ -101,7 +101,8 @@ setup(
                 ("/etc/nginx/sites-enabled/", ['config/shell-nginx']),
                 ("/etc/systemd/system/", ['config/shell_manager.target']),
                 ("/opt/hacksports/shellinabox/", ['config/ShellInABox.js']),
-                ("/opt/hacksports/config/", ['config/securebashrc'])],
+                ("/opt/hacksports/config/", ['config/securebashrc']),
+                ("/opt/hacksports/extra/", ['extra/no_aslr_wrapper.c'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
