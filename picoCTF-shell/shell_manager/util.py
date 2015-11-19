@@ -5,10 +5,16 @@ Common utilities for the shell manager.
 from os import listdir, unlink, sep
 from os.path import join, isdir, isfile
 
-import shutil
+import shutil, logging
 import json
 import re, string
 from shutil import copytree, copy2
+
+from voluptuous import Schema
+from voluptuous import Required, All, Length, Range
+from voluptuous import MultipleInvalid
+
+logger = logging.getLogger(__name__)
 
 # the root of the hacksports local store
 HACKSPORTS_ROOT = "/opt/hacksports/"
@@ -16,6 +22,34 @@ PROBLEM_ROOT = join(HACKSPORTS_ROOT, "sources")
 STAGING_ROOT = join(HACKSPORTS_ROOT, "staging")
 DEPLOYED_ROOT = join(HACKSPORTS_ROOT, "deployed")
 BUNDLE_ROOT = join(HACKSPORTS_ROOT, "bundles")
+
+problem_schema = Schema({
+    Required('author'): All(str, Length(min=1, max=32)),
+    Required('score'): All(int, Range(min=0)),
+    Required('name'): All(str, Length(min=1, max=32)),
+    Required('description'): str,
+    Required('category'): All(str, Length(min=1, max=32)),
+    Required("hints"): list,
+    "version": All(str, Length(min=1, max=8)),
+    "tags": list,
+    "organization": All(str, Length(min=1, max=32)),
+    "pkg_description": All(str, Length(min=1, max=256)),
+    "pkg_name": All(str, Length(min=1, max=32)),
+    "pkg_dependencies": list,
+    "pip_requirements": list
+})
+
+bundle_schema = Schema({
+    Required('author'): All(str, Length(min=1, max=32)),
+    Required("problems"): list,
+    Required('name'): All(str, Length(min=1, max=32)),
+    Required('description'): str,
+    Required("categories"): list,
+    "version": All(str, Length(min=1, max=8)),
+    "tags": list,
+    "organization": All(str, Length(min=1, max=32)),
+    "dependencies": dict
+})
 
 class FatalException(Exception):
     pass
@@ -118,6 +152,13 @@ def get_problem(problem_path):
     json_path = join(problem_path, "problem.json")
     problem = json.loads(open(json_path, "r").read())
 
+    try:
+        problem_schema(problem)
+    except MultipleInvalid as e:
+        logger.critical("Error validating problem object at '%s'!", json_path)
+        logger.critical(e)
+        raise FatalException
+
     return problem
 
 def get_bundle_root(bundle_name, absolute=False):
@@ -151,6 +192,15 @@ def get_bundle(bundle_path):
         A bundle object.
     """
 
-    bundle = json.loads(open(join(bundle_path, "bundle.json"), "r").read())
+    json_path = join(bundle_path, "bundle.json")
+
+    bundle = json.loads(open(json_path, "r").read())
+
+    try:
+        bundle_schema(bundle)
+    except MultipleInvalid as e:
+        logger.critical("Error validating bundle object at '%s'!", json_path)
+        logger.critical(e)
+        raise FatalException
 
     return bundle

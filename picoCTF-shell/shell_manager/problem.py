@@ -14,22 +14,6 @@ from shell_manager.util import FatalException
 
 logger = logging.getLogger(__name__)
 
-#More in-depth validation should occur with some sort of linting step.
-PROBLEM_FIELDS = [
-    ["author", {"required": True, "validation": str}],
-    ["score", {"required": True, "validation": lambda score: type(score) == int and score >= 0}],
-    ["name", {"required": True, "validation": str}],
-    ["description", {"required": True, "validation": str}],
-    ["category", {"required": True, "validation": str}],
-    ["tags", {"required": False, "validation": list}],
-    ["hints", {"required": False, "validation": list}],
-    ["organization", {"required": False, "validation": str}],
-    ["pkg_description", {"required": False, "validation": str}],
-    ["pkg_version", {"required": False, "validation": str}],
-    ["pkg_name", {"required": False, "validation": str}],
-    ["pkg_dependencies", {"required": False, "validation": str}],
-]
-
 PROBLEM_DEFAULTS = {
     "version": lambda problem: "1.0-0",
     "pkg_dependencies": lambda problem: [],
