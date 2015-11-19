@@ -1,0 +1,9 @@
+[Unit]
+Description=Isolate competitors in the shell environment
+
+[Service]
+Type=oneshot
+ExecStart=/vagrant/configs/security/isolate-users.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,0 @@
-@reboot mount -o remount,hidepid=2 /proc
-@reboot chmod 1733 /tmp /var/tmp /dev/shm
-@reboot chmod -R o-r /var/log /var/crash
-@reboot chmod o-w /proc
