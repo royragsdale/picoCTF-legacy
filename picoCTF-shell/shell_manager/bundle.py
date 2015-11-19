@@ -62,7 +62,7 @@ def bundle_problems(args, config):
     elif os.path.isfile(args.bundle_path):
         bundle = json.loads(open(args.bundle_path).read())
     else:
-        logger.critical("No bundle could be found at '%s'", args.bundle_path)
+        logger.error("No bundle could be found at '%s'", args.bundle_path)
         raise FatalException
 
     logger.debug("Starting to bundle: '%s'.", bundle["name"])
@@ -70,7 +70,7 @@ def bundle_problems(args, config):
     for problem_name in bundle["problems"]:
         installed_path = get_problem_root(problem_name, absolute=True)
         if not isdir(installed_path) or not get_problem(installed_path):
-            logger.critical("'%s' is not an installed problem.", problem_name)
+            logger.error("'%s' is not an installed problem.", problem_name)
             raise FatalException
 
     paths = {"working": getcwd() if args.out is None else args.out}

@@ -47,7 +47,7 @@ def local_update(repo_path, deb_paths=[]):
         logger.info("Creating repository at '%s'.", repo_path)
         makedirs(repo_path)
     elif not isdir(repo_path):
-        logger.critical("Repository '%s' is not a directory!", repo_path)
+        logger.error("Repository '%s' is not a directory!", repo_path)
         raise FatalException
 
     [copy2(deb_path, repo_path) for deb_path in deb_paths]
