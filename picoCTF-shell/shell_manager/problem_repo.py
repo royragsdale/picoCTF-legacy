@@ -47,7 +47,7 @@ def local_update(repo_path, deb_paths=[]):
         logger.info("Creating repository at '%s'.", repo_path)
         makedirs(repo_path)
     elif not isdir(repo_path):
-        logger.critical("Repoistory '%s' is not a directory!", repo_path)
+        logger.critical("Repository '%s' is not a directory!", repo_path)
         raise FatalException
 
     [copy2(deb_path, repo_path) for deb_path in deb_paths]
@@ -59,4 +59,4 @@ def local_update(repo_path, deb_paths=[]):
     with gzip.open(packages_path, "wb") as packages:
         packages.write(result.output)
 
-    logger.info("Repoistory '%s' updated successfully. Copied %d packages.", repo_path, len(deb_paths))
+    logger.info("Repository '%s' updated successfully. Copied %d packages.", repo_path, len(deb_paths))
