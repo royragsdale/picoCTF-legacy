@@ -17,6 +17,8 @@ STAGING_ROOT = join(HACKSPORTS_ROOT, "staging")
 DEPLOYED_ROOT = join(HACKSPORTS_ROOT, "deployed")
 BUNDLE_ROOT = join(HACKSPORTS_ROOT, "bundles")
 
+class FatalException(Exception):
+    pass
 
 def get_attributes(obj):
     """

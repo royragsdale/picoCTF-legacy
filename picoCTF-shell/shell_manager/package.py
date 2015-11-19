@@ -2,7 +2,7 @@
 Packaging operations for the shell manager.
 """
 
-import json, re, gzip
+import json, re, gzip, logging
 import spur, os
 
 from os import makedirs, listdir, getcwd, chmod
@@ -14,6 +14,11 @@ from copy import deepcopy
 
 from shell_manager.util import full_copy, move, sanitize_name
 from shell_manager.problem import get_problem, get_problem_root
+
+
+from shell_manager.util import FatalException
+
+logger = logging.getLogger(__name__)
 
 DEB_DEFAULTS = {
     "Section": "ctf",
@@ -45,12 +50,14 @@ def problem_to_control(problem, debian_path):
         control["Depends"] = ", ".join(problem.get("pkg_dependencies", []))
 
     contents = ""
-    for option, value in control.items():
+    for option, value in sorted(control.items()):
         contents += "{}: {}\n".format(option, value)
 
     control_file = open(join(debian_path, "control"), "w")
     control_file.write(contents)
     control_file.close()
+
+    logger.debug("Control file contents:\n%s", contents)
 
 def postinst_dependencies(problem, problem_path, debian_path, install_path):
     """
@@ -79,13 +86,18 @@ def postinst_dependencies(problem, problem_path, debian_path, install_path):
     #Write or copy the requirements to the staging directory.
     if len(listed_requirements) > 0:
         if isfile(requirements_path):
-            raise Exception("Problem has both a pip_requirements field and requirements.txt.")
+            logger.error("Problem '%s' has both a pip_requirements field and requirements.txt.", problem["name"])
+            raise FatalException
 
         with open(staging_requirements_path, "w") as f:
             f.writelines("\n".join(listed_requirements))
 
     elif isfile(requirements_path):
         copy(requirements_path, staging_requirements_path)
+
+    if logger.getEffectiveLevel() <= logging.DEBUG and isfile(staging_requirements_path):
+        with open(staging_requirements_path, "r") as f:
+            logger.debug("python requirements:\n%s", f.read())
 
     if isfile(staging_requirements_path):
         postinst_template.append("pip3 install -r {}".format(deployed_requirements_path))
@@ -105,6 +117,11 @@ def postinst_dependencies(problem, problem_path, debian_path, install_path):
         chmod(postinst_path, 0o775)
         contents = "\n".join(postinst_template)
         f.write(contents)
+
+        #post_template always has a she-bang.
+        if len(postinst_template) > 1:
+            logger.debug("post install:\n%s", contents)
+
 
 def find_problems(problem_path):
     """
@@ -136,10 +153,13 @@ def problem_builder(args, config):
     problem_paths = find_problems(problem_base_path)
 
     if len(problem_paths) == 0:
-        print("No problems found under {}!".format(problem_base_path))
+        logging.critical("No problems found under '%s'!", problem_base_path)
+        raise FatalException
 
     for problem_path in problem_paths:
         problem = get_problem(problem_path)
+
+        logger.debug("Starting to package: '%s'.", problem["name"])
 
         paths = {}
         if args.staging_dir is None:
@@ -195,12 +215,14 @@ def problem_builder(args, config):
         result = shell.run(["fakeroot", "dpkg-deb", "--build", paths["staging"], deb_path])
 
         if result.return_code != 0:
-            print("Error building problem deb for '{}'".format(problem["name"]))
-            print(result.output)
+            logger.error("Error building problem deb for '%s'.", problem["name"])
+            logger.error(result.output)
         else:
-            print("Problem '{}' packaged successfully.".format(problem["name"]))
+            logger.info("Problem '%s' packaged successfully.", problem["name"])
 
-        print("Cleaning up staging directory '{}'.".format(paths["staging"]))
+        logger.debug("Clearning up '%s' staging directory '%s'.", problem["name"], paths["staging"])
+
+
         rmtree(paths["staging"])
 
     if len(args.problem_paths) >= 1:
