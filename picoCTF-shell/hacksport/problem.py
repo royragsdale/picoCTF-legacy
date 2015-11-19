@@ -202,8 +202,7 @@ class Remote(Service):
         self.service_files = [ExecutableFile(self.program_name)]
 
         program_path = os.path.join(self.directory, self.program_name)
-        self.start_cmd = "socat tcp-listen:{},fork,reuseaddr EXEC:{}".format(
-                self.port, program_path)
+        self.start_cmd = "{}".format(program_path)
 
 class FlaskApp(Service):
     """
@@ -221,7 +220,7 @@ class FlaskApp(Service):
         assert os.path.isfile(self.app_file), "module must exist"
 
         self.service_files = [File(self.app_file)]
-        self.start_cmd = "uwsgi --http 0.0.0.0:{} -w {}".format(self.port, self.app)
+        self.start_cmd = "uwsgi --protocol=http --plugin python3 -w {} --logto /dev/null".format(self.app)
 
 class PHPApp(Service):
     """
@@ -236,4 +235,4 @@ class PHPApp(Service):
         """
 
         web_root = os.path.join(self.directory, self.php_root)
-        self.start_cmd = "php -S 0.0.0.0:{} -t {}".format(self.port, web_root)
+        self.start_cmd = "uwsgi --protocol=http --plugin php --force-cwd {0} --http-socket-modifier1 14 --php-index index.html --php-index index.php --check-static {0} --static-skip-ext php --logto /dev/null".format(web_root)

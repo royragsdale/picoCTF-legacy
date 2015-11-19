@@ -137,19 +137,22 @@ def get_username(problem_name, instance_number):
 
     return "{}_{}".format(sanitize_name(problem_name), instance_number)
 
-def create_service_file(problem, instance_number, path):
+def create_service_files(problem, instance_number, path):
     """
-    Creates a systemd service file for the given problem
+    Creates systemd service files for the given problem.
+    Creates a service file for a problem, and also a socket
+    file if the problem is a service.
 
     Args:
         problem: the instantiated problem object
         instance_number: the instance number
         path: the location to drop the service file
     Returns:
-        The path to the created service file
+        A tuple containing (service_file_path, socket_file_path).
+        socket_file_path will be None if the problem is not a service.
     """
 
-    template = """[Unit]
+    service_template = """[Unit]
 Description={} instance
 
 [Service]
@@ -157,22 +160,55 @@ User={}
 WorkingDirectory={}
 Type={}
 ExecStart={}
-Restart={}
+StandardInput={}
+StandardOutput={}
+NonBlocking={}
 
 [Install]
 WantedBy=shell_manager.target
 """
 
+    socket_template = """[Unit]
+Description=Socket for {}
+
+[Socket]
+ListenStream={}
+Accept={}
+
+[Install]
+WantedBy=shell_manager.target
+"""
+
+    is_service = isinstance(problem, Service)
+    is_web = isinstance(problem, FlaskApp) or isinstance(problem, PHPApp)
+
     problem_service_info = problem.service()
-    content = template.format(problem.name, problem.user, problem.directory,
+    service_content = service_template.format(problem.name, problem.user, problem.directory,
                               problem_service_info['Type'], problem_service_info['ExecStart'],
-                              "no" if problem_service_info['Type'] == "oneshot" else "always")
-    service_file_path = join(path, "{}.service".format(problem.user))
+                              "null" if is_web or not is_service else "socke",
+                              "null" if is_web or not is_service else "socket",
+                              "True" if is_web or not is_service else "False")
+
+    if is_web or not is_service:
+        service_file_path = join(path, "{}.service".format(problem.user))
+    else:
+        service_file_path = join(path, "{}@.service".format(problem.user))
+
+    socket_file_path = join(path, "{}.socket".format(problem.user))
 
     with open(service_file_path, "w") as f:
-        f.write(content)
+        f.write(service_content)
 
-    return service_file_path
+    if isinstance(problem, Service):
+        socket_content = socket_template.format(problem.name, problem.port,
+                            "false" if is_web else "true")
+
+        with open(socket_file_path, "w") as f:
+            f.write(socket_content)
+
+        return (service_file_path, socket_file_path)
+
+    return (service_file_path, None)
 
 def create_instance_user(problem_name, instance_number):
     """
@@ -329,13 +365,15 @@ def deploy_files(staging_directory, instance_directory, file_list, username, pro
         os.chown(instance_directory, default.pw_uid, user.pw_gid)
         os.chmod(instance_directory, 0o750)
 
-def install_user_service(service_file):
+def install_user_service(service_file, socket_file):
     """
-    Installs the service file into the systemd service directory,
-    sets the service to start on boot, and starts the service now.
+    Installs the service file and socket file into the systemd
+    service directory, sets the service to start on boot, and
+    starts the service now.
 
     Args:
         service_file: The path to the systemd service file to install
+        socket_file: The path to the systemd socket file to install
     """
 
     service_name = os.path.basename(service_file)
@@ -346,9 +384,28 @@ def install_user_service(service_file):
     service_path = os.path.join(SYSTEMD_SERVICE_PATH, service_name)
     shutil.copy2(service_file, service_path)
 
+    if socket_file != None:
+        socket_name = os.path.basename(socket_file)
+
+        # copy socket file
+        socket_path = os.path.join(SYSTEMD_SERVICE_PATH, socket_name)
+        shutil.copy2(socket_file, socket_path)
+        execute(["systemctl", "enable", socket_name], timeout=60)
+
+        # if this is a redeployment of a web challenge, it is necessary to stop all instances
+        # of the running service before restarting the socket.
+        try:
+            execute(["systemctl", "stop", service_name], timeout=60)
+        except RunProcessError as e:
+            pass
+
+        execute(["systemctl", "restart", socket_name], timeout=60)
+
     execute(["systemctl", "daemon-reload"], timeout=60)
     execute(["systemctl", "enable", service_name], timeout=60)
-    execute(["systemctl", "restart", service_name], timeout=60)
+
+    if socket_file == None:
+      execute(["systemctl", "restart", service_name], timeout=60)
 
 def generate_instance(problem_object, problem_directory, instance_number,
                       staging_directory, deployment_directory=None):
@@ -454,8 +511,8 @@ def generate_instance(problem_object, problem_directory, instance_number,
         if not os.path.isfile(join(copypath, f.path)):
             logger.error("File '%s' does not exist on the file system!", f)
 
-    service_file = create_service_file(problem, instance_number, staging_directory)
-    logger.debug("...Created service file '%s'.", service_file)
+    service_file, socket_file = create_service_files(problem, instance_number, staging_directory)
+    logger.debug("...Created service files '%s','%s'.", service_file, socket_file)
 
     # template the description
     problem.description = template_string(problem.description, **get_attributes(problem))
@@ -468,7 +525,8 @@ def generate_instance(problem_object, problem_directory, instance_number,
         "deployment_directory": deployment_directory,
         "files": all_files,
         "web_accessible_files": web_accessible_files,
-        "service_file": service_file
+        "service_file": service_file,
+        "socket_file": socket_file
     }
 
 def deploy_problem(problem_directory, instances=[0], test=False, deployment_directory=None):
@@ -477,7 +535,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
 
     Args:
         problem_directory: The directory storing the problem
-        instances: The number of instances to deploy. Defaults to 1.
+        instances: The list of instances to deploy. Defaults to [0]
         test: Whether the instances are test instances or not. Defaults to False.
         deployment_directory: If not None, the challenge will be deployed here instead of their home directory
     """
@@ -543,7 +601,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
                     os.makedirs(os.path.dirname(destination))
                 shutil.copy2(source, destination)
 
-            install_user_service(instance["service_file"])
+            install_user_service(instance["service_file"], instance["socket_file"])
 
             # delete staging directory
             shutil.rmtree(instance["staging_directory"])
@@ -554,6 +612,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
             "user": problem.user,
             "deployment_directory": deployment_directory,
             "service": os.path.basename(instance["service_file"]),
+            "socket": None if instance["socket_file"] is None else os.path.basename(instance["socket_file"]),
             "server": problem.server,
             "description": problem.description,
             "flag": problem.flag,
@@ -571,7 +630,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
 
         logger.debug("The instance deployment information can be found at '%s'.", instance_info_path)
 
-    logger.info("Problem '%s' deployed successfully.", problem_object["name"])
+    logger.info("Problem instances %s were successfully deployed for '%s'.", instances, problem_object["name"])
 
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
@@ -609,7 +668,7 @@ def deploy_problems(args, config):
                 else:
                     logger.error("Could not find bundle at '%s'.", bundle_path)
                     raise FatalException
-        problem_namess = bundle_problems
+        problem_names = bundle_problems
 
     # before deploying problems, load in port_map and already_deployed instances
     already_deployed = {}
@@ -669,17 +728,26 @@ def remove_instances(path, instance_list):
             directory = instance["deployment_directory"]
             user = instance["user"]
             service = instance["service"]
+            socket = instance["socket"]
             deployment_json_path = join(deployment_json_dir, "{}.json".format(instance_number))
 
             logger.debug("...Removing systemd service '%s'.", service)
-            execute(["systemctl", "stop", service], timeout=60)
+            if socket != None:
+                execute(["systemctl", "stop", socket], timeout=60)
+                execute(["systemctl", "disable", socket], timeout=60)
+                os.remove(join(SYSTEMD_SERVICE_PATH, socket))
+
+            try:
+                execute(["systemctl", "stop", service], timeout=60)
+            except RunProcessError as e:
+                pass
+
             execute(["systemctl", "disable", service], timeout=60)
             os.remove(join(SYSTEMD_SERVICE_PATH, service))
-            os.remove(deployment_json_path)
-
 
             logger.debug("...Removing deployment directory '%s'.", directory)
             shutil.rmtree(directory)
+            os.remove(deployment_json_path)
 
             logger.debug("...Removing problem user '%s'.", user)
             execute(["userdel", user])
