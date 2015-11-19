@@ -2,10 +2,15 @@
 Problem repository management for the shell manager.
 """
 
-import spur, gzip
+import spur, gzip, logging
 
 from shutil import copy2
-from os.path import join
+from os import makedirs
+from os.path import join, exists, isdir
+
+from shell_manager.util import FatalException
+
+logger = logging.getLogger(__name__)
 
 def update_repo(args, config):
     """
@@ -26,7 +31,8 @@ def remote_update(repo_ui, deb_paths=[]):
         deb_paths: list of problem deb paths to copy.
     """
 
-    pass
+    logger.error("Currently not implemented -- sorry!")
+    raise FatalException
 
 def local_update(repo_path, deb_paths=[]):
     """
@@ -37,6 +43,13 @@ def local_update(repo_path, deb_paths=[]):
         dep_paths: list of problem deb paths to copy.
     """
 
+    if not exists(repo_path):
+        logger.info("Creating repository at '%s'.", repo_path)
+        makedirs(repo_path)
+    elif not isdir(repo_path):
+        logger.critical("Repoistory '%s' is not a directory!", repo_path)
+        raise FatalException
+
     [copy2(deb_path, repo_path) for deb_path in deb_paths]
 
     shell = spur.LocalShell()
@@ -46,4 +59,4 @@ def local_update(repo_path, deb_paths=[]):
     with gzip.open(packages_path, "wb") as packages:
         packages.write(result.output)
 
-    print("Updated problem repository.")
+    logger.info("Repoistory '%s' updated successfully. Copied %d packages.", repo_path, len(deb_paths))
