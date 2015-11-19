@@ -447,12 +447,12 @@ def generate_instance(problem_object, problem_directory, instance_number,
         all_files.extend(problem.service_files)
 
     if not all([isinstance(f, File) for f in all_files]):
-        logger.critical("All files must be created using the File class!")
+        logger.error("All files must be created using the File class!")
         raise FatalException
 
     for f in all_files:
         if not os.path.isfile(join(copypath, f.path)):
-            logger.critical("File '%s' does not exist on the file system!", f)
+            logger.error("File '%s' does not exist on the file system!", f)
 
     service_file = create_service_file(problem, instance_number, staging_directory)
     logger.debug("...Created service file '%s'.", service_file)
@@ -585,7 +585,7 @@ def deploy_problems(args, config):
         create_user(deploy_config.DEFAULT_USER)
 
     if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
-        logger.critical("Cannot specify deployment directory if deploying multiple problems or instances.")
+        logger.error("Cannot specify deployment directory if deploying multiple problems or instances.")
         raise FatalException
 
     if args.secret:
@@ -606,7 +606,7 @@ def deploy_problems(args, config):
                     bundle = get_bundle(bundle_sources_path)
                     bundle_problems.extend(bundle["problems"])
                 else:
-                    logger.critical("Could not find bundle at '%s'.", bundle_path)
+                    logger.error("Could not find bundle at '%s'.", bundle_path)
                     raise FatalException
         problems = bundle_problems
 
@@ -621,7 +621,7 @@ def deploy_problems(args, config):
 
     lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
     if os.path.isfile(lock_file):
-        logger.critical("Cannot deploy while other deployment in progress. If you believe this is an error, "
+        logger.error("Cannot deploy while other deployment in progress. If you believe this is an error, "
                          "run 'shell_manager clean'")
         raise FatalException
 
@@ -648,7 +648,7 @@ def deploy_problems(args, config):
                 deploy_problem(join(get_problem_root(path, absolute=True)), instances=instance_list,
                                 test=args.dry, deployment_directory=args.deployment_directory)
             else:
-                logger.critical("Problem path '%s' cannot be found.", path)
+                logger.error("Problem path '%s' cannot be found.", path)
                 raise FatalException
     finally:
         if not args.dry:
@@ -700,7 +700,7 @@ def undeploy_problems(args, config):
                     bundle = get_bundle(bundle_sources_path)
                     bundle_problems.extend(bundle["problems"])
                 else:
-                    logger.critical("Could not find bundle at '%s'.", bundle_path)
+                    logger.error("Could not find bundle at '%s'.", bundle_path)
                     raise FatalException
         problem_paths = bundle_problems
 
@@ -713,7 +713,7 @@ def undeploy_problems(args, config):
 
     lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
     if os.path.isfile(lock_file):
-        logger.critical("Cannot undeploy while other deployment in progress. If you believe this is an error, "
+        logger.error("Cannot undeploy while other deployment in progress. If you believe this is an error, "
                          "run 'shell_manager clean'")
         raise FatalException
 
@@ -730,15 +730,14 @@ def undeploy_problems(args, config):
             problem_root = get_problem_root(path, absolute=True)
             problem = get_problem(problem_root)
             logger.debug("Undeploying problem '%s'.", problem["name"])
-            if not all(instance in already_deployed[path] for instance in instance_range):
-                logger.error("Not all specified instances are deployed for problem '%s'.", problem["name"])
-                raise FatalException
-
-            if isdir(problem_root):
+            instances = list(filter(lambda x : x in already_deployed, instance_range))
+            if len(instances) == 0:
+                logger.warn("No deployed instances %s were found for problem '%s'.")
+            elif isdir(problem_root):
                 remove_instances(path, instance_range)
                 logger.info("All '%s' problem instances removed successfully.", problem["name"])
             else:
-                logger.critical("Problem path '%s' is not a directory.", path)
+                logger.error("Problem path '%s' is not a directory.", path)
                 raise FatalException
     finally:
         os.remove(lock_file)
