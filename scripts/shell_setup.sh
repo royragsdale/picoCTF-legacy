@@ -25,6 +25,9 @@ fi
 # Install Dependencies
 apt-get install -y dpkg dpkg-dev fakeroot python3 python3-pip socat nginx php5-cli gcc-multilib shellinabox
 
+# Install uwsgi and plugins for shell server
+apt-get install -y uwsgi uwsgi-plugin-php uwsgi-plugin-python3
+
 dpkg -i /vagrant/configs/shellinabox/shellinabox_2.18_amd64.deb
 
 pip3 install --upgrade pip
