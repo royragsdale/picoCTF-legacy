@@ -50,7 +50,7 @@ def problem_to_control(problem, debian_path):
         control["Depends"] = ", ".join(problem.get("pkg_dependencies", []))
 
     contents = ""
-    for option, value in control.items():
+    for option, value in sorted(control.items()):
         contents += "{}: {}\n".format(option, value)
 
     control_file = open(join(debian_path, "control"), "w")

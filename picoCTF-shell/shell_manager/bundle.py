@@ -41,7 +41,7 @@ def bundle_to_control(bundle, debian_path):
     control["Depends"] = ", ".join(pkg_dependencies)
 
     contents = ""
-    for option, value in control.items():
+    for option, value in sorted(control.items()):
         contents += "{}: {}\n".format(option, value)
 
     control_file = open(join(debian_path, "control"), "w")
