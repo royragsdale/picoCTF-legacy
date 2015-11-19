@@ -65,7 +65,7 @@ def bundle_problems(args, config):
         logger.critical("No bundle could be found at '%s'", args.bundle_path)
         raise FatalException
 
-    logger.debug("Starting to bundle: %s", bundle["name"])
+    logger.debug("Starting to bundle: '%s'.", bundle["name"])
 
     for problem_name in bundle["problems"]:
         installed_path = get_problem_root(problem_name, absolute=True)
