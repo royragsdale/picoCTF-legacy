@@ -2,7 +2,7 @@
 Bundling operation for the shell manager. A special case of packaging.
 """
 
-import json, spur
+import json, spur, logging
 import copy as object_copy
 
 import os
@@ -13,6 +13,10 @@ from shutil import rmtree, copyfile
 
 from shell_manager.package import DEB_DEFAULTS
 from shell_manager.util import BUNDLE_ROOT, sanitize_name, get_problem, get_problem_root, get_bundle, get_bundle_root
+
+from shell_manager.util import FatalException
+
+logger = logging.getLogger(__name__)
 
 def bundle_to_control(bundle, debian_path):
     """
@@ -44,6 +48,8 @@ def bundle_to_control(bundle, debian_path):
     control_file.write(contents)
     control_file.close()
 
+    logger.debug("Control file contents:\n%s", contents)
+
 def bundle_problems(args, config):
     """
     Main entrypoint for generating problem bundles.
@@ -56,12 +62,16 @@ def bundle_problems(args, config):
     elif os.path.isfile(args.bundle_path):
         bundle = json.loads(open(args.bundle_path).read())
     else:
-        raise Exception("No bundle {}".format(args.bundle_path))
+        logger.critical("No bundle could be found at '%s'", args.bundle_path)
+        raise FatalException
+
+    logger.debug("Starting to bundle: %s", bundle["name"])
 
     for problem_name in bundle["problems"]:
         installed_path = get_problem_root(problem_name, absolute=True)
         if not isdir(installed_path) or not get_problem(installed_path):
-            raise Exception("'{}' is not an installed problem.".format(problem_name))
+            logger.critical("'%s' is not an installed problem.", problem_name)
+            raise FatalException
 
     paths = {"working": getcwd() if args.out is None else args.out}
 
@@ -109,11 +119,11 @@ def bundle_problems(args, config):
     result = shell.run(["fakeroot", "dpkg-deb", "--build", paths["staging"], deb_path])
 
     if result.return_code != 0:
-        print("Error building bundle deb for '{}'".format(bundle["name"]))
-        print(result.output)
+        logger.error("Error building bundle deb for '%s'.", bundle["name"])
+        logger.error(result.output)
     else:
-        print("Bundle '{}' packaged successfully.".format(bundle["name"]))
+        logger.info("Bundle '%s' packaged successfully.", bundle["name"])
 
-    print("Cleaning up staging directory '{}'.".format(paths["staging"]))
+    logger.debug("Clearning up '%s' staging directory '%s'.", bundle["name"], paths["staging"])
 
     rmtree(paths["staging"])
