@@ -60,7 +60,7 @@ def give_port():
                 return port
 
 
-from os.path import join
+from os.path import join, isdir
 from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
@@ -80,12 +80,12 @@ from shell_manager.bundle import get_bundle
 from shell_manager.bundle import get_bundle, get_bundle_root
 from shell_manager.problem import get_problem, get_problem_root
 from shell_manager.util import HACKSPORTS_ROOT, STAGING_ROOT, DEPLOYED_ROOT, sanitize_name, get_attributes
+from shell_manager.util import FatalException
 
-import os
-import json
-import shutil
-import functools
-import traceback
+import os, json, shutil, logging
+import functools, traceback
+
+logger = logging.getLogger(__name__)
 
 def challenge_meta(attributes):
     """
@@ -640,24 +640,30 @@ def remove_instances(path, instance_list):
     for instance in problem_instances:
         instance_number = instance["instance_number"]
         if instance["instance_number"] in instance_list:
-            print("Removing instance {} of {}".format(instance_number, path))
+            logger.debug("Removing instance {} of '{}'.".format(instance_number, path))
+
             directory = instance["deployment_directory"]
             user = instance["user"]
             service = instance["service"]
             deployment_json_path = join(deployment_json_dir, "{}.json".format(instance_number))
 
+            logger.debug("...Removing systemd service '%s'.", service)
             execute(["systemctl", "stop", service], timeout=60)
             execute(["systemctl", "disable", service], timeout=60)
-            shutil.rmtree(directory)
             os.remove(join(SYSTEMD_SERVICE_PATH, service))
             os.remove(deployment_json_path)
-            execute(["userdel", user])
 
+
+            logger.debug("...Removing deployment directory '%s'.", directory)
+            shutil.rmtree(directory)
+
+            logger.debug("...Removing problem user '%s'.", user)
+            execute(["userdel", user])
 
 def undeploy_problems(args, config):
     """ Main entrypoint for problem undeployment """
 
-    problems = args.problem_paths
+    problem_paths = args.problem_paths
 
     if args.bundle:
         bundle_problems = []
@@ -671,8 +677,9 @@ def undeploy_problems(args, config):
                     bundle = get_bundle(bundle_sources_path)
                     bundle_problems.extend(bundle["problems"])
                 else:
-                    raise Exception("Could not get bundle.")
-        problems = bundle_problems
+                    logger.critical("Could not find bundle at '%s'.", bundle_path)
+                    raise FatalException
+        problem_paths = bundle_problems
 
     # before deploying problems, load in already_deployed instances
     already_deployed = {}
@@ -683,8 +690,9 @@ def undeploy_problems(args, config):
 
     lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
     if os.path.isfile(lock_file):
-        raise Exception("Cannot undeploy while other deployment in progress. If you believe this is an error, "
+        logger.critical("Cannot undeploy while other deployment in progress. If you believe this is an error, "
                          "run 'shell_manager clean'")
+        raise FatalException
 
     with open(lock_file, "w") as f:
         f.write("1")
@@ -695,16 +703,19 @@ def undeploy_problems(args, config):
         instance_range = list(range(0, args.num_instances))
 
     try:
-        for path in problems:
-            assert all(instance in already_deployed[path] for instance in instance_range), \
-                    "Not all specified instances are deployed for problem \"{}\"".format(path)
+        for path in problem_paths:
+            problem_root = get_problem_root(path, absolute=True)
+            problem = get_problem(problem_root)
+            logger.debug("Undeploying problem '%s'.", problem["name"])
+            if not all(instance in already_deployed[path] for instance in instance_range):
+                logger.error("Not all specified instances are deployed for problem '%s'.", problem["name"])
+                raise FatalException
 
-            if os.path.isdir(os.path.join(get_problem_root(path, absolute=True))):
+            if isdir(problem_root):
                 remove_instances(path, instance_range)
+                logger.info("All '%s' problem instances removed successfully.", problem["name"])
             else:
-                raise Exception("Problem path {} cannot be found".format(path))
-
-    except Exception as e:
-        traceback.print_exc()
+                logger.critical("Problem path '%s' is not a directory.", path)
+                raise FatalException
     finally:
         os.remove(lock_file)
