@@ -2,7 +2,7 @@
 Problem migration operations for the shell manager.
 """
 
-import json, os
+import json, os, logging
 
 from sys import stdin
 from copy import deepcopy
@@ -10,6 +10,9 @@ from os.path import join
 from re import findall
 
 from shell_manager.util import PROBLEM_ROOT, sanitize_name, get_problem_root, get_problem
+from shell_manager.util import FatalException
+
+logger = logging.getLogger(__name__)
 
 #More in-depth validation should occur with some sort of linting step.
 PROBLEM_FIELDS = [
@@ -177,7 +180,7 @@ def migrate_problems(args, config):
         problem = get_problem(problem_path)
         problem_copy = deepcopy(problem)
 
-        print("Migrating '{}'...".format(problem_path))
+        logger.debug("Migrating '%s' from legacy %s format.", problem["name"], args.legacy_format)
 
         migrater = MIGRATION_TABLE[args.legacy_format]
         updated_problem = migrater(problem_path, problem_copy,
@@ -186,5 +189,5 @@ def migrate_problems(args, config):
         if args.dry:
             print(updated_problem)
         else:
-            print("Updated '{}' to the new problem format.".format(updated_problem["name"]))
+            logger.info("Updated '%s' to the new problem format.", problem["name"])
             set_problem(problem_path, updated_problem)
