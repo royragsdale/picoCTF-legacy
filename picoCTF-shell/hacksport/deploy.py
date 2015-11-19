@@ -496,12 +496,12 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
         current_instance = instance_number
         staging_directory = generate_staging_directory()
         if test and deployment_directory is None:
-            deployment_directory = os.path.join(staging_directory, "deployed")
+            deployment_directory = join(staging_directory, "deployed")
 
         instance = generate_instance(problem_object, problem_directory, instance_number, staging_directory, deployment_directory=deployment_directory)
         instance_list.append((instance_number, instance))
 
-    deployment_json_dir = os.path.join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
+    deployment_json_dir = join(DEPLOYED_ROOT, sanitize_name(problem_object["name"]))
     if not os.path.isdir(deployment_json_dir):
         os.makedirs(deployment_json_dir)
 
@@ -569,7 +569,8 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
         with open(instance_info_path, "w") as f:
             f.write(json.dumps(deployment_info, indent=4, separators=(", ", ": ")))
 
-    logger.debug("The instance deployment information can be found at '%s'.", instance_info_path)
+        logger.debug("The instance deployment information can be found at '%s'.", instance_info_path)
+
     logger.info("Problem '%s' deployed successfully.", problem_object["name"])
 
 def deploy_problems(args, config):
@@ -592,7 +593,7 @@ def deploy_problems(args, config):
         deploy_config.DEPLOY_SECRET = args.secret
         logger.warn("Overriding DEPLOY_SECRET with user supplied secret '%s'.", args.secret)
 
-    problems = args.problem_paths
+    problem_names = args.problem_paths
 
     if args.bundle:
         bundle_problems = []
@@ -608,7 +609,7 @@ def deploy_problems(args, config):
                 else:
                     logger.error("Could not find bundle at '%s'.", bundle_path)
                     raise FatalException
-        problems = bundle_problems
+        problem_namess = bundle_problems
 
     # before deploying problems, load in port_map and already_deployed instances
     already_deployed = {}
@@ -634,21 +635,21 @@ def deploy_problems(args, config):
         instance_range = list(range(0, args.num_instances))
 
     try:
-        for path in problems:
+        for problem_name in problem_names:
             if args.redeploy:
                 instance_list = instance_range
             else:
                 # remove already deployed instances
-                instance_list = list(set(instance_range) - set(already_deployed.get(path, [])))
+                instance_list = list(set(instance_range) - set(already_deployed.get(problem_name, [])))
 
-            if args.dry and isdir(path):
-                deploy_problem(path, instances=instance_list, test=args.dry,
+            if args.dry and isdir(problem_name):
+                deploy_problem(problem_name, instances=instance_list, test=args.dry,
                                 deployment_directory=args.deployment_directory)
-            elif os.path.isdir(join(get_problem_root(path, absolute=True))):
-                deploy_problem(join(get_problem_root(path, absolute=True)), instances=instance_list,
+            elif isdir(join(get_problem_root(problem_name, absolute=True))):
+                deploy_problem(join(get_problem_root(problem_name, absolute=True)), instances=instance_list,
                                 test=args.dry, deployment_directory=args.deployment_directory)
             else:
-                logger.error("Problem path '%s' cannot be found.", path)
+                logger.error("Problem '%s' doesn't appear to be installed.", problem_name)
                 raise FatalException
     finally:
         if not args.dry:
@@ -686,30 +687,30 @@ def remove_instances(path, instance_list):
 def undeploy_problems(args, config):
     """ Main entrypoint for problem undeployment """
 
-    problem_paths = args.problem_paths
+    problem_names = args.problem_paths
 
     if args.bundle:
         bundle_problems = []
         for bundle_path in args.problem_paths:
-            if os.path.isfile(bundle_path):
+            if isfile(bundle_path):
                 bundle = get_bundle(bundle_path)
                 bundle_problems.extend(bundle["problems"])
             else:
                 bundle_sources_path = get_bundle_root(bundle_path, absolute=True)
-                if os.path.isdir(bundle_sources_path):
+                if isdir(bundle_sources_path):
                     bundle = get_bundle(bundle_sources_path)
                     bundle_problems.extend(bundle["problems"])
                 else:
                     logger.error("Could not find bundle at '%s'.", bundle_path)
                     raise FatalException
-        problem_paths = bundle_problems
+        problem_names = bundle_problems
 
     # before deploying problems, load in already_deployed instances
     already_deployed = {}
     for path, problem in get_all_problems().items():
-        already_deployed[path] = []
+        already_deployed[problem["name"]] = []
         for instance in get_all_problem_instances(path):
-            already_deployed[path].append(instance["instance_number"])
+            already_deployed[problem["name"]].append(instance["instance_number"])
 
     lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
     if os.path.isfile(lock_file):
@@ -726,18 +727,19 @@ def undeploy_problems(args, config):
         instance_range = list(range(0, args.num_instances))
 
     try:
-        for path in problem_paths:
-            problem_root = get_problem_root(path, absolute=True)
-            problem = get_problem(problem_root)
-            logger.debug("Undeploying problem '%s'.", problem["name"])
-            instances = list(filter(lambda x : x in already_deployed, instance_range))
-            if len(instances) == 0:
-                logger.warn("No deployed instances %s were found for problem '%s'.")
-            elif isdir(problem_root):
-                remove_instances(path, instance_range)
-                logger.info("All '%s' problem instances removed successfully.", problem["name"])
+        for problem_name in problem_names:
+            problem_root = get_problem_root(problem_name, absolute=True)
+            if isdir(problem_root):
+                problem = get_problem(problem_root)
+                instances = list(filter(lambda x: x in already_deployed[problem["name"]], instance_range))
+                if len(instances) == 0:
+                    logger.warn("No deployed instances %s were found for problem '%s'.", instance_range, problem["name"])
+                else:
+                    logger.debug("Undeploying problem '%s'.", problem["name"])
+                    remove_instances(problem_name, instance_range)
+                    logger.info("Problem instances %s were successfully removed from '%s'.", instances, problem["name"])
             else:
-                logger.error("Problem path '%s' is not a directory.", path)
+                logger.error("Problem '%s' doesn't appear to be installed.", problem_name)
                 raise FatalException
     finally:
         os.remove(lock_file)
