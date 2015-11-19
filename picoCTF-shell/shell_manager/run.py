@@ -12,7 +12,7 @@ from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
-from shell_manager.util import HACKSPORTS_ROOT
+from shell_manager.util import HACKSPORTS_ROOT, FatalException
 from hacksport.deploy import deploy_problems, undeploy_problems
 from hacksport.status import clean, status, publish
 
@@ -106,25 +106,27 @@ def main():
 
     if args.debug:
         coloredlogs.set_level(logging.DEBUG)
-
-    config_path = join(HACKSPORTS_ROOT, "config.py")
     try:
-        config = load_source("config", config_path)
-    except PermissionError:
-        print("You must run shell_manager with sudo.")
-        exit(1)
-    except FileNotFoundError:
-        default_config_path = join(dirname(shell_manager.__file__), "config.py")
-        copy2(default_config_path, HACKSPORTS_ROOT)
-        chmod(config_path, 0o640)
-        print("There is no config.py in {}. One has been created for you. Please edit it accordingly.".format(HACKSPORTS_ROOT))
-        exit(1)
+        config_path = join(HACKSPORTS_ROOT, "config.py")
+        try:
+            config = load_source("config", config_path)
+        except PermissionError:
+            logger.error("You must run shell_manager with sudo.")
+            raise FatalException
+        except FileNotFoundError:
+            default_config_path = join(dirname(shell_manager.__file__), "config.py")
+            copy2(default_config_path, HACKSPORTS_ROOT)
+            chmod(config_path, 0o640)
+            logger.info("There is no config.py in '%s'. One has been created for you. Please edit it accordingly.", HACKSPORTS_ROOT)
+            raise FatalException
 
-    #Call the default function
-    if "func" in args:
-        args.func(args, config)
-    else:
-        parser.print_help()
+        #Call the default function
+        if "func" in args:
+            args.func(args, config)
+        else:
+            parser.print_help()
+    except FatalException:
+        exit(1)
 
 if __name__ == "__main__":
     main()
