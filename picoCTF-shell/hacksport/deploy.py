@@ -59,7 +59,7 @@ def give_port():
                 context["port_map"][port] = (context["problem"], context["instance"])
                 return port
 
-from os.path import join, isdir
+from os.path import join, isdir, isfile
 from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
