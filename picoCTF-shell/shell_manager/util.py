@@ -48,7 +48,8 @@ bundle_schema = Schema({
     "version": All(str, Length(min=1, max=8)),
     "tags": list,
     "organization": All(str, Length(min=1, max=32)),
-    "dependencies": dict
+    "dependencies": dict,
+    "pkg_dependencies": list
 })
 
 class FatalException(Exception):
