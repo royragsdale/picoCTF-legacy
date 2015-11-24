@@ -185,7 +185,7 @@ WantedBy=shell_manager.target
     problem_service_info = problem.service()
     service_content = service_template.format(problem.name, problem.user, problem.directory,
                               problem_service_info['Type'], problem_service_info['ExecStart'],
-                              "null" if is_web or not is_service else "socke",
+                              "null" if is_web or not is_service else "socket",
                               "null" if is_web or not is_service else "socket",
                               "True" if is_web or not is_service else "False")
 
