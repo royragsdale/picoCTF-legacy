@@ -82,8 +82,6 @@ class Challenge(metaclass=ABCMeta):
 
     files = []
 
-    remove_aslr = False
-
     def generate_flag(self, random):
         """
         Default generation of flags.
@@ -122,18 +120,6 @@ class Challenge(metaclass=ABCMeta):
             "Type": "oneshot",
             "ExecStart": "/bin/bash -c 'echo started'"
         }
-
-    def make_no_aslr_wrapper(self, exec_path, output="no_aslr_wrapper"):
-        """
-        Compiles a setgid wrapper to remove aslr.
-        Returns the name of the file generated
-        """
-
-        source_path = "no_aslr_wrapper.c"
-        execute(["gcc", "-o", output, "-DBINARY_PATH=\"{}\"".format(exec_path), join(EXTRA_ROOT, source_path)])
-        self.files.append(ExecutableFile(output))
-
-        return output
 
 
 class Compiled(Challenge):
@@ -213,6 +199,8 @@ class Remote(Service):
     Base behavior for remote challenges that use stdin/stdout.
     """
 
+    remove_aslr = False
+
     def remote_setup(self):
         """
         Setup function for remote challenges
@@ -231,6 +219,19 @@ class Remote(Service):
             self.service_files = [ExecutableFile(self.program_name)]
 
         self.start_cmd = join(self.directory, self.program_name)
+
+    def make_no_aslr_wrapper(self, exec_path, output="no_aslr_wrapper"):
+        """
+        Compiles a setgid wrapper to remove aslr.
+        Returns the name of the file generated
+        """
+
+        source_path = "no_aslr_wrapper.c"
+        execute(["gcc", "-o", output, "-DBINARY_PATH=\"{}\"".format(exec_path), join(EXTRA_ROOT, source_path)])
+        self.files.append(ExecutableFile(output))
+
+        return output
+
 
 class FlaskApp(Service):
     """
