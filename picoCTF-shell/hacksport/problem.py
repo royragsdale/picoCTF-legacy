@@ -238,6 +238,7 @@ class FlaskApp(Service):
     Class for python Flask web apps
     """
 
+    python_version = "3"
     app = "server:app"
 
     def flask_setup(self):
@@ -248,8 +249,15 @@ class FlaskApp(Service):
         self.app_file = "{}.py".format(self.app.split(":")[0])
         assert os.path.isfile(self.app_file), "module must exist"
 
+        if self.python_version == "2":
+            plugin_version = ""
+        elif self.python_version == "3":
+            plugin_version = "3"
+        else:
+            assert False, "Python version {} is invalid".format(python_version)
+
         self.service_files = [File(self.app_file)]
-        self.start_cmd = "uwsgi --protocol=http --plugin python3 -w {} --logto /dev/null".format(self.app)
+        self.start_cmd = "uwsgi --protocol=http --plugin python{} -w {} --logto /dev/null".format(plugin_version, self.app)
 
 class PHPApp(Service):
     """
