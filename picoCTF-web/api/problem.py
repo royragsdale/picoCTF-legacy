@@ -645,7 +645,7 @@ def get_all_problems(category=None, show_disabled=False):
     return list(db.problems.find(match, {"_id":0}).sort('score', pymongo.ASCENDING))
 
 @api.cache.memoize()
-def get_solved_problems(tid=None, uid=None, category=None):
+def get_solved_problems(tid=None, uid=None, category=None, show_disabled=False):
     """
     Gets the solved problems for a given team or user.
 
@@ -677,12 +677,12 @@ def get_solved_problems(tid=None, uid=None, category=None):
             pids.append(submission["pid"])
             problem = unlocked_filter(get_problem(pid=submission["pid"]), True)
             problem["solve_time"] = submission["timestamp"]
-            if not problem["disabled"]:
+            if not problem["disabled"] or show_disabled:
                 result.append(problem)
 
     return result
 
-def get_solved_pids(tid=None, uid=None, category=None):
+def get_solved_pids(*args, **kwargs):
     """
     Gets the solved pids for a given team or user.
 
@@ -693,7 +693,7 @@ def get_solved_pids(tid=None, uid=None, category=None):
         List of solved problem ids
     """
 
-    return [problem["pid"] for problem in get_solved_problems(tid=tid, uid=uid, category=category)]
+    return [problem["pid"] for problem in get_solved_problems(*args, **kwargs)]
 
 def is_problem_unlocked(problem, solved):
     """
