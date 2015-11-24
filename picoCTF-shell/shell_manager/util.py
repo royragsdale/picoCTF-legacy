@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 # the root of the hacksports local store
 HACKSPORTS_ROOT = "/opt/hacksports/"
 PROBLEM_ROOT = join(HACKSPORTS_ROOT, "sources")
+EXTRA_ROOT = join(HACKSPORTS_ROOT, "extra")
 STAGING_ROOT = join(HACKSPORTS_ROOT, "staging")
 DEPLOYED_ROOT = join(HACKSPORTS_ROOT, "deployed")
 BUNDLE_ROOT = join(HACKSPORTS_ROOT, "bundles")
