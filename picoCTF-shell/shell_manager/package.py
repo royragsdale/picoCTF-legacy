@@ -137,7 +137,7 @@ def find_problems(problem_path):
     problem_paths = []
 
     for root, _, files in os.walk(problem_path):
-        if "problem.json" in files:
+        if "problem.json" in files and "__staging" not in root:
             problem_paths.append(root)
 
     return problem_paths
