@@ -473,14 +473,10 @@ def generate_instance(problem_object, problem_directory, instance_number,
     web_accessible_files = []
 
     def url_for(web_accessible_files, source_name, display=None, raw=False, pre_templated=False):
-<<<<<<< Updated upstream
         if pre_templated:
             source_path = join(copy_path, "__pre_templated", source_name)
         else:
             source_path = join(copy_path, source_name)
-=======
-        source_path = join(copy_path, source_name) if pre_templated else join(copy_path, "__pre_templated", source_name)
->>>>>>> Stashed changes
 
         problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
         problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
