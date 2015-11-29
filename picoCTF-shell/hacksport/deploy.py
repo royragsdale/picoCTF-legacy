@@ -304,8 +304,7 @@ def template_file(in_file_path, out_file_path, **kwargs):
     with open(out_file_path, "w") as f:
         f.write(output)
 
-def template_staging_directory(staging_directory, problem, dont_template_files = ["problem.json", "challenge.py"],
-                                                           dont_template_directories = ["templates"]):
+def template_staging_directory(staging_directory, problem):
     """
     Templates every file in the staging directory recursively other than
     problem.json and challenge.py.
@@ -313,11 +312,13 @@ def template_staging_directory(staging_directory, problem, dont_template_files =
     Args:
         staging_directory: The path of the staging directory
         problem: The problem object
-        dont_template_files: The list of files not to template. Defaults to ["problem.json", "challenge.py"]
-        dont_template_directories: The list of files not to recurse into. Defaults to ["templates"]
     """
 
     # prepend the staging directory to all
+    dont_template = copy(problem.dont_template) + ["problem.json", "challenge.py", "templates"]
+
+    dont_template_files = list(filter(isfile, dont_template))
+    dont_template_directories = list(filter(isdir, dont_template))
     dont_template_directories = [join(staging_directory, directory) for directory in dont_template_directories]
 
     for root, dirnames, filenames in os.walk(staging_directory):

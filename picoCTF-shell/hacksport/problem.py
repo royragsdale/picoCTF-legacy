@@ -81,6 +81,7 @@ class Challenge(metaclass=ABCMeta):
     """
 
     files = []
+    dont_template = []
 
     def generate_flag(self, random):
         """
