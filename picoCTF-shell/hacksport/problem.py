@@ -35,6 +35,14 @@ class File(object):
             "group": self.group
         }
 
+class PreTemplatedFile(File):
+    """
+    Wrapper for files that should be served pre-templated.
+    """
+
+    def __init__(self, path, permissions=0o664):
+        super().__init__(path, permissions=permissions)
+
 class ExecutableFile(File):
     """
     Wrapper for executable files that will make them setgid and owned
