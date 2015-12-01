@@ -60,6 +60,7 @@ def give_port():
                 return port
 
 from os.path import join, isdir, isfile
+from os import makedirs
 from random import Random, randint
 from abc import ABCMeta
 from hashlib import md5
@@ -71,7 +72,7 @@ from copy import copy, deepcopy
 from spur import RunProcessError
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
-from hacksport.problem import File, ProtectedFile, ExecutableFile
+from hacksport.problem import File, ProtectedFile, ExecutableFile, PreTemplatedFile
 from hacksport.operations import create_user, execute
 from hacksport.status import get_all_problems, get_all_problem_instances
 from shell_manager.bundle import get_bundle
@@ -304,8 +305,7 @@ def template_file(in_file_path, out_file_path, **kwargs):
     with open(out_file_path, "w") as f:
         f.write(output)
 
-def template_staging_directory(staging_directory, problem, dont_template_files = ["problem.json", "challenge.py"],
-                                                           dont_template_directories = ["templates"]):
+def template_staging_directory(staging_directory, problem):
     """
     Templates every file in the staging directory recursively other than
     problem.json and challenge.py.
@@ -313,11 +313,13 @@ def template_staging_directory(staging_directory, problem, dont_template_files =
     Args:
         staging_directory: The path of the staging directory
         problem: The problem object
-        dont_template_files: The list of files not to template. Defaults to ["problem.json", "challenge.py"]
-        dont_template_directories: The list of files not to recurse into. Defaults to ["templates"]
     """
 
     # prepend the staging directory to all
+    dont_template = copy(problem.dont_template) + ["problem.json", "challenge.py", "templates", "__pre_templated"]
+
+    dont_template_files = list(filter(isfile, dont_template))
+    dont_template_directories = list(filter(isdir, dont_template))
     dont_template_directories = [join(staging_directory, directory) for directory in dont_template_directories]
 
     for root, dirnames, filenames in os.walk(staging_directory):
@@ -348,7 +350,13 @@ def deploy_files(staging_directory, instance_directory, file_list, username, pro
         output_path = join(instance_directory, f.path)
         if not os.path.isdir(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
-        shutil.copy2(join(staging_directory, f.path), output_path)
+
+        if isinstance(f, PreTemplatedFile):
+            file_source = join(staging_directory, "__pre_templated", f.path)
+        else:
+            file_source = join(staging_directory, f.path)
+
+        shutil.copy2(file_source, output_path)
 
         # set the ownership based on the type of file
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
@@ -431,14 +439,19 @@ def generate_instance(problem_object, problem_directory, instance_number,
     seed = generate_seed(problem_object['name'], deploy_config.DEPLOY_SECRET, str(instance_number))
     logger.debug("...Generated random seed '%s' for deployment.", seed)
 
-    copypath = join(staging_directory, PROBLEM_FILES_DIR)
-    shutil.copytree(problem_directory, copypath)
+    copy_path = join(staging_directory, PROBLEM_FILES_DIR)
+    shutil.copytree(problem_directory, copy_path)
+
+    pretemplated_directory = join(copy_path, "__pre_templated")
+
+    if isdir(pretemplated_directory):
+        shutil.rmtree(pretemplated_directory)
 
     # store cwd to restore later
     cwd = os.getcwd()
-    os.chdir(copypath)
+    os.chdir(copy_path)
 
-    challenge = load_source("challenge", join(copypath, "challenge.py"))
+    challenge = load_source("challenge", join(copy_path, "challenge.py"))
 
     if deployment_directory is None:
         deployment_directory = home_directory
@@ -455,10 +468,15 @@ def generate_instance(problem_object, problem_directory, instance_number,
     logger.debug("...Running problem initialize.")
     problem.initialize()
 
+    shutil.copytree(copy_path, pretemplated_directory)
+
     web_accessible_files = []
 
-    def url_for(web_accessible_files, source_name, display=None, raw=False):
-        source_path = join(copypath, source_name)
+    def url_for(web_accessible_files, source_name, display=None, raw=False, pre_templated=False):
+        if pre_templated:
+            source_path = join(copy_path, "__pre_templated", source_name)
+        else:
+            source_path = join(copy_path, source_name)
 
         problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
         problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
@@ -478,7 +496,7 @@ def generate_instance(problem_object, problem_directory, instance_number,
 
     problem.url_for = functools.partial(url_for, web_accessible_files)
 
-    template_staging_directory(copypath, problem)
+    template_staging_directory(copy_path, problem)
 
     if isinstance(problem, Compiled):
         problem.compiler_setup()
@@ -508,7 +526,7 @@ def generate_instance(problem_object, problem_directory, instance_number,
         raise FatalException
 
     for f in all_files:
-        if not os.path.isfile(join(copypath, f.path)):
+        if not os.path.isfile(join(copy_path, f.path)):
             logger.error("File '%s' does not exist on the file system!", f)
 
     service_file, socket_file = create_service_files(problem, instance_number, staging_directory)
@@ -604,7 +622,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
             install_user_service(instance["service_file"], instance["socket_file"])
 
             # delete staging directory
-            shutil.rmtree(instance["staging_directory"])
+            #shutil.rmtree(instance["staging_directory"])
 
         unique = problem_object["name"] + problem_object["author"] + str(instance_number) + deploy_config.DEPLOY_SECRET
 
