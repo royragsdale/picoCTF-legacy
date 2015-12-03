@@ -67,7 +67,8 @@ def get_connection(sid):
         )
         shell.run(["echo", "connected"])
     except spur.ssh.ConnectionError as e:
-        raise WebException("Cannot connect to {}@{}:{} with the specified password".format(username, host, port))
+        raise WebException("Cannot connect to {}@{}:{} with the specified password".format(
+            server["username"], server["host"], server["port"]))
 
     return shell
 
