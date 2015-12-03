@@ -87,7 +87,7 @@ def add_symlinks(sid, user, to_add):
             shell.run(["sudo", "ln", "-s", path, symlink])
             print("Added symlink %s --> %s" % (symlink, path))
         except spur.results.RunProcessError as e:
-            print("Failed to add symlink %s->%s" % (symlink, path))
+            print("Failed to add symlink %s --> %s" % (symlink, path))
 
 def run():
     global connections
