@@ -2,92 +2,54 @@
 
 import api
 import spur
-import time
+import json
+import string
+import random
+
 from os.path import join
 
-def cache(f, *args, **kwargs):
-    result = f(cache=False, *args, **kwargs)
-    key = api.cache.get_mongo_key(f, *args, **kwargs)
-    api.cache.set(key, result)
-    return result
+script = """
+import json
+import os
+import pwd
 
-class CantConnectException(Exception):
-    pass
+from os.path import join
 
-# open shell server connections
-connections = {}
+data = json.loads(raw_input())
 
-def get_connection(sid):
-    global connections
-    if connections.get(sid, None) == None:
-        try:
-            connections[sid] = api.shell_servers.get_connection(sid)
-        except api.common.WebException as e:
-            raise CantConnectException
-    return connections[sid]
-
-def get_home_dir(shell, user):
-    # first make sure the user has an account
-    if shell.run(["id", "-u", user], allow_error=True).return_code != 0:
-        return None
-
-    home_dir = shell.run(["bash", "-c", "echo ~%s" % user]).output.decode("utf-8").strip()
-
-    return home_dir
-
-@api.cache.memoize()
-def get_symlinks(sid, user):
-    shell = get_connection(sid)
-
-    home_dir = get_home_dir(shell, user)
-    if home_dir == None:
-        return None
-
+for user, symlinks in data.items():
+    home_dir = pwd.getpwnam(user).pw_dir
     problems_path = join(home_dir, "problems")
+
+    if not os.path.isdir(problems_path):
+        os.mkdir(problems_path)
+        os.chown(problems_path, 0, 0)
+
+    current_symlinks = set(list(os.listdir(problems_path)))
+    correct_symlinks = set(symlinks.keys())
+
+    for problem in correct_symlinks - current_symlinks:
+        src, dst = symlinks[problem], join(problems_path, problem)
+        os.symlink(src, dst)
+        print("Added symlink %s --> %s" % (src, dst))
+
+    for problem in current_symlinks - correct_symlinks:
+        link = join(problems_path, problem)
+        assert os.path.islink(link), "%s is not a symlink!" % link
+        os.unlink(link)
+        print("Removed symlink %s" % link)
+"""
+
+def make_temp_dir(shell):
+    path = "".join(random.choice(string.ascii_lowercase) for i in range(10))
+
+    full_path = join("/tmp", path)
+
     try:
-        result = shell.run(["sudo", "ls", problems_path]).output.decode("utf-8")
-        return result.split("\n")[:-1]
-    except spur.results.RunProcessError as e:
-        # directory must not exist
-        result = shell.run(["sudo", "mkdir", problems_path], allow_error=True)
-        if result.return_code != 0:
-            # something else is wrong, so give up
-            return None
-
-        # try again
-        get_symlinks(shell, user)
-
-def rm_symlinks(sid, user, to_remove):
-    shell = get_connection(sid)
-
-    home_dir = get_home_dir(shell, user)
-    if home_dir == None:
+        shell.run(["mkdir", full_path])
+        return full_path
+    except api.common.WebException as e:
         return None
-
-    problems_path = join(home_dir, "problems")
-    for name in to_remove:
-        symlink = join(problems_path, name)
-        try:
-            shell.run(["sudo", "rm", symlink])
-            print("Removed symlink %s" % symlink)
-        except spur.results.RunProcessError as e:
-            print("Failed to remove symlink %s" % symlink)
-
-def add_symlinks(sid, user, to_add):
-    shell = get_connection(sid)
-
-    home_dir = get_home_dir(shell, user)
-    if home_dir == None:
-        return None
-
-    problems_path = join(home_dir, "problems")
-    for name, path in to_add.items():
-        symlink = join(problems_path, name)
-        try:
-            shell.run(["sudo", "ln", "-s", path, symlink])
-            print("Added symlink %s --> %s" % (symlink, path))
-        except spur.results.RunProcessError as e:
-            print("Failed to add symlink %s --> %s" % (symlink, path))
 
 def run():
     global connections
@@ -95,34 +57,40 @@ def run():
     teams = api.team.get_all_teams(show_ineligible=True)
 
     for server in api.shell_servers.get_servers():
+        try:
+            shell = api.shell_servers.get_connection(server["sid"])
+        except api.common.WebException as e:
+            print("Can't connect to server \"%s\"" % server["name"])
+            continue
+
+        data = {}
+        for team in teams:
+            unlocked_problems = api.problem.get_unlocked_problems(tid=team["tid"])
+            correct_symlinks = {p["name"]:p["deployment_directory"] for p in unlocked_problems if p["should_symlink"]}
+
+            data.update({user["username"]:correct_symlinks for user in api.team.get_team_members(tid=team["tid"])})
+
+        temp_dir = make_temp_dir(shell)
+        if temp_dir == None:
+            print("Couldn't make temporary directory on shell server")
+            continue
+
+        script_path = join(temp_dir, "symlinker.py")
+        with shell.open(script_path, "w") as remote_script:
+            remote_script.write(script)
 
         try:
-            for team in teams:
-                unlocked_problems = api.problem.get_unlocked_problems(tid=team["tid"])
-                correct_symlinks = {p["name"]:p["deployment_directory"] for p in unlocked_problems if p["should_symlink"]}
-                correct_names = set(correct_symlinks.keys())
+            process = shell.spawn(["sudo", "python", script_path])
+            process.stdin_write(json.dumps(data)+"\n")
+            result = process.wait_for_result()
+            output = result.output.decode('utf-8')
+            if output != "":
+                print(output)
+        except api.common.WebException as e:
+            print("Couldn't run script to create symlinks")
 
-                for user in api.team.get_team_members(tid=team["tid"]):
-                    start = time.time()
-                    current_symlinks = get_symlinks(server["sid"], user["username"])
-                    if current_symlinks == None:
-                        continue
-
-                    symlinked_names = set(current_symlinks)
-                    to_add = correct_names - symlinked_names
-                    to_remove = symlinked_names - correct_names
-
-                    if len(to_add) > 0:
-                        add_symlinks(server["sid"], user["username"], {name:correct_symlinks[name] for name in to_add})
-                    if len(to_remove) > 0:
-                        rm_symlinks(server["sid"], user["username"], to_remove)
-
-                    if len(to_add) > 0 or len(to_remove) > 0:
-                        cache(get_symlinks, server["sid"], user["username"])
-
-                    print("Took %.2f seconds." % (time.time() - start))
-
-        except CantConnectException as e:
-            print("Couldn't connect to server \"%s\"" % server["name"])
-
-        connections[server["sid"]] = None
+        try:
+            shell.run(["sudo", "rm", "-r", temp_dir])
+        except api.common.WebException as e:
+            print("Couldn't remove temporary directory on shell server")
+            continue
