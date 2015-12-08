@@ -635,6 +635,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
             "description": problem.description,
             "flag": problem.flag,
             "instance_number": instance_number,
+            "should_symlink": not isinstance(problem, Service) and len(instance["files"]) > 0,
             "files": [f.to_dict() for f in instance["files"]]
         }
 
