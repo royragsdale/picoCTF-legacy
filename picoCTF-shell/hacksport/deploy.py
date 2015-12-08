@@ -164,6 +164,7 @@ ExecStart={}
 StandardInput={}
 StandardOutput={}
 NonBlocking={}
+IgnoreSIGPIPE={}
 
 [Install]
 WantedBy=shell_manager.target
@@ -188,7 +189,8 @@ WantedBy=shell_manager.target
                               problem_service_info['Type'], problem_service_info['ExecStart'],
                               "null" if is_web or not is_service else "socket",
                               "null" if is_web or not is_service else "socket",
-                              "True" if is_web or not is_service else "False")
+                              "true" if is_web or not is_service else "false",
+                              "true" if is_web or not is_service else "false")
 
     if is_web or not is_service:
         service_file_path = join(path, "{}.service".format(problem.user))
