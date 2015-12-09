@@ -31,7 +31,7 @@ for user, symlinks in data.items():
     for problem in correct_symlinks - current_symlinks:
         src, dst = symlinks[problem], join(problems_path, problem)
         os.symlink(src, dst)
-        print("Added symlink %s --> %s" % (src, dst))
+        print("Added symlink %s --> %s" % (dst, src))
 
     for problem in current_symlinks - correct_symlinks:
         link = join(problems_path, problem)
@@ -76,15 +76,21 @@ def run():
             continue
 
         script_path = join(temp_dir, "symlinker.py")
-        with shell.open(script_path, "w") as remote_script:
-            remote_script.write(script)
+        try:
+            with shell.open(script_path, "w") as remote_script:
+                remote_script.write(script)
+        except Exception as e:
+            print("Couldn't open script file")
+            continue
 
         try:
             process = shell.spawn(["sudo", "python", script_path])
             process.stdin_write(json.dumps(data)+"\n")
             result = process.wait_for_result()
             output = result.output.decode('utf-8')
-            if output != "":
+            if output == "":
+                print("Everthing up to date")
+            else:
                 print(output)
         except api.common.WebException as e:
             print("Couldn't run script to create symlinks")
@@ -93,4 +99,5 @@ def run():
             shell.run(["sudo", "rm", "-r", temp_dir])
         except api.common.WebException as e:
             print("Couldn't remove temporary directory on shell server")
-            continue
+        except Exception as e:
+            print("Unknown error.")
