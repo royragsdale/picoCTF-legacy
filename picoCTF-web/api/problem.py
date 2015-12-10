@@ -145,6 +145,9 @@ def insert_problem(problem, sid=None):
         The newly created problem id.
     """
 
+    if sid is None:
+        raise InternalException("Must provide an sid to insert problem.")
+
     db = api.common.get_conn()
     validate(problem_schema, problem)
 
