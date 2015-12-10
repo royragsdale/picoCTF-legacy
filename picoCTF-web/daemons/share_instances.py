@@ -117,7 +117,7 @@ def run():
             result = process.wait_for_result()
             output = result.output.decode('utf-8')
             if output == "":
-                print("Everthing up to date")
+                print("Everything up to date")
             else:
                 print(output)
         except api.common.WebException as e:
