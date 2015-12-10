@@ -20,7 +20,7 @@ from os.path import join
 
 data = json.loads(raw_input())
 
-for user, symlinks in data.items():
+for user, correct_symlinks in data.items():
     home_dir = pwd.getpwnam(user).pw_dir
     problems_path = join(home_dir, "problems")
 
@@ -46,19 +46,25 @@ for user, symlinks in data.items():
         os.chown(problems_path, 0, 0)
         print("Made %s owned by root:root" % problems_path)
 
-    current_symlinks = set(list(os.listdir(problems_path)))
-    correct_symlinks = set(symlinks.keys())
+    current_symlink_keys = list(os.listdir(problems_path))
+    full_paths = map(lambda p : join(problems_path, p), current_symlink_keys)
+    current_symlinks = dict(zip(current_symlink_keys, map(os.readlink, full_paths)))
 
-    for problem in correct_symlinks - current_symlinks:
-        src, dst = symlinks[problem], join(problems_path, problem)
-        os.symlink(src, dst)
-        print("Added symlink %s --> %s" % (dst, src))
+    to_remove = []
+    for problem, src in current_symlinks.items():
+        if problem not in correct_symlinks.keys() or src != correct_symlinks[problem]:
+            link = join(problems_path, problem)
+            assert os.path.islink(link), "%s is not a symlink!" % link
+            os.unlink(link)
+            current_symlinks.pop(problem)
+            print("Removed symlink %s -> %s" % (link, src))
 
-    for problem in current_symlinks - correct_symlinks:
-        link = join(problems_path, problem)
-        assert os.path.islink(link), "%s is not a symlink!" % link
-        os.unlink(link)
-        print("Removed symlink %s" % link)
+    for problem, src in correct_symlinks.items():
+        if problem not in current_symlinks:
+            dst = join(problems_path, problem)
+            os.symlink(src, dst)
+            print("Added symlink %s --> %s" % (dst, src))
+
 """
 
 def make_temp_dir(shell):
