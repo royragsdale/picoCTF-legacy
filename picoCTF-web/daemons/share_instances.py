@@ -87,7 +87,8 @@ def run():
         data = {}
         for team in teams:
             unlocked_problems = api.problem.get_unlocked_problems(tid=team["tid"])
-            correct_symlinks = {p["name"]:p["deployment_directory"] for p in unlocked_problems if p["should_symlink"]}
+            correct_symlinks = {p["name"]:p["deployment_directory"] for p in unlocked_problems if p["should_symlink"]
+                                                                                              and p["sid"] == server["sid"]}
 
             data.update({user["username"]:correct_symlinks for user in api.team.get_team_members(tid=team["tid"])})
 
