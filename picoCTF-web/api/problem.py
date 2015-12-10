@@ -450,31 +450,6 @@ def count_submissions(pid=None, uid=None, tid=None, category=None, correctness=N
 
     return db.submissions.find(match, {"_id": 0}).count()
 
-def get_most_recent_submission(uid=None, tid=None, correctness=None):
-    """
-    Gets the most recent submission from a team or user.
-    """
-
-    db = api.common.get_conn()
-
-    match = {}
-
-    if uid is not None:
-        match.update({"uid": uid})
-    elif tid is not None:
-        match.update({"tid": tid})
-    else:
-        raise InternalException("You have to supply a uid or tid.")
-
-    if correctness is not None:
-        match.update({"correct": correctness})
-
-    #pymongo is awkward
-    submission = list(db.submissions.find(match).sort('timestamp', pymongo.DESCENDING).limit(1))
-
-    if len(submission) == 1:
-        return submission[0]
-
 
 def get_submissions(pid=None, uid=None, tid=None, category=None, correctness=None, eligibility=None):
     """
