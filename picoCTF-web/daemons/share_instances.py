@@ -8,10 +8,13 @@ import random
 
 from os.path import join
 
-script = """
+script = \
+"""
 import json
 import os
+import stat
 import pwd
+import subprocess
 
 from os.path import join
 
@@ -22,8 +25,26 @@ for user, symlinks in data.items():
     problems_path = join(home_dir, "problems")
 
     if not os.path.isdir(problems_path):
+        if os.path.isfile(problems_path) or os.path.islink(problems_path):
+            os.unlink(problems_path)
+            print("Deleted %s because it was not a directory" % problems_path)
         os.mkdir(problems_path)
+        print("Made new directory %s" % problems_path)
+
+    dirstat = os.stat(problems_path)
+
+    # if only os.chattr() existed... but I guess the following hacks work
+
+    #if not dirstat.st_mode & stat.UF_NOUNLINK:
+    #    os.lchflags(problems_path, dirstat.st_flags | os.SF_NOUNLINK)
+
+    if b"-u-" not in subprocess.check_output(["lsattr", "-d", problems_path]):
+        subprocess.check_output(["chattr", "+u", problems_path])
+        print("Made %s undeletable." % problems_path)
+
+    if not (dirstat.st_uid == 0 and dirstat.st_gid == 0):
         os.chown(problems_path, 0, 0)
+        print("Made %s owned by root:root" % problems_path)
 
     current_symlinks = set(list(os.listdir(problems_path)))
     correct_symlinks = set(symlinks.keys())
