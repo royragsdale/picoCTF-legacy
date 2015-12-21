@@ -59,7 +59,7 @@ def give_port():
                 context["port_map"][port] = (context["problem"], context["instance"])
                 return port
 
-from os.path import join, isdir, isfile
+from os.path import join, isdir, isfile, commonprefix
 from os import makedirs
 from random import Random, randint
 from abc import ABCMeta
@@ -325,7 +325,7 @@ def template_staging_directory(staging_directory, problem):
     dont_template_directories = [join(staging_directory, directory) for directory in dont_template_directories]
 
     for root, dirnames, filenames in os.walk(staging_directory):
-        if root in dont_template_directories:
+        if any(os.path.commonprefix([root, path]) == path for path in dont_template_directories):
             continue
         for filename in filenames:
             if filename in dont_template_files:
