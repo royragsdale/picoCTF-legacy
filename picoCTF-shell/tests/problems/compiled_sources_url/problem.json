@@ -3,5 +3,6 @@
   "score": 50,
   "author": "test",
   "description": "The flag is totally not: {{flag}}. And it definitely isn't available at {{url_for('flag.txt')}}",
-  "category": "Binary"
+  "category": "Binary",
+  "hints": []
 }

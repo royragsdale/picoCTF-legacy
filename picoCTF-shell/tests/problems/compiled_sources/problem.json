@@ -3,5 +3,6 @@
   "score": 50,
   "author": "test",
   "description": "The flag is totally not: {{flag}}",
-  "category": "Binary"
+  "category": "Binary",
+  "hints": []
 }
