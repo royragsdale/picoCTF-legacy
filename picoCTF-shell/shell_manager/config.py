@@ -17,8 +17,8 @@ DEFAULT_USER = "hacksports"
 # specifies.
 WEB_ROOT = "/usr/share/nginx/html/"
 
-# the root of the home directories for the problem instances
-HOME_DIRECTORY_ROOT = "/home/problems/"
+# the root of the problem directories for the instances
+PROBLEM_DIRECTORY_ROOT = "/problems/"
 
 # "obfuscate" problem directory names
 OBFUSCATE_PROBLEM_DIRECTORIES = False

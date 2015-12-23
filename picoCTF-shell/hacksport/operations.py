@@ -46,24 +46,13 @@ def execute(cmd, timeout=60, **kwargs):
 
     return process.wait_for_result()
 
-def create_user(username, home_directory_root="/home/"):
+def create_user(username):
     """
-    Creates a user with the given username
+    Creates a user account with the given username
 
     Args:
         username: the username to create
-        home_directory_root: the parent directory to create the
-                             home directory in. Defaults to /home/
 
-    Returns:
-        The new user's home directory
     """
 
-    home_directory = path.join(home_directory_root, username)
-
-    if not path.isdir(home_directory):
-        makedirs(home_directory)
-
-    execute(["useradd", "-s", "/bin/bash", "-m", "-d", home_directory, username])
-
-    return home_directory
+    execute(["useradd", "-s", "/bin/bash", username])
