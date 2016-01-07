@@ -21,7 +21,12 @@ from os.path import join
 data = json.loads(raw_input())
 
 for user, correct_symlinks in data.items():
-    home_dir = pwd.getpwnam(user).pw_dir
+    try:
+        home_dir = pwd.getpwnam(user).pw_dir
+    except KeyError as e:
+        #print "%s does not have a shell account"
+        continue
+
     problems_path = join(home_dir, "problems")
 
     if not os.path.isdir(problems_path):
