@@ -46,14 +46,14 @@ def give_port():
 
     # during real deployment, let's register a port
     if port_random is None:
-        port_random = Random(context["config"].DEPLOY_SECRET)
+        port_random = Random(context["config"].deploy_secret)
 
-    if len(context["port_map"].items()) + len(context["config"].BANNED_PORTS) == 65536:
+    if len(context["port_map"].items()) + len(context["config"].banned_ports) == 65536:
         raise Exception("All usable ports are taken. Cannot deploy any more instances.")
 
     while True:
         port = port_random.randint(0, 65535)
-        if port not in context["config"].BANNED_PORTS:
+        if port not in context["config"].banned_ports:
             owner, instance = context["port_map"].get(port, (None, None))
             if owner is None or (owner == context["problem"] and instance == context["instance"]):
                 context["port_map"][port] = (context["problem"], context["instance"])
@@ -124,8 +124,8 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
     random = Random(seed)
     attributes = deepcopy(problem_object)
 
-    attributes.update({"random": random, "user": user, "default_user": deploy_config.DEFAULT_USER,
-                       "server": deploy_config.HOSTNAME, "directory": instance_directory})
+    attributes.update({"random": random, "user": user, "default_user": deploy_config.default_user,
+                       "server": deploy_config.hostname, "directory": instance_directory})
 
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 
@@ -243,10 +243,10 @@ def generate_instance_deployment_directory(username):
     """
 
     directory = username
-    if deploy_config.OBFUSCATE_PROBLEM_DIRECTORIES:
-        directory = md5((username + deploy_config.DEPLOY_SECRET).encode()).hexdigest()
+    if deploy_config.obfuscate_problem_directories:
+        directory = md5((username + deploy_config.deploy_secret).encode()).hexdigest()
 
-    root_dir = deploy_config.PROBLEM_DIRECTORY_ROOT
+    root_dir = deploy_config.problem_directory_root
 
     if not isdir(root_dir):
         os.makedirs(root_dir)
@@ -370,7 +370,7 @@ def deploy_files(staging_directory, instance_directory, file_list, username, pro
 
     # get uid and gid for default and problem user
     user = getpwnam(username)
-    default = getpwnam(deploy_config.DEFAULT_USER)
+    default = getpwnam(deploy_config.default_user)
 
     for f in file_list:
         # copy the file over, making the directories as needed
@@ -474,7 +474,7 @@ def generate_instance(problem_object, problem_directory, instance_number,
         deployment_directory = generate_instance_deployment_directory(username)
     logger.debug("...Using deployment directory '%s'.", deployment_directory)
 
-    seed = generate_seed(problem_object['name'], deploy_config.DEPLOY_SECRET, str(instance_number))
+    seed = generate_seed(problem_object['name'], deploy_config.deploy_secret, str(instance_number))
     logger.debug("...Generated random seed '%s' for deployment.", seed)
 
     copy_path = join(staging_directory, PROBLEM_FILES_DIR)
@@ -513,16 +513,16 @@ def generate_instance(problem_object, problem_directory, instance_number,
         else:
             source_path = join(copy_path, source_name)
 
-        problem_hash = problem_object["name"] + deploy_config.DEPLOY_SECRET + str(instance_number)
+        problem_hash = problem_object["name"] + deploy_config.deploy_secret + str(instance_number)
         problem_hash = md5(problem_hash.encode("utf-8")).hexdigest()
 
         destination_path = join(STATIC_FILE_ROOT, problem_hash, source_name)
 
         link_template = "<a href='{}'>{}</a>"
 
-        web_accessible_files.append((source_path, join(deploy_config.WEB_ROOT, destination_path)))
+        web_accessible_files.append((source_path, join(deploy_config.web_root, destination_path)))
         uri_prefix = "//"
-        uri = join(uri_prefix, deploy_config.HOSTNAME, destination_path)
+        uri = join(uri_prefix, deploy_config.hostname, destination_path)
 
         if not raw:
             return link_template.format(uri, source_name if display is None else display)
@@ -661,7 +661,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
             if not debug:
                 shutil.rmtree(instance["staging_directory"])
 
-        unique = problem_object["name"] + problem_object["author"] + str(instance_number) + deploy_config.DEPLOY_SECRET
+        unique = problem_object["name"] + problem_object["author"] + str(instance_number) + deploy_config.deploy_secret
 
         deployment_info = {
             "user": problem.user,
@@ -695,18 +695,18 @@ def deploy_problems(args, config):
     deploy_config = config
 
     try:
-        user = getpwnam(deploy_config.DEFAULT_USER)
+        user = getpwnam(deploy_config.default_user)
     except KeyError as e:
-        logger.info("DEFAULT_USER '%s' does not exist. Creating the user now.", deploy_config.DEFAULT_USER)
-        create_user(deploy_config.DEFAULT_USER)
+        logger.info("default_user '%s' does not exist. Creating the user now.", deploy_config.default_user)
+        create_user(deploy_config.default_user)
 
     if args.deployment_directory is not None and (len(args.problem_paths) > 1 or args.num_instances > 1):
         logger.error("Cannot specify deployment directory if deploying multiple problems or instances.")
         raise FatalException
 
     if args.secret:
-        deploy_config.DEPLOY_SECRET = args.secret
-        logger.warn("Overriding DEPLOY_SECRET with user supplied secret '%s'.", args.secret)
+        deploy_config.deploy_secret = args.secret
+        logger.warn("Overriding deploy_secret with user supplied secret '%s'.", args.secret)
 
     problem_names = args.problem_paths
 

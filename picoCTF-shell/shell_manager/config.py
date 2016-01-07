@@ -1,28 +1,26 @@
-from os.path import join
+{
+    "deploy_secret": "qwertyuiop",
 
-# secret used for deterministic deployment
-DEPLOY_SECRET = "qwertyuiop"
+    "hostname": "127.0.0.1",
 
-# the externally accessable address of this server
-HOSTNAME = "127.0.0.1"
+    "web_server": "http://127.0.0.1",
 
-# the url of the web server
-WEB_SERVER = "http://127.0.0.1"
+    "default_user": "hacksports",
 
-# the default username for files to be owned by
-DEFAULT_USER = "hacksports"
+    "web_root": "/usr/share/nginx/html/",
 
-# the root of the web server running to serve static files
-# make sure this is consistent with what config/shell.nginx
-# specifies.
-WEB_ROOT = "/usr/share/nginx/html/"
+    "problem_directory_root": "/problems/",
 
-# the root of the problem directories for the instances
-PROBLEM_DIRECTORY_ROOT = "/problems/"
+    "obfuscate_problem_directories": false,
 
-# "obfuscate" problem directory names
-OBFUSCATE_PROBLEM_DIRECTORIES = False
-
-# list of ports that should not be assigned to any instances
-# this bans the first ports 0-999 and 4242 for shellinaboxd
-BANNED_PORTS = list(range(1000))+[4242]
+    "banned_ports": [
+        {
+            "start": 0,
+            "end": 1000
+        },
+        {
+            "start": 4242,
+            "end": 4242
+        }
+    ]
+}

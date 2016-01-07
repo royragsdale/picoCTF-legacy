@@ -6,16 +6,8 @@ from os.path import join, realpath, dirname
 
 PATH = dirname(realpath(__file__))
 
-class Config:
-    DEPLOY_SECRET = "Af9h3mc"
-    HOSTNAME = "super.shell.server"
-    WEB_ROOT = "/usr/share/ngninx/html"
-    BANNED_PORTS = config.BANNED_PORTS
-    DEFAULT_USER = config.DEFAULT_USER
-    PROBLEM_DIRECTORY_ROOT = config.PROBLEM_DIRECTORY_ROOT
-    OBFUSCATE_PROBLEM_DIRECTORIES = config.OBFUSCATE_PROBLEM_DIRECTORIES
-
-hacksport.deploy.deploy_config = Config()
+config_path = join(PATH, "../shell_manager/config.json")
+hacksport.deploy.deploy_config = get_config(config_path)
 
 class TestProblems:
     """

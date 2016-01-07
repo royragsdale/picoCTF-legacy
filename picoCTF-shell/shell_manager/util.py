@@ -25,11 +25,11 @@ DEPLOYED_ROOT = join(HACKSPORTS_ROOT, "deployed")
 BUNDLE_ROOT = join(HACKSPORTS_ROOT, "bundles")
 
 problem_schema = Schema({
-    Required('author'): All(str, Length(min=1, max=32)),
-    Required('score'): All(int, Range(min=0)),
-    Required('name'): All(str, Length(min=1, max=32)),
-    Required('description'): str,
-    Required('category'): All(str, Length(min=1, max=32)),
+    Required("author"): All(str, Length(min=1, max=32)),
+    Required("score"): All(int, Range(min=0)),
+    Required("name"): All(str, Length(min=1, max=32)),
+    Required("description"): str,
+    Required("category"): All(str, Length(min=1, max=32)),
     Required("hints"): list,
     "version": All(str, Length(min=1, max=8)),
     "tags": list,
@@ -41,16 +41,32 @@ problem_schema = Schema({
 })
 
 bundle_schema = Schema({
-    Required('author'): All(str, Length(min=1, max=32)),
+    Required("author"): All(str, Length(min=1, max=32)),
     Required("problems"): list,
-    Required('name'): All(str, Length(min=1, max=32)),
-    Required('description'): str,
+    Required("name"): All(str, Length(min=1, max=32)),
+    Required("description"): str,
     Required("categories"): list,
     "version": All(str, Length(min=1, max=8)),
     "tags": list,
     "organization": All(str, Length(min=1, max=32)),
     "dependencies": dict,
     "pkg_dependencies": list
+})
+
+config_schema = Schema({
+    Required("deploy_secret") : str,
+    Required("hostname"): str,
+    Required("web_server"): str,
+    Required("default_user"): str,
+    Required("web_root"): str,
+    Required("problem_directory_root"): str,
+    Required("obfuscate_problem_directories"): bool,
+    Required("banned_ports"): list
+}, extra=True)
+
+port_range_schema = Schema({
+    Required("start"): All(int, Range(min=0, max=66635)),
+    Required("end"): All(int, Range(min=0, max=66635))
 })
 
 class FatalException(Exception):
@@ -206,3 +222,42 @@ def get_bundle(bundle_path):
         raise FatalException
 
     return bundle
+
+def get_config(path):
+    """
+    Retrieve a configuration object from the given path
+
+    Args:
+        path: the full path to the json file
+
+    Returns:
+        A python object containing the fields within
+    """
+
+    with open(path) as f:
+        config_object = json.loads(f.read())
+
+    try:
+        config_schema(config_object)
+    except MultipleInvalid as e:
+        logger.critical("Error validating config file at '%s'!", path)
+        logger.critical(e)
+        raise FatalException
+
+    for port_range in config_object["banned_ports"]:
+        try:
+            port_range_schema(port_range)
+            assert port_range["start"] <= port_range["end"]
+        except MultipleInvalid as e:
+            logger.critical("Error validating port range in config file at '%s'!", path)
+            logger.critical(e)
+            raise FatalException
+        except AssertionError as e:
+            logger.critical("Invalid port range: (%d -> %d)", port_range["start"], port_range["end"])
+            raise FatalException
+
+    config = object()
+    for key, value in config_object.items():
+        config.__setattr__(key, value)
+
+    return config

@@ -6,6 +6,7 @@ Shell Manager -- Tools for deploying and packaging problems.
 
 import logging, coloredlogs
 import shell_manager
+import json
 
 from argparse import ArgumentParser
 from shell_manager.package import problem_builder
@@ -20,8 +21,6 @@ from os.path import join, dirname
 from os import sep, chmod
 
 from shutil import copy2
-
-from imp import load_source
 
 coloredlogs.DEFAULT_LOG_FORMAT = "%(asctime)s %(name)s %(levelname)s: %(message)s"
 coloredlogs.DEFAULT_DATE_FORMAT = "%H:%M:%S"
@@ -107,17 +106,17 @@ def main():
     if args.debug:
         coloredlogs.set_level(logging.DEBUG)
     try:
-        config_path = join(HACKSPORTS_ROOT, "config.py")
+        config_path = join(HACKSPORTS_ROOT, "config.json")
         try:
-            config = load_source("config", config_path)
+            config = get_config(config_path)
         except PermissionError:
             logger.error("You must run shell_manager with sudo.")
             raise FatalException
         except FileNotFoundError:
-            default_config_path = join(dirname(shell_manager.__file__), "config.py")
+            default_config_path = join(dirname(shell_manager.__file__), "config.json")
             copy2(default_config_path, HACKSPORTS_ROOT)
             chmod(config_path, 0o640)
-            logger.info("There is no config.py in '%s'. One has been created for you. Please edit it accordingly.", HACKSPORTS_ROOT)
+            logger.info("There is no config.json in '%s'. One has been created for you. Please edit it accordingly.", HACKSPORTS_ROOT)
             raise FatalException
 
         #Call the default function
