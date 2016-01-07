@@ -777,7 +777,7 @@ def unlocked_filter(problem, solved):
         A filtered problem object
     """
 
-    return filter_problem(problem, ["flag", "tags"], {"solved": solved, "unlocked":True})
+    return filter_problem(problem, ["flag", "tags", "files"], {"solved": solved, "unlocked":True})
 
 def locked_filter(problem):
     """
