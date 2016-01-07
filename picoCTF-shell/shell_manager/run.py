@@ -65,8 +65,8 @@ def main():
     bundle_parser.set_defaults(func=bundle_problems)
 
     deploy_parser = subparsers.add_parser("deploy", help="problem deployment")
-    deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate.")
-    deploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance to generate.")
+    deploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to generate (numbers 0 through n-1).")
+    deploy_parser.add_argument("-i", "--instances", action="append", type=int, help="particular instance(s) to generate.")
     deploy_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
     deploy_parser.add_argument("-r", "--redeploy", action="store_true", help="redeploy instances that have already been deployed")
     deploy_parser.add_argument("-s", "--secret", action="store", type=str, help="use a different deployment secret for this invocation.")
@@ -76,8 +76,8 @@ def main():
     deploy_parser.set_defaults(func=deploy_problems)
 
     undeploy_parser = subparsers.add_parser("undeploy", help="problem undeployment. cannot guarantee full removal of problem files")
-    undeploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to undeploy.")
-    undeploy_parser.add_argument("-i", "--instance", type=int, default=None, help="particular instance to undeploy.")
+    undeploy_parser.add_argument("-n", "--num-instances", type=int, default=1, help="number of instances to undeploy (numbers 0 through n-1).")
+    undeploy_parser.add_argument("-i", "--instances", action="append", type=int, help="particular instance(s) to generate.")
     undeploy_parser.add_argument("-b", "--bundle", action="store_true", help="specify a bundle of problems to undeploy.")
     undeploy_parser.add_argument("problem_paths", nargs="*", type=str, help="paths to problems.")
     undeploy_parser.set_defaults(func=undeploy_problems)

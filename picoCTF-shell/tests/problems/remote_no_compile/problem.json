@@ -3,5 +3,6 @@
   "score": 50,
   "author": "test",
   "description": "Service is running at {{server}}:{{port}}",
-  "category": "Binary"
+  "category": "Binary",
+  "hints": []
 }

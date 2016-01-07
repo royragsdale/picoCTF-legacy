@@ -9,6 +9,9 @@ import os
 import shutil
 import socket
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_all_problems():
     """ Returns a dictionary of name:object mappings """
@@ -81,10 +84,12 @@ def clean(args, config):
 
     # remove staging directories
     if os.path.isdir(STAGING_ROOT):
+        logger.info("Removing the staging directories")
         shutil.rmtree(STAGING_ROOT)
 
     # remove lock file
     if os.path.isfile(lock_file):
+        logger.info("Removing the stale lock file")
         os.remove(lock_file)
 
     #TODO: potentially perform more cleaning
