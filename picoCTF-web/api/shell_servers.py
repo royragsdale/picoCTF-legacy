@@ -22,24 +22,53 @@ server_schema = Schema({
         ("Protocol must be either HTTP or HTTPS", [lambda x: x in ['HTTP', 'HTTPS']]))
 }, extra=True)
 
-def get_connection(host, port, username, password):
+def get_server(sid=None, name=None):
+    """
+    Returns the server object corresponding to the sid provided
+
+    Args:
+        sid: the server id to lookup
+
+    Returns:
+        The server object
+    """
+
+    db = api.common.get_conn()
+
+    if sid is None:
+        if name is None:
+            raise InternalException("You must specify either an sid or name")
+        else:
+            sid = api.common.hash(name)
+
+    server = db.shell_servers.find_one({"sid": sid})
+    if server is None:
+        raise InternalException("Server with sid '{}' does not exist".format(sid))
+
+    return server
+
+def get_connection(sid):
     """
     Attempts to connect to the given server and
     returns a connection.
     """
 
+
+    server = get_server(sid)
+
     try:
         shell = spur.SshShell(
-            hostname=host,
-            username=username,
-            password=password,
-            port=port,
+            hostname=server["host"],
+            username=server["username"],
+            password=server["password"],
+            port=server["port"],
             missing_host_key=spur.ssh.MissingHostKey.accept,
             connect_timeout=10
         )
         shell.run(["echo", "connected"])
     except spur.ssh.ConnectionError as e:
-        raise WebException("Cannot connect to {}@{}:{} with the specified password".format(username, host, port))
+        raise WebException("Cannot connect to {}@{}:{} with the specified password".format(
+            server["username"], server["host"], server["port"]))
 
     return shell
 
@@ -127,31 +156,6 @@ def remove_server(sid):
 
     db.shell_servers.remove({"sid": sid})
 
-def get_server(sid=None, name=None):
-    """
-    Returns the server object corresponding to the sid provided
-
-    Args:
-        sid: the server id to lookup
-
-    Returns:
-        The server object
-    """
-
-    db = api.common.get_conn()
-
-    if sid is None:
-        if name is None:
-            raise InternalException("You must specify either an sid or name")
-        else:
-            sid = api.common.hash(name)
-
-    server = db.shell_servers.find_one({"sid": sid})
-    if server is None:
-        raise InternalException("Server with sid '{}' does not exist".format(sid))
-
-    return server
-
 def get_servers():
     """
     Returns the list of added shell servers.
@@ -174,8 +178,7 @@ def get_problem_status_from_server(sid):
             - The output data of shell_manager status --json
     """
 
-    server = get_server(sid)
-    shell = get_connection(server['host'], server['port'], server['username'], server['password'])
+    shell = get_connection(sid)
     ensure_setup(shell)
 
     output = shell.run(["sudo", "shell_manager", "status", "--json"]).output.decode("utf-8")
@@ -207,8 +210,7 @@ def load_problems_from_server(sid):
         The number of problems loaded
     """
 
-    server = get_server(sid)
-    shell = get_connection(server['host'], server['port'], server['username'], server['password'])
+    shell = get_connection(sid)
 
     result = shell.run(["sudo", "shell_manager", "publish"])
     data = json.loads(result.output.decode("utf-8"))
