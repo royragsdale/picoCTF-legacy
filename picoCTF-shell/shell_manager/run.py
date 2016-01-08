@@ -13,14 +13,10 @@ from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
 from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
-from shell_manager.util import HACKSPORTS_ROOT, FatalException
+from shell_manager.util import get_hacksports_config, place_default_config, FatalException
+from shell_manager.config import print_configuration, set_configuration_option, new_configuration_file
 from hacksport.deploy import deploy_problems, undeploy_problems
 from hacksport.status import clean, status, publish
-
-from os.path import join, dirname
-from os import sep, chmod
-
-from shutil import copy2
 
 coloredlogs.DEFAULT_LOG_FORMAT = "%(asctime)s %(name)s %(levelname)s: %(message)s"
 coloredlogs.DEFAULT_DATE_FORMAT = "%H:%M:%S"
@@ -31,7 +27,7 @@ def main():
     parser = ArgumentParser(description="Shell Manager")
     parser.add_argument("-d", "--debug", action="store_true", default=False, help="show debug information")
     parser.add_argument("--colorize", default="auto", choices=["auto", "never"], help="support colored output")
-    subparsers = parser.add_subparsers(help="package problem for distribution")
+    subparsers = parser.add_subparsers()
 
     problem_package_parser = subparsers.add_parser("package", help="problem package management")
     problem_package_parser.add_argument("-s", "--staging-dir", help="use an explicit directory for problem staging.")
@@ -95,6 +91,23 @@ def main():
     publish_parser = subparsers.add_parser("publish", help="Generate the information needed by the web server for this deployment.")
     publish_parser.set_defaults(func=publish)
 
+    config_parser = subparsers.add_parser("config", help="View or modify configuration options")
+    config_parser.add_argument("-f", "--file", type=str, default=None, help="Which configuration file to access. If none is provided, the system wide configuration file will be used.")
+    config_parser.set_defaults(func=print_configuration)
+    config_subparsers = config_parser.add_subparsers()
+
+    config_set_parser = config_subparsers.add_parser("set", help="Set configuration options")
+    config_set_parser.add_argument("-f", "--field", type=str, required=True, help="which field to set")
+    config_set_parser.add_argument("-v", "--value", type=str, required=True, help="options's new value")
+    config_set_parser.add_argument("-j", "--json", action="store_true", default=False, help="interpret the given value as JSON")
+    config_set_parser.add_argument("--allow-type-change", action="store_true", default=False, help="Allow the supplied field to change types if already specified")
+    config_set_parser.set_defaults(func=set_configuration_option)
+
+    config_new_parser = config_subparsers.add_parser("new", help="Make a new configuration files with defaults")
+    config_new_parser.add_argument("files", nargs="+", help="Configuration files to make")
+    config_new_parser.add_argument("--overwrite", action="store_true", default=False, help="whether to overwrite files that already exist")
+    config_new_parser.set_defaults(func=new_configuration_file)
+
     args = parser.parse_args()
 
     if args.colorize == "never":
@@ -106,17 +119,14 @@ def main():
     if args.debug:
         coloredlogs.set_level(logging.DEBUG)
     try:
-        config_path = join(HACKSPORTS_ROOT, "config.json")
         try:
-            config = get_config(config_path)
+          config = get_hacksports_config()
         except PermissionError:
             logger.error("You must run shell_manager with sudo.")
             raise FatalException
         except FileNotFoundError:
-            default_config_path = join(dirname(shell_manager.__file__), "config.json")
-            copy2(default_config_path, HACKSPORTS_ROOT)
-            chmod(config_path, 0o640)
-            logger.info("There is no config.json in '%s'. One has been created for you. Please edit it accordingly.", HACKSPORTS_ROOT)
+            place_default_config()
+            logger.info("There was no default configuration. One has been created for you. Please edit it accordingly using the 'shell_manager config' subcommand before deploying any instances.")
             raise FatalException
 
         #Call the default function

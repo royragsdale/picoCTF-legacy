@@ -44,16 +44,23 @@ def give_port():
     if context["config"] is None:
         return randint(1000, 65000)
 
+    if "banned_ports_parsed" not in context["config"]:
+        banned_ports_result = []
+        for port_range in context["config"].banned_ports:
+            banned_ports_result.extend(list(range(port_range["start"], port_range["end"] + 1)))
+
+        context["config"]["banned_ports_parsed"] = banned_ports_result
+
     # during real deployment, let's register a port
     if port_random is None:
         port_random = Random(context["config"].deploy_secret)
 
-    if len(context["port_map"].items()) + len(context["config"].banned_ports) == 65536:
+    if len(context["port_map"].items()) + len(context["config"].banned_ports_parsed) == 65536:
         raise Exception("All usable ports are taken. Cannot deploy any more instances.")
 
     while True:
         port = port_random.randint(0, 65535)
-        if port not in context["config"].banned_ports:
+        if port not in context["config"].banned_ports_parsed:
             owner, instance = context["port_map"].get(port, (None, None))
             if owner is None or (owner == context["problem"] and instance == context["instance"]):
                 context["port_map"][port] = (context["problem"], context["instance"])
@@ -124,8 +131,11 @@ def update_problem_class(Class, problem_object, seed, user, instance_directory):
     random = Random(seed)
     attributes = deepcopy(problem_object)
 
-    attributes.update({"random": random, "user": user, "default_user": deploy_config.default_user,
-                       "server": deploy_config.hostname, "directory": instance_directory})
+    # pass configuration options in as class fields
+    attributes.update(dict(deploy_config))
+
+    attributes.update({"random": random, "user": user, "directory": instance_directory,
+                       "server": deploy_config.hostname})
 
     return challenge_meta(attributes)(Class.__name__, Class.__bases__, Class.__dict__)
 

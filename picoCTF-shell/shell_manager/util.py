@@ -2,7 +2,7 @@
 Common utilities for the shell manager.
 """
 
-from os import listdir, unlink, sep
+from os import listdir, unlink, sep, chmod
 from os.path import join, isdir, isfile
 
 import shutil, logging
@@ -23,6 +23,52 @@ EXTRA_ROOT = join(HACKSPORTS_ROOT, "extra")
 STAGING_ROOT = join(HACKSPORTS_ROOT, "staging")
 DEPLOYED_ROOT = join(HACKSPORTS_ROOT, "deployed")
 BUNDLE_ROOT = join(HACKSPORTS_ROOT, "bundles")
+
+
+class ConfigDict(dict):
+    # Neat trick to allow configuration fields to be accessed as attributes
+    def __getattr__(self, attr):
+        return self[attr]
+    def __setattr__(self, attr, value):
+        self[attr] = value
+
+default_config =  ConfigDict({
+    # secret used for deterministic deployment
+    "deploy_secret": "qwertyuiop",
+
+    # the externally accessable address of this server
+    "hostname": "127.0.0.1",
+
+    # the url of the web server
+    "web_server": "http://127.0.0.1",
+
+    # the default username for files to be owned by
+    "default_user": "hacksports",
+
+    # the root of the web server running to serve static files
+    # make sure this is consistent with what config/shell.nginx
+    # specifies.
+    "web_root": "/usr/share/nginx/html/",
+
+    # the root of the problem directories for the instances
+    "problem_directory_root": "/problems/",
+
+    # "obfuscate" problem directory names
+    "obfuscate_problem_directories": False,
+
+    # list of port ranges that should not be assigned to any instances
+    # this bans the first ports 0-999 and 4242 for shellinaboxd
+    "banned_ports": [
+        {
+            "start": 0,
+            "end": 1000
+        },
+        {
+            "start": 4242,
+            "end": 4242
+        }
+    ]
+})
 
 problem_schema = Schema({
     Required("author"): All(str, Length(min=1, max=32)),
@@ -256,8 +302,50 @@ def get_config(path):
             logger.critical("Invalid port range: (%d -> %d)", port_range["start"], port_range["end"])
             raise FatalException
 
-    config = object()
+    config = ConfigDict()
     for key, value in config_object.items():
-        config.__setattr__(key, value)
+       config[key] = value
 
     return config
+
+def get_hacksports_config():
+    """
+    Returns the global configuration options from the file in HACKSPORTS_ROOT
+    """
+
+    return get_config(join(HACKSPORTS_ROOT, "config.json"))
+
+def write_configuration_file(path, config_dict):
+    """
+    Write the options in config_dict to the specified path as JSON
+
+    Args:
+        path: the path of the output JSON file
+        config_dict: the configuration dictionary
+    """
+
+    with open(path, "w") as f:
+        json_data = json.dumps(config_dict, sort_keys=True,
+                               indent=4, separators=(',', ': '))
+        f.write(json_data)
+
+def write_global_configuration(config_dict):
+    """
+    Write the options in config_dict to the global config file
+
+    Args:
+        config_dict: the configuration dictionary
+    """
+
+    write_configuration_file(join(HACKSPORTS_ROOT, "config.json"), config_dict)
+
+def place_default_config(destination=join(HACKSPORTS_ROOT, "config.json")):
+    """
+    Places a default configuration file in the destination
+
+    Args:
+        destination: Where to place the default configuration. Defaults to HACKSPORTS_ROOT/config.json
+    """
+
+    write_configuration_file(destination, default_config)
+    chmod(destination, 0o640)

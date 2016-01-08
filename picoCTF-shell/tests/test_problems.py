@@ -1,13 +1,12 @@
 import hacksport.deploy
 from hacksport.deploy import deploy_problem
-from shell_manager import config
+from shell_manager.util import default_config
 
 from os.path import join, realpath, dirname
 
 PATH = dirname(realpath(__file__))
 
-config_path = join(PATH, "../shell_manager/config.json")
-hacksport.deploy.deploy_config = get_config(config_path)
+hacksport.deploy.deploy_config = default_config
 
 class TestProblems:
     """
