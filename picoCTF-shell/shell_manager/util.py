@@ -269,19 +269,14 @@ def get_bundle(bundle_path):
 
     return bundle
 
-def get_config(path):
+def verify_config(config_object):
     """
-    Retrieve a configuration object from the given path
+    Verifies the given configuration dict against the config_schema and the port_range_schema
+    Raise FatalException if failed.
 
     Args:
-        path: the full path to the json file
-
-    Returns:
-        A python object containing the fields within
+        config_object: The configuration options in a dict
     """
-
-    with open(path) as f:
-        config_object = json.loads(f.read())
 
     try:
         config_schema(config_object)
@@ -301,6 +296,22 @@ def get_config(path):
         except AssertionError as e:
             logger.critical("Invalid port range: (%d -> %d)", port_range["start"], port_range["end"])
             raise FatalException
+
+def get_config(path):
+    """
+    Retrieve a configuration object from the given path
+
+    Args:
+        path: the full path to the json file
+
+    Returns:
+        A python object containing the fields within
+    """
+
+    with open(path) as f:
+        config_object = json.loads(f.read())
+
+    verify_config(config_object)
 
     config = ConfigDict()
     for key, value in config_object.items():
@@ -323,6 +334,8 @@ def write_configuration_file(path, config_dict):
         path: the path of the output JSON file
         config_dict: the configuration dictionary
     """
+
+    verify_config(config_dict)
 
     with open(path, "w") as f:
         json_data = json.dumps(config_dict, sort_keys=True,

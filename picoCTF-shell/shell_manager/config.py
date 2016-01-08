@@ -12,6 +12,8 @@ from shell_manager.util import get_config, write_configuration_file, write_globa
 logger = logging.getLogger(__name__)
 
 def port_range_to_str(port_range):
+    if port_range["start"] == port_range["end"]:
+        return str(port_range["start"])
     return "%d-%d" % (port_range["start"], port_range["end"])
 
 def banned_ports_to_str(banned_ports):
@@ -28,15 +30,22 @@ def print_configuration(args, global_config):
         try:
             config = get_config(args.file)
         except FileNotFoundError:
-            log.fatal("Could not find configuration file '%s'", args.file)
+            logger.fatal("Could not find configuration file '%s'", args.file)
             raise FatalException
 
-    print("Configuration options:")
+    if args.json:
+        print("Configuration options (in JSON):")
+    else:
+        print("Configuration options (pretty printed):")
+
     for option, value in config.items():
-        if option == "banned_ports":
-            value_string = banned_ports_to_str(value)
+        if args.json:
+            value_string = json.dumps(value)
         else:
-            value_string = repr(value)
+            if option == "banned_ports":
+                value_string = banned_ports_to_str(value)
+            else:
+                value_string = repr(value)
 
         print("  %s = %s" % (option.ljust(50), value_string))
 
@@ -51,7 +60,7 @@ def set_configuration_option(args, global_config):
         try:
             config = get_config(args.file)
         except FileNotFoundError:
-            log.fatal("Could not find configuration file '%s'", args.file)
+            logger.fatal("Could not find configuration file '%s'", args.file)
             raise FatalException
 
     field = args.field
