@@ -60,7 +60,8 @@ cp $ROOT/config/sshd_config /etc/ssh/sshd_config
 # so we just need to install the dependencies here
 apt-get install -y libpam-python python-setuptools
 sudo service sshd restart
-easy_install pip
+
+curl https://bootstrap.pypa.io/get-pip.py | python2
 pip2 install requests
 groupadd competitors
 
