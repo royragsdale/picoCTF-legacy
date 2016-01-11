@@ -17,9 +17,9 @@ cd $ROOT
 
 mkdir /tmp/hacksports/
 
-#if config.py exists, back it up
-if [ -f /opt/hacksports/config.py ]; then
-    cp /opt/hacksports/config.py /tmp/hacksports/config.py
+#if config.json exists, back it up
+if [ -f /opt/hacksports/config.json ]; then
+    cp /opt/hacksports/config.json /tmp/hacksports/config.json
 fi
 
 # Install Dependencies
@@ -37,8 +37,8 @@ apt-get remove -y --force-yes python3-pip
 ./install.sh
 
 # restore config.py if backed up
-if [ -f /tmp/hacksports/config.py ]; then
-    cp /tmp/hacksports/config.py /opt/hacksports/config.py
+if [ -f /tmp/hacksports/config.json ]; then
+    cp /tmp/hacksports/config.json /opt/hacksports/config.json
 fi
 
 # disable apache if it's running
@@ -87,13 +87,12 @@ sudo systemctl add-wants default.target shell_manager.target
 
 # END of what was previously in picoCTF-shell-manager-install.sh
 
-# modify config.py
-shell_manager status
+# modify configuration
+shell_manager config
 DEPLOY_SECRET="@@@ChAnGeMe!@@@"
-echo -e "\nHOSTNAME = '192.168.2.3'\n" >> /opt/hacksports/config.py
-echo -e "\nWEB_SERVER = 'http://192.168.2.2'\n" >> /opt/hacksports/config.py
-echo -e "\nDEPLOY_SECRET = '$DEPLOY_SECRET'\n" >> /opt/hacksports/config.py
-
+shell_manager config set -f hostname -v "192.168.2.3"
+shell_manager config set -f web_server -v "http://192.168.2.2"
+shell_manager config set -f deploy_secret -v "$DEPLOY_SECRET"
 echo "Done"
 
 echo "Setting permissions."
