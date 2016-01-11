@@ -1,28 +1,101 @@
-from os.path import join
+"""
+Utilities for dealing with configuration commands
+"""
 
-# secret used for deterministic deployment
-DEPLOY_SECRET = "qwertyuiop"
+import json
+import os
+import logging
 
-# the externally accessable address of this server
-HOSTNAME = "127.0.0.1"
+from shell_manager.util import get_config, write_configuration_file, write_global_configuration, \
+                               place_default_config, FatalException
 
-# the url of the web server
-WEB_SERVER = "http://127.0.0.1"
+logger = logging.getLogger(__name__)
 
-# the default username for files to be owned by
-DEFAULT_USER = "hacksports"
+def port_range_to_str(port_range):
+    if port_range["start"] == port_range["end"]:
+        return str(port_range["start"])
+    return "%d-%d" % (port_range["start"], port_range["end"])
 
-# the root of the web server running to serve static files
-# make sure this is consistent with what config/shell.nginx
-# specifies.
-WEB_ROOT = "/usr/share/nginx/html/"
+def banned_ports_to_str(banned_ports):
+    return "[" + ", ".join(map(port_range_to_str, banned_ports)) + "]"
 
-# the root of the problem directories for the instances
-PROBLEM_DIRECTORY_ROOT = "/problems/"
+def print_configuration(args, global_config):
+    """
+    Entry point for config subcommand
+    """
 
-# "obfuscate" problem directory names
-OBFUSCATE_PROBLEM_DIRECTORIES = False
+    if args.file == None:
+        config = global_config
+    else:
+        try:
+            config = get_config(args.file)
+        except FileNotFoundError:
+            logger.fatal("Could not find configuration file '%s'", args.file)
+            raise FatalException
 
-# list of ports that should not be assigned to any instances
-# this bans the first ports 0-999 and 4242 for shellinaboxd
-BANNED_PORTS = list(range(1000))+[4242]
+    if args.json:
+        print("Configuration options (in JSON):")
+    else:
+        print("Configuration options (pretty printed):")
+
+    for option, value in config.items():
+        if args.json:
+            value_string = json.dumps(value)
+        else:
+            if option == "banned_ports":
+                value_string = banned_ports_to_str(value)
+            else:
+                value_string = repr(value)
+
+        print("  %s = %s" % (option.ljust(50), value_string))
+
+def set_configuration_option(args, global_config):
+    """
+    Entry point for config set subcommand
+    """
+
+    if args.file == None:
+        config = global_config
+    else:
+        try:
+            config = get_config(args.file)
+        except FileNotFoundError:
+            logger.fatal("Could not find configuration file '%s'", args.file)
+            raise FatalException
+
+    field = args.field
+    value = args.value
+    if args.json:
+        try:
+            value = json.loads(args.value)
+        except Exception as e:
+            logger.fatal("Couldn't parse value as JSON")
+            raise FatalException
+
+    if field in config and type(config[field]) != type(value) and not args.allow_type_change:
+        logger.fatal("Tried to change type of '%s' from '%s' to '%s'", field, type(config[field]), type(value))
+        logger.fatal("Try adding --json and supplying the value as json.")
+        logger.fatal("If changing the type is desired, add the --allow-type-change option")
+        raise FatalException
+
+    config[field] = value
+
+    if args.file:
+      write_configuration_file(args.file, config)
+    else:
+      write_global_configuration(config)
+
+    logger.info("Set {} = {}".format(field, value))
+
+def new_configuration_file(args, global_config):
+    """
+    Entry point for config new subcommand
+    """
+
+    for path in args.files:
+        if not args.overwrite and os.path.exists(path):
+            logger.warning("'%s' already exists. Not placing new configuration.", path)
+            continue
+
+        place_default_config(path)
+        logger.info("Default configuration file '%s' was created", path)

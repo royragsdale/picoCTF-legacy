@@ -6,15 +6,15 @@ import json
 import subprocess
 import time
 
-from imp import load_source
 from os.path import join
 
 DEFAULT_USER    = "nobody"
 HACKSPORTS_ROOT = "/opt/hacksports/"
 COMPETITORS_GROUP = "competitors"
 
-config = load_source("config", join(HACKSPORTS_ROOT, "config.py"))
-SERVER = config.WEB_SERVER
+config_file = join(HACKSPORTS_ROOT, "config.json")
+config = json.loads(open(config_file).read())
+SERVER = config["web_server"]
 TIMEOUT=5
 
 pamh = None

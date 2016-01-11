@@ -1,21 +1,12 @@
 import hacksport.deploy
 from hacksport.deploy import deploy_problem
-from shell_manager import config
+from shell_manager.util import default_config
 
 from os.path import join, realpath, dirname
 
 PATH = dirname(realpath(__file__))
 
-class Config:
-    DEPLOY_SECRET = "Af9h3mc"
-    HOSTNAME = "super.shell.server"
-    WEB_ROOT = "/usr/share/ngninx/html"
-    BANNED_PORTS = config.BANNED_PORTS
-    DEFAULT_USER = config.DEFAULT_USER
-    PROBLEM_DIRECTORY_ROOT = config.PROBLEM_DIRECTORY_ROOT
-    OBFUSCATE_PROBLEM_DIRECTORIES = config.OBFUSCATE_PROBLEM_DIRECTORIES
-
-hacksport.deploy.deploy_config = Config()
+hacksport.deploy.deploy_config = default_config
 
 class TestProblems:
     """
