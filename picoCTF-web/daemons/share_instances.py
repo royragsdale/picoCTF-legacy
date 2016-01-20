@@ -86,51 +86,54 @@ def make_temp_dir(shell):
 def run():
     global connections
 
-    teams = api.team.get_all_teams(show_ineligible=True)
+    if api.utilities.check_competition_active():
+        teams = api.team.get_all_teams(show_ineligible=True)
 
-    for server in api.shell_servers.get_servers():
-        try:
-            shell = api.shell_servers.get_connection(server["sid"])
-        except api.common.WebException as e:
-            print("Can't connect to server \"%s\"" % server["name"])
-            continue
+        for server in api.shell_servers.get_servers():
+            try:
+                shell = api.shell_servers.get_connection(server["sid"])
+            except api.common.WebException as e:
+                print("Can't connect to server \"%s\"" % server["name"])
+                continue
 
-        data = {}
-        for team in teams:
-            unlocked_problems = api.problem.get_unlocked_problems(tid=team["tid"])
-            correct_symlinks = {p["name"]:p["deployment_directory"] for p in unlocked_problems if p["should_symlink"]
-                                                                                              and p["sid"] == server["sid"]}
+            data = {}
+            for team in teams:
+                unlocked_problems = api.problem.get_unlocked_problems(tid=team["tid"])
+                correct_symlinks = {p["name"]:p["deployment_directory"] for p in unlocked_problems if p["should_symlink"]
+                                                                                                and p["sid"] == server["sid"]}
 
-            data.update({user["username"]:correct_symlinks for user in api.team.get_team_members(tid=team["tid"])})
+                data.update({user["username"]:correct_symlinks for user in api.team.get_team_members(tid=team["tid"])})
 
-        temp_dir = make_temp_dir(shell)
-        if temp_dir == None:
-            print("Couldn't make temporary directory on shell server")
-            continue
+            temp_dir = make_temp_dir(shell)
+            if temp_dir == None:
+                print("Couldn't make temporary directory on shell server")
+                continue
 
-        script_path = join(temp_dir, "symlinker.py")
-        try:
-            with shell.open(script_path, "w") as remote_script:
-                remote_script.write(script)
-        except Exception as e:
-            print("Couldn't open script file")
-            continue
+            script_path = join(temp_dir, "symlinker.py")
+            try:
+                with shell.open(script_path, "w") as remote_script:
+                    remote_script.write(script)
+            except Exception as e:
+                print("Couldn't open script file")
+                continue
 
-        try:
-            process = shell.spawn(["sudo", "python", script_path])
-            process.stdin_write(json.dumps(data)+"\n")
-            result = process.wait_for_result()
-            output = result.output.decode('utf-8')
-            if output == "":
-                print("Everything up to date")
-            else:
-                print(output)
-        except api.common.WebException as e:
-            print("Couldn't run script to create symlinks")
+            try:
+                process = shell.spawn(["sudo", "python", script_path])
+                process.stdin_write(json.dumps(data)+"\n")
+                result = process.wait_for_result()
+                output = result.output.decode('utf-8')
+                if output == "":
+                    print("Everything up to date")
+                else:
+                    print(output)
+            except api.common.WebException as e:
+                print("Couldn't run script to create symlinks")
 
-        try:
-            shell.run(["sudo", "rm", "-r", temp_dir])
-        except api.common.WebException as e:
-            print("Couldn't remove temporary directory on shell server")
-        except Exception as e:
-            print("Unknown error.")
+            try:
+                shell.run(["sudo", "rm", "-r", temp_dir])
+            except api.common.WebException as e:
+                print("Couldn't remove temporary directory on shell server")
+            except Exception as e:
+                print("Unknown error.")
+    else:
+        print("Competition is not active.")
