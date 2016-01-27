@@ -9,12 +9,39 @@ This is a collection of scripts and tools to deploy the picoCTF platform to prod
 
 ## Technology
 1. AWS
-    - EC2 (Servers)
-    - Route 53 (DNS)
-    - IAM (Access Management)
-2. Ansible
+2. Terrafrom
+    - infrastructure control 
+3. Ansible
     - provisioning
     - administration
     - configuration
-3. Terrafrom
-    - infrastructure control 
+
+## Setup
+
+### AWS
+1. IAM (Access Management)
+    - Groups
+        - admin: Admin access to web console with password
+        - deploy: Command line access with ACCESS_KEY_ID and SECRET_ACCESS_KEY
+    - Users
+2. EC2 (Servers)
+   - Based on the following code bases
+        - web : <https://github.com/picoCTF/picoCTF-web>
+        - shell : <https://github.com/picoCTF/picoCTF-shell-manager>
+        - db : [mongoDB](https://docs.mongodb.org/ecosystem/platforms/amazon-ec2/)
+        - coco : <https://github.com/codecombat/codecombat>
+3. Route 53 (DNS)
+4. CloudWatch (Alarms)
+
+### Terraform
+1. Install
+    - <https://www.terraform.io/intro/getting-started/install.html>
+    - `unzip ~/down/terraform_0.6.9_linux_amd64.zip -d /usr/local/terraform`
+    - Add to path
+
+### Ansible
+1. Install
+    - <http://docs.ansible.com/ansible/intro_installation.html#getting-ansible> 
+    - pip option  
+        - `sudo apt-get install python-pip`
+        - `sudo pip install ansible`
