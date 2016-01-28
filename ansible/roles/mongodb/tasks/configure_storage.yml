@@ -1,0 +1,17 @@
+---
+# Playbook that sets up a seperate filesystem for MongoDB data and journal
+# per the MongoDB on EC2 recommendations
+# https://docs.mongodb.org/ecosystem/platforms/amazon-ec2/#manually-deploy-mongodb-on-ec2
+
+- name: Ensure filesystem exists on EBS Block device for MongoDB data and journal
+  filesystem: 
+    fstype: "{{ db_data_device_fstype }}"
+    dev: "{{ db_data_device }}"
+
+- name: Ensure EBS device for MongoDB data and journal is mounted
+  mount: 
+    name: "{{ db_data_path }}"
+    src: "{{ db_data_device }}"
+    fstype: "{{ db_data_device_fstype }}"
+    opts:  "{{ db_data_mount_opts }}"
+    state: mounted

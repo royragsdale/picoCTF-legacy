@@ -7,3 +7,4 @@
 # This does not include adding any content
 
 - include: install.yml
+- include: configure_storage.yml

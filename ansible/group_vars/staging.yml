@@ -1,3 +1,9 @@
 ---
 # Variables shared across all staging playbooks
 ansible_user: admin
+
+# Defined in Terrafrom (temporarily static)
+db_data_device: "/dev/xvdf"
+db_data_device_fstype: "ext4"
+db_data_path: "/data"
+db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
