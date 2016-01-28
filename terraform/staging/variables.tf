@@ -34,3 +34,10 @@ variable "db_instance_type" {}
 variable "vpc_cidr" {}
 variable "public_subnet_cidr" {}
 
+
+# Tags
+variable "year" {}
+variable "environment" {}
+variable "web_name" {}
+variable "db_name" {}
+

@@ -141,6 +141,11 @@ resource "aws_instance" "web" {
 
     # Launch into the internet facing subnet
     subnet_id = "${aws_subnet.staging_public.id}"
+
+    tags {
+        Name = "${var.web_name}"
+        Year = "${var.year}"
+    }
 }
 
 resource "aws_instance" "db" {
@@ -151,10 +156,12 @@ resource "aws_instance" "db" {
     ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.db_instance_type}"
     key_name = "${aws_key_pair.auth.id}"
-
-    # Public Security group to allow HTTP and SSH access
     vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
-
-    # Launch into the internet facing subnet
     subnet_id = "${aws_subnet.staging_public.id}"
+
+    tags {
+        Name = "${var.db_name}"
+        Year = "${var.year}"
+    }
+
 }
