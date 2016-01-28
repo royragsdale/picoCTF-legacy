@@ -8,13 +8,9 @@ This is a collection of scripts and tools to deploy the picoCTF platform to prod
 3. Configurable
 
 ## Technology
-1. AWS
-2. Terrafrom
-    - infrastructure control 
-3. Ansible
-    - provisioning
-    - administration
-    - configuration
+1. AWS: Infrastructure
+2. Terrafrom: Infrastructure Orchestration
+3. Ansible: Provisioning/Configuration/Administration
 
 ## Setup
 
@@ -32,12 +28,6 @@ This is a collection of scripts and tools to deploy the picoCTF platform to prod
         - coco : <https://github.com/codecombat/codecombat>
 3. Route 53 (DNS)
 4. CloudWatch (Alarms)
-
-### Terraform
-1. Install
-    - <https://www.terraform.io/intro/getting-started/install.html>
-    - `unzip ~/down/terraform_0.6.9_linux_amd64.zip -d /usr/local/terraform`
-    - Add to path
 
 ### Ansible
 1. Install
