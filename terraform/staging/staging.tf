@@ -35,7 +35,7 @@ resource "aws_subnet" "staging_public" {
 
 # Default security group to access instances over SSH, HTTP, and HTTPS
 resource "aws_security_group" "staging_web" {
-    name        = "staging_public"
+    name        = "staging_web"
     description = "Allows SSH, HTTP, HTTPS to staging web servers"
     vpc_id      = "${aws_vpc.staging.id}"
 
@@ -81,7 +81,7 @@ resource "aws_security_group" "staging_db_access" {
 
 # Database security group. Only allows SSH, Mongo, outbound
 resource "aws_security_group" "staging_db" {
-    name        = "staging_db_access"
+    name        = "staging_db"
     description = "Allows SSH from web, and Mongo access from web servers"
     vpc_id      = "${aws_vpc.staging.id}"
 
