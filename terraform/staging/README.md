@@ -8,6 +8,7 @@
 1. Make edits to the appropriate configuration file
 2. Check what changes it will have
     - `terraform plan -var-file="secret.tfvars"`
+    - look for things like improperly templated/applied variables
 3. If everything looks good commit code explaining the changes
 4. Apply the changes
     - `terraform apply -var-file="secret.tfvars"` 
