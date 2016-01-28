@@ -131,6 +131,7 @@ resource "aws_instance" "web" {
 
     ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.web_instance_type}"
+    availability_zone = "${var.availability_zone}"
 
     # The name of our SSH keypair we created above.
     key_name = "${aws_key_pair.auth.id}"
@@ -148,6 +149,26 @@ resource "aws_instance" "web" {
     }
 }
 
+
+# Create EBS volume for MongoDB data and journal
+# having them on the same device allows backup with --journal
+resource "aws_ebs_volume" "db_data_journal" {
+    availability_zone = "${var.availability_zone}"
+    size = "${var.db_ebs_data_size}"
+    tags {
+        Name = "${var.db_ebs_data_name}"
+        Year = "${var.year}"
+    }
+}
+
+# Attach data and journal volume to the db instance
+resource "aws_volume_attachment" "db_data_journal" {
+  device_name = "${var.db_ebs_data_device_name}"
+  volume_id = "${aws_ebs_volume.db_data_journal.id}"
+  instance_id = "${aws_instance.db.id}"
+}
+
+
 resource "aws_instance" "db" {
     connection {
         user = "${var.user}"
@@ -155,6 +176,7 @@ resource "aws_instance" "db" {
 
     ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.db_instance_type}"
+    availability_zone = "${var.availability_zone}"
     key_name = "${aws_key_pair.auth.id}"
     vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
     subnet_id = "${aws_subnet.staging_public.id}"

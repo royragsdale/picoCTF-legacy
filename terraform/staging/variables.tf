@@ -14,6 +14,7 @@ variable "public_key_path" {}
 ########################################
 
 variable "region" {}
+variable "availability_zone" {}
 
 # AMI
 # Debian Jessie amd64 HVM EBS
@@ -34,10 +35,13 @@ variable "db_instance_type" {}
 variable "vpc_cidr" {}
 variable "public_subnet_cidr" {}
 
+# EBS Volumes
+variable "db_ebs_data_size" {}
+variable "db_ebs_data_device_name" {}
 
 # Tags
 variable "year" {}
 variable "environment" {}
 variable "web_name" {}
 variable "db_name" {}
-
+variable "db_ebs_data_name" {}
