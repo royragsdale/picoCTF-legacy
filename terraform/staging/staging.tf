@@ -163,7 +163,7 @@ resource "aws_ebs_volume" "db_data_journal" {
 
 # Attach data and journal volume to the db instance
 resource "aws_volume_attachment" "db_data_journal" {
-  device_name = "{$var.db_ebs_data_device_name}"
+  device_name = "${var.db_ebs_data_device_name}"
   volume_id = "${aws_ebs_volume.db_data_journal.id}"
   instance_id = "${aws_instance.db.id}"
 }

@@ -17,7 +17,7 @@ public_subnet_cidr = "10.0.1.0/24"
 db_ebs_data_size = "50"
 db_ebs_data_device_name = "/dev/xvdf"
 
-
+# Tags
 year = "2016"
 environment = "staging"
 web_name = "2016-staging-web"
