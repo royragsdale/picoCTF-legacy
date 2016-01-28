@@ -1,9 +1,9 @@
 
 
-output "web server address" {
+output "Staging Web IP address" {
     value = "${aws_instance.web.public_ip}"
 }
 
-output "backend server address" {
-    value = "${aws_instance.backend.public_ip}"
+output "Staging DB IP address" {
+    value = "${aws_instance.db.public_ip}"
 }

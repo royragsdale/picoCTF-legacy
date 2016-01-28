@@ -5,42 +5,39 @@
 provider "aws" {
     access_key = "${var.access_key}"
     secret_key = "${var.secret_key}"
-    region = "us-east-1"
+    region = "${var.region}"
 }
 
-# Create a VPC to launch our instances into
-# This is the private network where our instances will be created
-resource "aws_vpc" "projectA" {
-    cidr_block = "10.0.0.0/16"
+# Create a VPC (private netork ) to launch our instances into
+resource "aws_vpc" "staging" {
+    cidr_block = "${var.vpc_cidr}"
 }
 
 # Create an internet gateway to give our subnet access to the outside world
-# Otherwise they would not be internet accessible. GW is pointed to in vpc_route
-resource "aws_internet_gateway" "projectA_gw" {
-    vpc_id = "${aws_vpc.projectA.id}"
+resource "aws_internet_gateway" "staging" {
+    vpc_id = "${aws_vpc.staging.id}"
 }
 
 # Grant the VPC internet access on its main route table
 resource "aws_route" "internet_access" {
-    route_table_id         = "${aws_vpc.projectA.main_route_table_id}"
+    route_table_id         = "${aws_vpc.staging.main_route_table_id}"
     destination_cidr_block = "0.0.0.0/0"
-    gateway_id             = "${aws_internet_gateway.projectA_gw.id}"
+    gateway_id             = "${aws_internet_gateway.staging.id}"
 }
 
-# Create a public facing subnet to launch our web-accessible instances into
-# This is also what we will use to apply security groups (aka fw rules)
-# Maps public ip automatically
-resource "aws_subnet" "projectA_public" {
-    vpc_id                  = "${aws_vpc.projectA.id}"
-    cidr_block              = "10.0.1.0/24"
+# Create a public facing subnet to launch our instances into
+# Maps public ip automatically (every instance gets a public ip)
+resource "aws_subnet" "staging_public" {
+    vpc_id                  = "${aws_vpc.staging.id}"
+    cidr_block              = "${var.public_subnet_cidr}"
     map_public_ip_on_launch = true
 }
 
-# Default security group to access instances over SSH and HTTP
-resource "aws_security_group" "projectA_public" {
-    name        = "projectA_public"
-    description = "Allows SSH and HTTP to projectA public servers"
-    vpc_id      = "${aws_vpc.projectA.id}"
+# Default security group to access instances over SSH, HTTP, and HTTPS
+resource "aws_security_group" "staging_web" {
+    name        = "staging_public"
+    description = "Allows SSH, HTTP, HTTPS to staging web servers"
+    vpc_id      = "${aws_vpc.staging.id}"
 
     # SSH access from anywhere
     ingress {
@@ -58,6 +55,14 @@ resource "aws_security_group" "projectA_public" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 
+    # HTTPS access from anywhere
+    ingress {
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
     # outbound internet access
     egress {
         from_port   = 0
@@ -67,18 +72,18 @@ resource "aws_security_group" "projectA_public" {
     }
 }
 
-# Security group id webservers to access to backend servers
-resource "aws_security_group" "projectA_web" {
-    name        = "projectA_web"
-    description = "Identifies webservers to allow acess to backend"
-    vpc_id      = "${aws_vpc.projectA.id}"
+# Security group for webservers to access to database servers
+resource "aws_security_group" "staging_db_access" {
+    name        = "staging_db_access"
+    description = "Identifies webservers allowed acess the database"
+    vpc_id      = "${aws_vpc.staging.id}"
 }
 
-# Backend security group. Only allows SSH and outbound
-resource "aws_security_group" "projectA_backend" {
-    name        = "projectA_backend"
-    description = "Allows SSH only"
-    vpc_id      = "${aws_vpc.projectA.id}"
+# Database security group. Only allows SSH, Mongo, outbound
+resource "aws_security_group" "staging_db" {
+    name        = "staging_db_access"
+    description = "Allows SSH from web, and Mongo access from web servers"
+    vpc_id      = "${aws_vpc.staging.id}"
 
     # SSH access from anywhere
     ingress {
@@ -88,12 +93,12 @@ resource "aws_security_group" "projectA_backend" {
         cidr_blocks = ["0.0.0.0/0"]
     }
     
-    # "Server" access only from webserver
+    # Mongo access only from webservers
     ingress {
-        from_port   = 80
-        to_port     = 80
+        from_port   = 27017
+        to_port     = 27017
         protocol    = "tcp"
-        security_groups = ["${aws_security_group.projectA_web.id}"]
+        security_groups = ["${aws_security_group.staging_db_access.id}"]
     }
 
     # outbound internet access
@@ -111,7 +116,7 @@ resource "aws_key_pair" "auth" {
     public_key = "${file(var.public_key_path)}"
 }
 
-# Create Elastic IP for web
+# Create Elastic IP for web server
 resource "aws_eip" "web" {
     instance = "${aws_instance.web.id}"
     vpc = true
@@ -121,47 +126,35 @@ resource "aws_instance" "web" {
     # The connection block tells our provisioner how to communicate with the
     # instance.  Will use the local SSH agent for authentication.
     connection {
-        # The default username for our AMI
-        user = "admin"
+        user = "${var.user}"
     }
 
-    # Debian Jessie
-    ami = "ami-116d857a"
-    instance_type = "t2.micro"
+    ami = "${lookup(var.amis, var.region)}"
+    instance_type = "${var.web_instance_type}"
 
     # The name of our SSH keypair we created above.
     key_name = "${aws_key_pair.auth.id}"
 
-    # Public Security group to allow HTTP and SSH access
-    vpc_security_group_ids = ["${aws_security_group.projectA_public.id}",
-        "${aws_security_group.projectA_web.id}"]
+    # Public Security group to allow HTTP, HTTPS and SSH access
+    vpc_security_group_ids = ["${aws_security_group.staging_web.id}",
+        "${aws_security_group.staging_db_access.id}"]
 
     # Launch into the internet facing subnet
-    subnet_id = "${aws_subnet.projectA_public.id}"
-
-    # Run a remote provisioner on instance after creating it to install
-    # install nginx and start it (port 80)
-    provisioner "remote-exec" {
-        inline = [
-          "sudo apt-get -y update",
-          "sudo apt-get -y install nginx",
-          "sudo service nginx start"
-        ]
-    }
+    subnet_id = "${aws_subnet.staging_public.id}"
 }
 
-resource "aws_instance" "backend" {
+resource "aws_instance" "db" {
     connection {
-        user = "admin"
+        user = "${var.user}"
     }
 
-    ami = "ami-116d857a"
-    instance_type = "t2.micro"
+    ami = "${lookup(var.amis, var.region)}"
+    instance_type = "${var.db_instance_type}"
     key_name = "${aws_key_pair.auth.id}"
 
     # Public Security group to allow HTTP and SSH access
-    vpc_security_group_ids = ["${aws_security_group.projectA_backend.id}"]
+    vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
 
     # Launch into the internet facing subnet
-    subnet_id = "${aws_subnet.projectA_public.id}"
+    subnet_id = "${aws_subnet.staging_public.id}"
 }
