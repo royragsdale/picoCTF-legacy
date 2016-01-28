@@ -1,7 +1,6 @@
 
-
-output "Staging Web IP address" {
-    value = "${aws_instance.web.public_ip}"
+output "Staging Web Elastic IP address" {
+    value = "${aws_eip.web.public_ip}"
 }
 
 output "Staging DB IP address" {
