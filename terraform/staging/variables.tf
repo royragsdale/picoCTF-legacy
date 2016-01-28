@@ -14,6 +14,7 @@ variable "public_key_path" {}
 ########################################
 
 variable "region" {}
+variable "availability_zone" {}
 
 # AMI
 # Debian Jessie amd64 HVM EBS

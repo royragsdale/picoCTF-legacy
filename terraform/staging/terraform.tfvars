@@ -1,5 +1,6 @@
 
 region = "us-east-1"
+availability_zone = "us-east-1d"
 
 # Default username for Debian AMIs
 user = "admin"

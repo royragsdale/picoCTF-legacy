@@ -131,6 +131,7 @@ resource "aws_instance" "web" {
 
     ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.web_instance_type}"
+    availability_zone = "${var.availability_zone}"
 
     # The name of our SSH keypair we created above.
     key_name = "${aws_key_pair.auth.id}"
@@ -155,6 +156,7 @@ resource "aws_instance" "db" {
 
     ami = "${lookup(var.amis, var.region)}"
     instance_type = "${var.db_instance_type}"
+    availability_zone = "${var.availability_zone}"
     key_name = "${aws_key_pair.auth.id}"
     vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
     subnet_id = "${aws_subnet.staging_public.id}"
