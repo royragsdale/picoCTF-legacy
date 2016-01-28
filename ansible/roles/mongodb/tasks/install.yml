@@ -1,0 +1,16 @@
+---
+# Playbook that installs MongoDB and associted utilities
+
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Install MongoDB meta package
+  apt:
+    pkg: mongodb
+    state: present
+
+- name: Ensure mongodb is running
+  service: 
+    name: mongodb
+    state: started
+    enabled: yes

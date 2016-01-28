@@ -1,5 +1,5 @@
 ---
-# Playbook that assigns all the necessary roles to provision the backend server
+# Playbook that assigns all the necessary roles to provision the backend database
 - hosts: db
   remote_user: "{{ ansible_user }}"
 
@@ -8,3 +8,4 @@
 
   roles:
     - common
+    - mongodb
