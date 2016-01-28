@@ -1,0 +1,14 @@
+---
+# Playbook that installs base utilities we would want on any server
+
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Install base packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - curl
+    - vim
+    - tmux

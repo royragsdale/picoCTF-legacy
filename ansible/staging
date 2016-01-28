@@ -1,0 +1,10 @@
+
+[staging:children]
+web
+db
+
+[web]
+52.72.127.236
+
+[db]
+54.152.82.229

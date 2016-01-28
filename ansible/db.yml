@@ -1,0 +1,10 @@
+---
+# Playbook that assigns all the necessary roles to provision the backend server
+- hosts: db
+  remote_user: "{{ ansible_user }}"
+
+  become: yes
+  become_method: sudo
+
+  roles:
+    - common

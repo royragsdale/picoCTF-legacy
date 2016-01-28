@@ -1,0 +1,11 @@
+---
+# Playbook that assigns all the necessary roles to provision the web server
+- hosts: web
+  remote_user: "{{ ansible_user }}"
+
+  become: yes
+  become_method: sudo
+
+  roles:
+    - common
+    - nginx

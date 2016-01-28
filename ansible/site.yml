@@ -1,0 +1,4 @@
+---
+# Playbook to deploy the entire staging environment
+- include: web.yml
+- include: db.yml

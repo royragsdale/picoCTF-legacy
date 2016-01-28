@@ -1,0 +1,3 @@
+---
+# Variables shared across all staging playbooks
+ansible_user: admin
