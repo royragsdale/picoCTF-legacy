@@ -22,6 +22,18 @@ We are working towards stage 1 with 2 and 3 in necessarily short order.
 2. Inventory information (Terraform)
     - IP / SSH Key
 
+## Work Flow
+
+### Provisioning (Staging)
+This will be necessary after first brining up the infrastructure with Terraform
+1. Check that the inventory (`staging`) matches what terraform has deployed.
+    - This is required until we pull a dynamic inventory. 
+    - `terraform show`
+2. Check that syntax is correct and that playbooks and roles will all run
+    - `ansible-playbook site.yml --check -i staging`
+3. Run the playbook for the site with on the staging hosts
+    - `ansible-playbook site.yml -i staging`
+
 ## Setup 
 1. Install
     - <http://docs.ansible.com/ansible/intro_installation.html#getting-ansible> 
@@ -29,3 +41,5 @@ We are working towards stage 1 with 2 and 3 in necessarily short order.
         - `sudo apt-get install python-pip`
         - `sudo pip install ansible`
 
+## Notes
+A side goal of using Ansible to automate the deployment of picoCTF is to clean up the configuration and development environment by contributing back to picoCTF-platform.

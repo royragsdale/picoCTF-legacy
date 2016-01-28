@@ -28,10 +28,3 @@ This is a collection of scripts and tools to deploy the picoCTF platform to prod
         - coco : <https://github.com/codecombat/codecombat>
 3. Route 53 (DNS)
 4. CloudWatch (Alarms)
-
-### Ansible
-1. Install
-    - <http://docs.ansible.com/ansible/intro_installation.html#getting-ansible> 
-    - pip option  
-        - `sudo apt-get install python-pip`
-        - `sudo pip install ansible`
