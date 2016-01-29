@@ -1,0 +1,41 @@
+---
+# Playbook that sets up users for a runnning instance of MongoDB
+# Heavily influenced by: https://github.com/UnderGreen/ansible-role-mongodb
+# Using a subset of @UnderGreen's work
+
+# Include the passwords
+- include_vars: secret_vars/staging_secret.yml
+
+- name: create administrative users
+  mongodb_user:
+    database: admin
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    roles: "{{ item.roles }}"
+    login_port: "{{ mongodb_conf_port }}"
+  with_items:
+    - "{{ mongodb_user_admins }}"
+
+- name: create root user
+  mongodb_user:
+    database: admin
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    roles: "{{ item.roles }}"
+    login_port: "{{ mongodb_conf_port }}"
+  with_items:
+    - {
+      name: "{{ mongodb_root_admin_name }}",
+      password: "{{ mongodb_root_admin_password }}",
+      roles: "root"
+      }
+
+- name: create normal users
+  mongodb_user:
+    database: "{{ item.database }}"
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    roles: "{{ item.roles }}"
+    login_port: "{{ mongodb_conf_port }}"
+  with_items:
+    - "{{ mongodb_users }}"
