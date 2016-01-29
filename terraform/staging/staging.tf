@@ -153,6 +153,13 @@ resource "aws_instance" "web" {
 }
 
 
+# Create Elastic IP for db server to simplify configuration
+resource "aws_eip" "db" {
+    instance = "${aws_instance.db.id}"
+    vpc = true
+}
+
+
 # Create EBS volume for MongoDB data and journal
 # having them on the same device allows backup with --journal
 resource "aws_ebs_volume" "db_data_journal" {
