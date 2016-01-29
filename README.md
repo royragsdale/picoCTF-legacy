@@ -38,3 +38,21 @@ Whip web+shell code base into shape with regards to configuration and deployment
         - coco : <https://github.com/codecombat/codecombat>
 3. Route 53 (DNS)
 4. CloudWatch (Alarms)
+
+
+## Other Notes
+
+### Bugs and Fixes
+
+Temporarily placed here until there is a better place
+
+#### DB auth fails
+
+- Check client version, we are using MongoDB 3.2 which changed auth from "MONGODB-CR" to "SCRAM-SHA-1" and changed the auth schema
+    - MongoDB shell version: 3.2.1 should work
+    - latest pymongo should work [TODO] verify version
+    - mongod.log will have a line like the following if this is the issue
+       - `Failed to authenticate cocoAdmin@admin with mechanism MONGODB-CR: AuthenticationFailed MONGODB-CR credentials missing in the user document`
+    - relevant [Stack Overflow](http://stackoverflow.com/questions/29006887/mongodb-cr-authentication-failed)
+
+
