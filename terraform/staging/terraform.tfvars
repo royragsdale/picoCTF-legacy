@@ -13,6 +13,9 @@ db_instance_type = "t2.micro"
 vpc_cidr = "10.0.0.0/16"
 public_subnet_cidr = "10.0.1.0/24"
 
+web_private_ip = "10.0.1.10"
+db_private_ip = "10.0.1.20"
+
 # EBS Volumes
 db_ebs_data_size = "50"
 db_ebs_data_device_name = "/dev/xvdf"

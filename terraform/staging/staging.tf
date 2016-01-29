@@ -143,6 +143,9 @@ resource "aws_instance" "web" {
     # Launch into the internet facing subnet
     subnet_id = "${aws_subnet.staging_public.id}"
 
+    # Fix private_ip
+    private_ip = "${var.web_private_ip}"
+
     tags {
         Name = "${var.web_name}"
         Year = "${var.year}"
@@ -180,6 +183,7 @@ resource "aws_instance" "db" {
     key_name = "${aws_key_pair.auth.id}"
     vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
     subnet_id = "${aws_subnet.staging_public.id}"
+    private_ip = "${var.db_private_ip}"
 
     tags {
         Name = "${var.db_name}"
