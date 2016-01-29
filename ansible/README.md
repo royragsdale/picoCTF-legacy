@@ -42,4 +42,6 @@ This will be necessary after first brining up the infrastructure with Terraform
         - `sudo pip install ansible`
 
 ## Notes
-A side goal of using Ansible to automate the deployment of picoCTF is to clean up the configuration and development environment by contributing back to picoCTF-platform.
+- A side goal of using Ansible to automate the deployment of picoCTF is to clean up the configuration and development environment by contributing back to picoCTF-platform.
+- A completely fresh deployment --check will fail on Install MongoDB meta package
+    - this is because we are adding a new repository

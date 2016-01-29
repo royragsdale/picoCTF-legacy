@@ -8,8 +8,8 @@ db_data_device_fstype: "ext4"
 db_data_path: "/data"
 db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
 
-# Static from Terraform [TODO]
-db_private_ip: 10.0.1.16
+# Static from Terraform
+db_private_ip: 10.0.1.20
 
 # MongoDB Configuration Variables (used in configure_mongo.yml task)
 mongodb_user: mongodb
