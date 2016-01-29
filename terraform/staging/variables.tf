@@ -36,6 +36,7 @@ variable "vpc_cidr" {}
 variable "public_subnet_cidr" {}
 variable "web_private_ip" {}
 variable "db_private_ip" {}
+variable "coco_db_cidr" {}
 
 # EBS Volumes
 variable "db_ebs_data_size" {}

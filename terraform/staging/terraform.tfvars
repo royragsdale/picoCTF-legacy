@@ -16,6 +16,8 @@ public_subnet_cidr = "10.0.1.0/24"
 web_private_ip = "10.0.1.10"
 db_private_ip = "10.0.1.20"
 
+coco_db_cidr = "52.0.243.3/32"
+
 # EBS Volumes
 db_ebs_data_size = "50"
 db_ebs_data_device_name = "/dev/xvdf"
