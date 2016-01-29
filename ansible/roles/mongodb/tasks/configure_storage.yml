@@ -15,3 +15,10 @@
     fstype: "{{ db_data_device_fstype }}"
     opts:  "{{ db_data_mount_opts }}"
     state: mounted
+
+- name:  Ensure mongod user owns data and journal directory
+  file: 
+    path: "{{ db_data_path }}"
+    owner: "{{ mongodb_user }}"
+    group: "{{ mongodb_user }}"
+

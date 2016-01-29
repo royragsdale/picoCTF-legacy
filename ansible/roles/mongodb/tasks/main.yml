@@ -10,3 +10,8 @@
 - include: configure_storage.yml
 - include: configure_mongo.yml
 #- include: configure_auth.yml
+
+- name: Ensure mongodb is started
+  service: 
+    name: "{{ mongodb_daemon_name }}"
+    state: started
