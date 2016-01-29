@@ -45,4 +45,8 @@ Each primary Terraform configuration file creates and manages the following elem
     - `unzip ~/down/terraform_0.6.9_linux_amd64.zip -d /usr/local/terraform`
     - Add to path
 
-
+## Other Notes
+- Error waiting for Volume (vol-XYZABC) to detach from Instance
+    - This is caused when an instance with an attached volume attempts to mutate
+    - Use `terrafrom taint aws_instance.XXX` to cause a full deletion and recreation
+    - Check with `terraform plan` then if it makes sense apply with `terraform apply` 
