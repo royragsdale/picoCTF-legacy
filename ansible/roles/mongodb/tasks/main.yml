@@ -8,3 +8,5 @@
 
 - include: install.yml
 - include: configure_storage.yml
+- include: configure_mongo.yml
+#- include: configure_auth.yml
