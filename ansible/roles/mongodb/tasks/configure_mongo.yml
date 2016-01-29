@@ -6,7 +6,7 @@
 - name: Configure mongodb
   template: 
     src: mongod.conf.j2
-    dest: /etc/mongod.conf
+    dest: /etc/mongodb.conf
     backup: yes
     owner: root
     group: root
