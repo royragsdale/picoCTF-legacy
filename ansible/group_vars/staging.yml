@@ -11,13 +11,16 @@ db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
 # Static from Terraform [TODO]
 db_private_ip: 10.0.1.16
 
-
 # MongoDB Configuration Variables (used in configure_mongo.yml task)
-mongodb_user: mongodb                             # Default (Debian)
-mongodb_daemon_name: mongodb                      # Default (Debian)
+mongodb_user: mongodb
+mongodb_daemon_name: mongod
+
+mongodb_apt_keyserver: keyserver.ubuntu.com
+mongodb_apt_key_id: EA312927
+mongodb_repo: 'deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.2 main'
 
 mongodb_conf_auth: true                           # Run with security
-mongodb_conf_bind_ip: "{{ db_private_ip }}"       # IP addresses to listen on (Static)
+mongodb_conf_bind_ip: "0.0.0.0"                   # IP addresses to listen on (Static)
 mongodb_conf_dbpath: "{{ db_data_path }}"         # Directory for datafiles (Static)
 mongodb_conf_nohttpinterface: true                # Disable http interface
 mongodb_conf_journal: true                        # Enable journaling
@@ -27,17 +30,8 @@ mongodb_conf_port: 27017                          # Specify port number
 
 # MongoDB User Variables (used in configure_auth.yml task)
 # Passwords are stored outside version control
-mongodb_user_admins:
-  - {
-    name: picoAdmin,
-    password: "{{ picoAdmin_db_password }}",
-    roles: "userAdminAnyDatabase"
-    }
-  - {
-    name: cocoAdmin,
-    password: "{{ cocoAdmin_db_password }}",
-    roles: "userAdminAnyDatabase"
-    }
+initial_admin_name: picoAdmin
+initial_admin_password: "{{ picoAdmin_db_password }}"
 
 mongodb_root_admin_name: rootAdmin
 mongodb_root_admin_password: "{{ root_db_password }}"
@@ -57,4 +51,10 @@ mongodb_users:
     password: "{{ cocoWeb_db_password }}",
     roles: readWrite,
     database: "{{ picoCTF_db_name }}"
+  }
+  - {
+    name: cocoAdmin,
+    password: "{{ cocoAdmin_db_password }}",
+    roles: "userAdminAnyDatabase,readWriteAnyDatabase",
+    database: "admin"
   }
