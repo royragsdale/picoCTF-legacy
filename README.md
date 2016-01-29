@@ -12,6 +12,16 @@ This is a collection of scripts and tools to deploy the picoCTF platform to prod
 2. Terrafrom: Infrastructure Orchestration
 3. Ansible: Provisioning/Configuration/Administration
 
+## Status
+
+Work in progress.
+
+### Current
+Working on building out the staging environment.  Even within that the only system with a relatively reasonable configuration is the database.
+
+### Next
+Whip web+shell code base into shape with regards to configuration and deployment.
+
 ## Setup
 
 ### AWS
