@@ -11,5 +11,5 @@
     owner: root
     group: root
     mode: 0644
-    notify :
-      - mongodb restart
+  notify :
+    - mongodb restart
