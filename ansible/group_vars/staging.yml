@@ -7,3 +7,52 @@ db_data_device: "/dev/xvdf"
 db_data_device_fstype: "ext4"
 db_data_path: "/data"
 db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
+
+
+# MongoDB Configuration Variables (used in configure_mongo.yml task)
+mongodb_user: mongodb                             # Default (Debian)
+mongodb_daemon_name: mongodb                      # Default (Debian)
+
+mongodb_conf_auth: true                           # Run with security
+mongodb_conf_bind_ip: 127.0.0.1                   # Comma separated list of ip addresses to listen on
+mongodb_conf_dbpath: "{{ db_data_path }}"          # Directory for datafiles
+mongodb_conf_fork: true                           # Fork server process
+mongodb_conf_httpinterface: false                 # Enable http interface
+mongodb_conf_journal: true                        # Enable journaling
+mongodb_conf_logappend: true                      # Append to logpath instead of over-writing
+mongodb_conf_logpath: /var/log/mongodb/{{ mongodb_daemon_name }}.log # Log file to send write to instead of stdout
+mongodb_conf_port: 27017                          # Specify port number
+
+# MongoDB User Variables (used in configure_auth.yml task)
+# Passwords are stored outside version control
+mongodb_user_admins:
+  - {
+    name: picoAdmin
+    password: "{{ picoAdmin_db_password }}",
+    roles: "userAdminAnyDatabase"
+    }
+  - {
+    name: cocoAdmin
+    password: "{{ cocoAdmin_db_password }}",
+    roles: "userAdminAnyDatabase"
+    }
+
+mongodb_root_admin_name: rootAdmin
+mongodb_root_admin_password: "{{ root_db_password }}"
+
+picoCTF_db_name: picoCTF3
+
+# Add additional users here
+mongodb_users:
+  - {
+    name: picoWeb,
+    password: "{{ picoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
+  }
+  - {
+    name: cocoWeb,
+    password: "{{ cocoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
+  }
