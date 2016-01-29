@@ -31,6 +31,7 @@ resource "aws_subnet" "staging_public" {
     vpc_id                  = "${aws_vpc.staging.id}"
     cidr_block              = "${var.public_subnet_cidr}"
     map_public_ip_on_launch = true
+    availability_zone = "${var.availability_zone}"
 }
 
 # Default security group to access instances over SSH, HTTP, and HTTPS
