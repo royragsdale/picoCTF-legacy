@@ -122,7 +122,7 @@ resource "aws_security_group" "staging_db_coco_sync" {
         from_port   = 27017
         to_port     = 27017
         protocol    = "tcp"
-        cidr_blocks = ["${var.coco_db_cidr}"]
+        cidr_blocks = ["${var.coco_db_cidr}","${var.home_test_db_cidr}"]
     }
 }
 
