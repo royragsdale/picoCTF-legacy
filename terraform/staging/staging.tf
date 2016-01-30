@@ -154,7 +154,8 @@ resource "aws_instance" "web" {
 
     # Public Security group to allow HTTP, HTTPS and SSH access
     vpc_security_group_ids = ["${aws_security_group.staging_web.id}",
-        "${aws_security_group.staging_db_access.id}"]
+        "${aws_security_group.staging_db_access.id}",
+        "${aws_security_group.staging_db_coco_sync.id}"]
 
     # Launch into the internet facing subnet
     subnet_id = "${aws_subnet.staging_public.id}"
