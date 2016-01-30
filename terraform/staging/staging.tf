@@ -154,8 +154,7 @@ resource "aws_instance" "web" {
 
     # Public Security group to allow HTTP, HTTPS and SSH access
     vpc_security_group_ids = ["${aws_security_group.staging_web.id}",
-        "${aws_security_group.staging_db_access.id}",
-        "${aws_security_group.staging_db_coco_sync.id}"]
+        "${aws_security_group.staging_db_access.id}"]
 
     # Launch into the internet facing subnet
     subnet_id = "${aws_subnet.staging_public.id}"
@@ -205,7 +204,8 @@ resource "aws_instance" "db" {
     instance_type = "${var.db_instance_type}"
     availability_zone = "${var.availability_zone}"
     key_name = "${aws_key_pair.auth.id}"
-    vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
+    vpc_security_group_ids = ["${aws_security_group.staging_db.id}",
+        "${aws_security_group.staging_db_coco_sync.id}"]
     subnet_id = "${aws_subnet.staging_public.id}"
     private_ip = "${var.db_private_ip}"
 
