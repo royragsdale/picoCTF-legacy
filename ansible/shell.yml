@@ -1,6 +1,6 @@
 ---
-# Playbook that assigns all the necessary roles to provision the web server
-- hosts: web
+# Playbook that assigns all the necessary roles to provision the shell server
+- hosts: shell
   remote_user: "{{ ansible_user }}"
 
   become: yes

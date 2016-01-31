@@ -1,10 +1,14 @@
 
 [staging:children]
 web
+shell
 db
 
 [web]
 52.73.0.171
+
+[shell]
+52.72.97.197
 
 [db]
 52.71.93.40
