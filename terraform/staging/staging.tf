@@ -168,6 +168,35 @@ resource "aws_instance" "web" {
     }
 }
 
+# Create Elastic IP for shell server
+resource "aws_eip" "shell" {
+    instance = "${aws_instance.shell.id}"
+    vpc = true
+}
+
+resource "aws_instance" "shell" {
+    connection {
+        user = "${var.user}"
+    }
+
+    ami = "${lookup(var.amis, var.region)}"
+    instance_type = "${var.web_instance_type}"
+    availability_zone = "${var.availability_zone}"
+    key_name = "${aws_key_pair.auth.id}"
+
+    # Public Security group to [TODO]
+    vpc_security_group_ids = ["${aws_security_group.staging_web.id}"]
+
+    # Launch into the internet facing subnet
+    subnet_id = "${aws_subnet.staging_public.id}"
+    private_ip = "${var.shell_private_ip}"
+
+    tags {
+        Name = "${var.shell_name}"
+        Year = "${var.year}"
+    }
+}
+
 
 # Create Elastic IP for db server to simplify configuration
 resource "aws_eip" "db" {
