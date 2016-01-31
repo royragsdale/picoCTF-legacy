@@ -1,0 +1,38 @@
+---
+# Playbook that installs and configures nginx
+# This is the base configuration across any nginx server we deploy
+# This does not include adding any content
+
+- name: Clone picoCTF-platform
+  git: 
+    repo: "{{ pico_repo }}" 
+    dest: "{{ pico_code_dir }}"
+    recursive: yes
+
+- name: Ensure admin user owns pico code dir
+  file:
+    path: "{{ pico_code_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+    recurse: yes
+
+- name: Ensure admin user owns pico http dir
+  file:
+    path: "{{ pico_http_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+
+- name: Update apt
+  apt:
+    update_cache: yes
+
+- name: Install jekyll
+  apt:
+    pkg: jekyll
+    state: present
+
+## Next step is the following two scripts
+# /vagrant/scripts/web_setup.sh  (fails due to a vagrant config issue)
+# or /vagrant/picoCTF-web/scripts/devploy.sh (builds and redeploys)

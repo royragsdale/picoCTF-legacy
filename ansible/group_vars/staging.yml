@@ -58,3 +58,9 @@ mongodb_users:
     roles: "userAdminAnyDatabase,readWriteAnyDatabase",
     database: "admin"
   }
+
+# picoCTF-web variables
+pico_repo: "https://github.com/picoCTF/picoCTF-platform"
+pico_code_dir: /vagrant
+pico_http_dir: /srv/http/ctf
+pico_web_install_command: "{{pico_code_dir}}/scripts/web_setup.sh"
