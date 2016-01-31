@@ -73,6 +73,31 @@ resource "aws_security_group" "staging_web" {
     }
 }
 
+# Default security group to enable unfederated access. Should be used
+# for the shell server only, and examined to see if it can be locked
+# down further.
+resource "aws_security_group" "staging_shell" {
+    name        = "staging_shell"
+    description = "Allows full acces from internet to the shell server"
+    vpc_id      = "${aws_vpc.staging.id}"
+
+    # inbound access to all ports from anywhere 
+    ingress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    # outbound internet access
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
 # Security group for webservers to access to database servers
 resource "aws_security_group" "staging_db_access" {
     name        = "staging_db_access"
@@ -184,8 +209,8 @@ resource "aws_instance" "shell" {
     availability_zone = "${var.availability_zone}"
     key_name = "${aws_key_pair.auth.id}"
 
-    # Public Security group to [TODO]
-    vpc_security_group_ids = ["${aws_security_group.staging_web.id}"]
+    # Public Security group to allow unfetttered acess from the internet
+    vpc_security_group_ids = ["${aws_security_group.staging_shell.id}"]
 
     # Launch into the internet facing subnet
     subnet_id = "${aws_subnet.staging_public.id}"

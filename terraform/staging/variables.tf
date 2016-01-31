@@ -29,6 +29,7 @@ variable "amis" {
 
 # Instances
 variable "web_instance_type" {}
+variable "shell_instance_type" {}
 variable "db_instance_type" {}
 
 # Network
@@ -39,7 +40,6 @@ variable "shell_private_ip" {}
 variable "db_private_ip" {}
 variable "coco_db_cidr" {}
 variable "home_test_db_cidr" {}
-
 
 # EBS Volumes
 variable "db_ebs_data_size" {}
