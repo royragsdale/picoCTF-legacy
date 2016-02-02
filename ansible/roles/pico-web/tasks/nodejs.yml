@@ -6,15 +6,24 @@
 # nodejs-legacy npm
 # npm install -g coffee-script react-tools jsxhint coffee-react 
 
+- name: Check if nodejs is installed
+  stat:
+    path: /usr/bin/nodejs
+  register: nodejs
+
 - name: Download nodejs 4.x setup script
   get_url: 
     url: "https://deb.nodesource.com/setup_4.x"
     dest: "/tmp/node_setup.sh"
     mode: 0700
 
+# Since shell commands are not idempotent we manually
+# check above if already have the nodejs binary (implying
+# all nodejs steps where previosuly sucessful)
 - name: Setup nodejs repositories
   shell: "/tmp/node_setup.sh"
   become: yes
+  when: nodejs.stat.exists == False
 
 - name: Install nodejs and dependencies
   apt:
