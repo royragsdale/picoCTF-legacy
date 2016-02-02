@@ -1,0 +1,37 @@
+---
+# Playbook that installs and configures node dependencies
+# follows the official instalation guide
+# https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions
+
+# nodejs-legacy npm
+# npm install -g coffee-script react-tools jsxhint coffee-react 
+
+- name: Download nodejs 4.x setup script
+  get_url: 
+    url: "https://deb.nodesource.com/setup_4.x"
+    dest: "/tmp/node_setup.sh"
+    mode: 0700
+
+- name: Setup nodejs repositories
+  shell: "/tmp/node_setup.sh"
+  become: yes
+
+- name: Install nodejs and dependencies
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - nodejs
+    - build-essential
+
+# Extracted from picoCTF-platform/scripts/web_setup.sh
+# Review necessity [TODO]
+- name: Install nodejs packages (globally)
+  npm: 
+    name: "{{ item }}"
+    global: yes
+  with_items:
+    - coffee-script
+    - react-tools
+    - jsxhint
+    - coffee-react

@@ -4,6 +4,7 @@
 - name: Update apt
   apt:
     update_cache: yes
+    cache_valid_time: 3600
 
 # Extracted from picoCTF-platform/scripts/web_setup.sh
 - name: Install picoCTF platform system dependencies
