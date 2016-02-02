@@ -24,14 +24,12 @@
     group: "{{ ansible_user }}"
     state: directory
 
-- name: Update apt
-  apt:
-    update_cache: yes
 
-- name: Install jekyll
-  apt:
-    pkg: jekyll
-    state: present
+- include: dependencies.yml
+#- include: picoCTF-webapp.yml
+#- include: nginx.yml
+#- include: nodejs.yml
+#- include: monit.yml
 
 ## Next step is the following two scripts
 # /vagrant/scripts/web_setup.sh  (fails due to a vagrant config issue)
