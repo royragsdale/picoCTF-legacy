@@ -1,0 +1,9 @@
+---
+# Playbook that installs and configures the picoCTF API/webapp
+
+# Source was cloned in main
+- name: Install picoCTF-web from source
+  pip:
+    name: "file://{{ pico_web_api_dir }}"
+    executable: pip3
+    extra_args: "--upgrade"

@@ -73,5 +73,6 @@ pico_api_auth_teacher: "/api/user/authorize/teacher"
 pico_api_auth_admin: "/api/user/authorize/admin"
 pico_site_config_name: "ctf"
 
+pico_web_api_dir: "{{ pico_code_dir }}/picoCTF-web"
 
 pico_web_install_command: "{{pico_code_dir}}/scripts/web_setup.sh"

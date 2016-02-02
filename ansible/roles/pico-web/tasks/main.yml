@@ -28,7 +28,7 @@
 - include: dependencies.yml
 - include: nginx.yml
 - include: nodejs.yml
-#- include: picoCTF-webapp.yml
+- include: picoCTF-webapp.yml
 #- include: monit.yml
 
 - name: Ensure nginx is running
