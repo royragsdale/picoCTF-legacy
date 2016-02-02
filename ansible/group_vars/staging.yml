@@ -61,6 +61,17 @@ mongodb_users:
 
 # picoCTF-web variables
 pico_repo: "https://github.com/picoCTF/picoCTF-platform"
-pico_code_dir: /vagrant
-pico_http_dir: /srv/http/ctf
+pico_code_dir: "/vagrant"
+pico_http_dir: "/srv/http/ctf"
+
+## nginx
+pico_server_name: "_"                                 # catch all [TODO]
+pico_http_alias: "{{ pico_http_dir }}/$1.html"
+pico_api_proxy_pass: "http://localhost:8000"
+pico_api_auth_user:  "/api/user/authorize/user"
+pico_api_auth_teacher: "/api/user/authorize/teacher"
+pico_api_auth_admin: "/api/user/authorize/admin"
+pico_site_config_name: "ctf"
+
+
 pico_web_install_command: "{{pico_code_dir}}/scripts/web_setup.sh"

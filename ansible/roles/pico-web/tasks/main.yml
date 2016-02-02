@@ -26,11 +26,18 @@
 
 
 - include: dependencies.yml
+- include: nginx.yml
 #- include: picoCTF-webapp.yml
-#- include: nginx.yml
 #- include: nodejs.yml
 #- include: monit.yml
 
+- name: Ensure nginx is running
+  service: 
+    name: nginx
+    state: started
+    enabled: yes
+    
+    
 ## Next step is the following two scripts
 # /vagrant/scripts/web_setup.sh  (fails due to a vagrant config issue)
 # or /vagrant/picoCTF-web/scripts/devploy.sh (builds and redeploys)
