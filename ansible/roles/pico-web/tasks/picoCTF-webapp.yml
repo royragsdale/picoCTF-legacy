@@ -2,8 +2,35 @@
 # Playbook that installs and configures the picoCTF API/webapp
 
 # Source was cloned in main
-- name: Install picoCTF-web from source
+- name: Install picoCTF-web api from source
   pip:
     name: "file://{{ pico_web_api_dir }}"
     executable: pip3
     extra_args: "--upgrade"
+
+- name: Compile CoffeeScript
+  command: "cjsx -bc -o {{ pico_web_js_out_path }} {{ pico_web_coffescript_in_path }}"
+
+- name: Ensure admin user owns pico web backup dir
+  file:
+    path: "{{ pico_web_backup_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+
+- name: Backup existing web site
+  copy:
+    src: "{{ pico_http_dir }}"
+    dest: "{{ pico_web_backup_dir }}"
+    backup: yes
+
+- name: Remove old version of web
+  file:
+    path: "{{ pico_http_dir }}"
+    state: absent
+    recurse: true
+
+- name: Run Jekyll to rebuild new web
+  shell: "cd {{ pico_web_api_dir }}/web && jekyll build"
+  become: yes
+

@@ -75,4 +75,9 @@ pico_site_config_name: "ctf"
 
 pico_web_api_dir: "{{ pico_code_dir }}/picoCTF-web"
 
-pico_web_install_command: "{{pico_code_dir}}/scripts/web_setup.sh"
+# picoCTF-webapp
+
+pico_web_js_out_path: "{{ pico_web_api_dir}}/web/js/"
+pico_web_coffescript_in_path: "{{ pico_web_api_dir}}/web/coffee/"
+
+pico_web_backup_dir: "/backup"
