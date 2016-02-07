@@ -1,0 +1,45 @@
+---
+# Playbook that installs all challenges in the private problems repo
+
+# Extracted from picoCTF-platform/scripts/shell_setup.sh
+
+- include_vars: secret_vars/staging_secret.yml
+
+- name: Copy over git SSH public key file
+  copy:
+    src: "secret_vars/{{ git_ssh_public_key_file }}"
+    dest: "/home/{{ ansible_user }}/.ssh/{{ git_ssh_public_key_file }}"
+    mode: 0600
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy over git SSH private key file
+  copy:
+    src: "secret_vars/{{ git_ssh_private_key_file }}"
+    dest: "/home/{{ ansible_user }}/.ssh/{{ git_ssh_private_key_file }}"
+    mode: 0600
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+
+- name: Clone picoCTF-problems-private
+  git: 
+    repo: "{{ private_problems_repo }}"
+    version: "{{ private_problems_branch }}"
+    dest: "{{  private_problems_dir }}"
+    accept_hostkey: yes
+    key_file: "/home/{{ ansible_user }}/.ssh/{{ git_ssh_private_key_file }}"
+
+- name: Ensure admin user owns picoCTF-platform dir
+  file:
+    path: "{{ private_problems_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+    recurse: yes
+
+- name: Run Challenge Deployment Script
+  script: scripts/deploy_challenges.sh
+
+- name: Run Challenge Deployment Script (private)
+  script: scripts/deploy_private.sh

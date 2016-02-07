@@ -1,0 +1,57 @@
+---
+# Playbook that installs and configures services on the shell_server
+
+# Extracted from picoCTF-platform/scripts/shell_setup.sh
+# [TODO] service files need examination
+
+- name: Copy over shellinaboxd Service file
+  copy:
+    src:  "{{ shellinaboxd_src}}"
+    remote_src: yes
+    dest: "{{ shellinaboxd_dst}}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable shellinaboxd Service
+  service:
+    name: "{{ shellinaboxd_service_name }}"
+    enabled: yes
+
+- name: Start shellinaboxd Service
+  service:
+    name: "{{ shellinaboxd_service_name }}"
+    state: started
+
+- name: Copy over pam configs
+  copy:
+    src:  "{{ pam_common_auth_src }}"
+    remote_src: yes
+    dest: /etc/pam.d/common-auth
+    owner: root
+    group: root
+    mode: 0644
+
+# [TODO] should be templated
+- name: Copy over sshd configs
+  copy:
+    src:  "{{ sshd_config_src }}"
+    remote_src: yes
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+
+
+- name: Restart ssh service to pickup new configs
+  service:
+    name: sshd
+    state: restarted
+
+# TODO where should this go
+- name: Add competitiors group
+  group: 
+    name: competitors
+    state: present
+
+
