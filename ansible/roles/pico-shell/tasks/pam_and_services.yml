@@ -5,9 +5,8 @@
 # [TODO] service files need examination
 
 - name: Copy over shellinaboxd Service file
-  copy:
-    src:  "{{ shellinaboxd_src}}"
-    remote_src: yes
+  template: 
+    src: shellinaboxd.service.j2
     dest: "{{ shellinaboxd_dst}}"
     owner: root
     group: root

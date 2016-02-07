@@ -90,7 +90,8 @@ web_address: "http://52.73.0.171"
 
 shell_site_config_name: "shell"
 
-shellinabox_server_path: "http://localhost:4242/"
+shellinaboxd_port: "4242"
+shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
 shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
 shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
 
@@ -101,7 +102,7 @@ shell_manager_verison: "remove_data_files"
 shell_service_path: "/lib/systemd/system"
 
 shellinaboxd_service_name: "shellinaboxd.service"
-shellinaboxd_src: "{{ pico_code_dir }}/scripts/{{ shellinaboxd_service_name }}"
+#shellinaboxd_src: "{{ pico_code_dir }}/scripts/{{ shellinaboxd_service_name }}"
 shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
 
 
