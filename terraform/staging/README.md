@@ -40,5 +40,10 @@ Note:  This will create the necessary server instances and configures networking
     - `git add terraform.tfstate*`
     - `git commit -m "[APPLY] - sucess rebuilding server aws_instance.web"`
     - this ensures that changes to infrastructure are tracked
-7. Re-provision/Configure
+7. Test ssh
+    - `ssh -i ~/.ssh/pico_staging_rsa admin@52.72.97.197`
+    - should likely fail due to host key change
+8. Remove stale host key
+    - `ssh-keygen -f "/home/roy/.ssh/known_hosts" -R 52.72.97.197`
+9. Re-provision/Configure
     - run the relevant ansible playbooks
