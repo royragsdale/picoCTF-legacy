@@ -7,6 +7,8 @@ from werkzeug.contrib.cache import SimpleCache
 from voluptuous import Invalid, MultipleInvalid
 from hashlib import md5
 
+import api
+
 allowed_protocols = []
 allowed_ports = []
 
@@ -15,10 +17,6 @@ admin_emails = None
 
 __connection = None
 __client = None
-
-mongo_addr = "127.0.0.1"
-mongo_port = 27017
-mongo_db_name = ""
 
 external_client = None
 
