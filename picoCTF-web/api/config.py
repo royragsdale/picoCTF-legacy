@@ -31,6 +31,9 @@ api.common.allowed_ports = [8080]
 api.common.mongo_db_name = "ctf"
 api.common.mongo_addr = "127.0.0.1"
 api.common.mongo_port = 27017
+api.common.mongo_user = None
+api.common.mongo_pw = None
+
 
 """ TESTING """
 

@@ -34,7 +34,14 @@ def get_conn():
     global __client, __connection
     if not __connection:
         try:
-            __client = MongoClient(mongo_addr, mongo_port)
+            # Allow more complex mongodb connections
+            if mongo_user and mongo_pw:
+                uri = "mongodb://{}:{}@{}:{}/{}?authMechanism=SCRAM-SHA-1".format(
+                    mongo_user,mongo_pw,mongo_addr,mongo_port,mongo_db_name)
+            else:
+                uri = "mongodb://{}:{}/{}".format(mongo_addr,mongo_port,mongo_db_name)
+
+            __client = MongoClient(uri)
             __connection = __client[mongo_db_name]
         except ConnectionFailure:
             raise SevereInternalException("Could not connect to mongo database {} at {}:{}".format(mongo_db_name, mongo_addr, mongo_port))
