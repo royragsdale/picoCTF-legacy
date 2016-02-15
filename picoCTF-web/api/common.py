@@ -35,14 +35,22 @@ def get_conn():
     if not __connection:
         try:
             # Allow more complex mongodb connections
-            if mongo_user and mongo_pw:
+            conf = api.app.app.config
+            if conf["MONGO_USER"] and conf["MONGO_PW"]:
                 uri = "mongodb://{}:{}@{}:{}/{}?authMechanism=SCRAM-SHA-1".format(
-                    mongo_user,mongo_pw,mongo_addr,mongo_port,mongo_db_name)
+                        conf["MONGO_USER"],
+                        conf["MONGO_PW"],
+                        conf["MONGO_ADDR"],
+                        conf["MONGO_PORT"],
+                        conf["MONGO_DB_NAME"])
             else:
-                uri = "mongodb://{}:{}/{}".format(mongo_addr,mongo_port,mongo_db_name)
+                uri = "mongodb://{}:{}/{}".format(
+                        conf["MONGO_ADDR"],
+                        conf["MONGO_PORT"],
+                        conf["MONGO_DB_NAME"])
 
             __client = MongoClient(uri)
-            __connection = __client[mongo_db_name]
+            __connection = __client[conf["MONGO_DB_NAME"]]
         except ConnectionFailure:
             raise SevereInternalException("Could not connect to mongo database {} at {}:{}".format(mongo_db_name, mongo_addr, mongo_port))
         except InvalidName as error:
