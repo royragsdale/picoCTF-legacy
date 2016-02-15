@@ -73,6 +73,9 @@ pico_api_auth_teacher: "/api/user/authorize/teacher"
 pico_api_auth_admin: "/api/user/authorize/admin"
 pico_site_config_name: "ctf"
 
+pico_internal_allow: "10.0.1.0/24"
+pico_game_redirect: "http://game.staging.picoctf.com"
+
 pico_web_api_dir: "{{ pico_code_dir }}/picoCTF-web"
 
 # picoCTF-webapp
