@@ -76,12 +76,13 @@ pico_site_config_name: "ctf"
 pico_internal_allow: "10.0.1.0/24"
 pico_game_redirect: "http://game.staging.picoctf.com"
 
-pico_web_api_dir: "{{ web_code_dir }}/picoCTF-web"
+pico_web_api_dir: "{{ web_code_dir }}"
 
 # picoCTF-webapp
 web_repo:  "https://github.com/royragsdale/picoCTF-web"
 web_verison: "refactor_config"
 web_code_dir:  "/picoCTF-web"
+web_config_dir:  "/picoCTF-web-config"
 
 pico_web_js_out_path: "{{ pico_web_api_dir}}/web/js/"
 pico_web_coffescript_in_path: "{{ pico_web_api_dir}}/web/coffee/"

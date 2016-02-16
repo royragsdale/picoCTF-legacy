@@ -19,20 +19,28 @@
     state: directory
 
 - name: Backup existing web site
-  copy:
-    src: "{{ pico_http_dir }}"
-    dest: "{{ pico_web_backup_dir }}"
-    backup: yes
+  command: "cp -R {{ pico_http_dir }} {{ pico_web_backup_dir }}"
 
 - name: Remove old version of web
   file:
     path: "{{ pico_http_dir }}"
     state: absent
-    recurse: true
 
+# [TODO] no need for this to be root
 - name: Run Jekyll to rebuild new web
   shell: "cd {{ pico_web_api_dir }}/web && jekyll build"
   become: yes
+
+# Include the passwords needed in deploy settings
+- include_vars: secret_vars/staging_secret.yml
+
+- name: Ensure admin user owns pico web config dir
+  file:
+    path: "{{ web_config_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+
 
 - name: Template deployment settings
   template:
