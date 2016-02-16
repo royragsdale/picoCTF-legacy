@@ -34,3 +34,10 @@
   shell: "cd {{ pico_web_api_dir }}/web && jekyll build"
   become: yes
 
+- name: Template deployment settings
+  template:
+    src: deploy_settings.py.j2
+    dest: "{{ web_config_dir }}/deploy_settings.py"
+    backup: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"

@@ -3,15 +3,30 @@
 # This is the base configuration across any nginx server we deploy
 # This does not include adding any content
 
+# Don't recurse, clone picoCTF-web seperately
+# [TODO] - fix should not be nessecary shellinbox related
 - name: Clone picoCTF-platform
   git: 
     repo: "{{ pico_repo }}" 
     dest: "{{ pico_code_dir }}"
-    recursive: yes
 
 - name: Ensure admin user owns pico code dir
   file:
     path: "{{ pico_code_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+    recurse: yes
+
+- name: Clone picoCTF-web
+  git:
+    repo: "{{ web_repo }}"
+    version: "{{ web_verison }}"
+    dest: "{{  web_code_dir }}"
+
+- name: Ensure admin user owns picoCTF-shell-manager dir
+  file:
+    path: "{{ web_code_dir }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     state: directory
