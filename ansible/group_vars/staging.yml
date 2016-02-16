@@ -80,7 +80,7 @@ pico_web_api_dir: "{{ web_code_dir }}"
 
 # picoCTF-webapp
 web_repo:  "https://github.com/royragsdale/picoCTF-web"
-web_verison: "refactor_config"
+web_verison: "staging"
 web_code_dir:  "/picoCTF-web"
 web_config_dir:  "/picoCTF-web-config"
 
@@ -106,7 +106,7 @@ shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
 shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
 
 shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
-shell_manager_verison: "remove_data_files"
+shell_manager_verison: "staging"
 pico_shell_manager_dir:  "/picoCTF-shell-manager"
 
 shell_service_path: "/lib/systemd/system"
