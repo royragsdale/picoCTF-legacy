@@ -1,0 +1,63 @@
+# {{ ansible_managed }}
+
+server {
+        server_name {{ pico_server_name }};
+        listen       80;
+        root  {{ pico_http_dir }};
+
+        ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+
+        gzip on;
+        gzip_vary on;
+        gzip_disable "msie6";
+        gzip_types    text/plain application/x-javascript text/xml text/css application/json;
+
+        error_page 404  = /404.html;
+        error_page 401  = /401.html;
+
+
+        satisfy any;
+
+        allow {{ pico_internal_allow }};
+        deny all;
+
+        # http basic auth
+        auth_basic "Restricted";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+
+        location = / {
+            default_type text/html;
+            index  index.html;
+        }
+
+        location ~ /api/ {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass {{ pico_api_proxy_pass }};
+            proxy_redirect off;
+        }
+
+        location ~ ^/(problems|profile|scoreboard|account|shell|reset|faq|news|contact)$ {
+            auth_request {{ pico_api_auth_user }};
+            default_type text/html;
+            alias {{ pico_http_alias }};
+        }
+
+        location ~ ^/(classroom)$ {
+            auth_request {{ pico_api_auth_teacher }};
+            default_type text/html;
+            alias {{ pico_http_alias }};
+        }
+
+        location ~ ^/(management)$ {
+            auth_request {{ pico_api_auth_admin }};
+            default_type text/html;
+            alias {{ pico_http_alias }};
+        }
+
+        # route to custom game
+        location /game {
+            return 301 {{ pico_game_redirect }};
+        }
+}

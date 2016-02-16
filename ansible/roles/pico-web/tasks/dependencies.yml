@@ -1,0 +1,26 @@
+---
+# Playbook that installs the dependencies for the picoctf-web server
+
+- name: Update apt
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+# Extracted from picoCTF-platform/scripts/web_setup.sh
+- name: Install picoCTF platform system dependencies
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - python3-pip
+    - gunicorn
+    - jekyll 
+
+# The following will still be installed but elsewhere
+# individual roles: nginx, mongodb, nodejs-legacy, npm , monit
+# in common: tmux, git
+
+# Needs review [TODO]
+# not sure: ruby-dev, libzmq-dev
+# testing only, not needed: firefox, xvfb, phantomjs, dos2unix 
+  

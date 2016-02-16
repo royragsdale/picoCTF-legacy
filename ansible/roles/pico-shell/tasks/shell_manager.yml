@@ -1,0 +1,23 @@
+---
+# Playbook that installs and configures the picoCTF shell_manager from sourrce
+
+# needed for: shell_manager_deploy_secret
+- include_vars: secret_vars/staging_secret.yml
+
+# Source was cloned in main
+- name: Install picoCTF-shell-manager from source
+  pip:
+    name: "file://{{ pico_shell_manager_dir }}"
+    executable: pip3
+    extra_args: "--upgrade"
+
+# modify configuration using shell_manager utility
+# configures from scratch every time.
+# [TODO] a template would be better
+- name: Configure shell_manager
+  command: "{{ item }}"
+  with_items:
+    - "shell_manager config new /opt/hacksports/config.json"
+    - "shell_manager config set -f hostname -v {{ shell_hostname }}"
+    - "shell_manager config set -f web_server -v {{ web_address }}"
+    - "shell_manager config set -f deploy_secret -v {{ shell_manager_deploy_secret }}"

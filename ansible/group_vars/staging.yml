@@ -58,3 +58,70 @@ mongodb_users:
     roles: "userAdminAnyDatabase,readWriteAnyDatabase",
     database: "admin"
   }
+
+# picoCTF-web and picoCTF-shell variables
+pico_repo: "https://github.com/picoCTF/picoCTF-platform"
+pico_code_dir: "/vagrant"
+pico_http_dir: "/srv/http/ctf"
+
+## nginx
+pico_server_name: "_"                                 # catch all [TODO]
+pico_http_alias: "{{ pico_http_dir }}/$1.html"
+pico_api_proxy_pass: "http://localhost:8000"
+pico_api_auth_user:  "/api/user/authorize/user"
+pico_api_auth_teacher: "/api/user/authorize/teacher"
+pico_api_auth_admin: "/api/user/authorize/admin"
+pico_site_config_name: "ctf"
+
+pico_internal_allow: "10.0.1.0/24"
+pico_game_redirect: "http://game.staging.picoctf.com"
+
+pico_web_api_dir: "{{ web_code_dir }}"
+
+# picoCTF-webapp
+web_repo:  "https://github.com/royragsdale/picoCTF-web"
+web_verison: "staging"
+web_code_dir:  "/picoCTF-web"
+web_config_dir:  "/picoCTF-web-config"
+
+pico_web_js_out_path: "{{ pico_web_api_dir}}/web/js/"
+pico_web_coffescript_in_path: "{{ pico_web_api_dir}}/web/coffee/"
+
+pico_web_backup_dir: "/backup"
+
+
+# picoCTF-shell-manager
+shellinabox_deb_path: "{{ pico_code_dir }}/configs/shellinabox/shellinabox_2.18_amd64.deb"
+
+shell_hostname: "52.72.97.197"
+web_address: "http://52.73.0.171"
+
+shell_site_config_name: "shell"
+
+shellinaboxd_port: "4242"
+shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
+
+# [TODO] fix this path
+shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
+shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
+
+shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
+shell_manager_verison: "staging"
+pico_shell_manager_dir:  "/picoCTF-shell-manager"
+
+shell_service_path: "/lib/systemd/system"
+
+shellinaboxd_service_name: "shellinaboxd.service"
+#shellinaboxd_src: "{{ pico_code_dir }}/scripts/{{ shellinaboxd_service_name }}"
+shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
+
+
+pam_common_auth_src: "{{ pico_shell_manager_dir }}/config/common-auth"
+sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
+
+
+
+private_problems_repo: "git@github.com:picoCTF/picoCTF-problems-private.git"
+private_problems_branch: "quick_merge"
+private_problems_dir: "/picoCTF-problems-private"
+

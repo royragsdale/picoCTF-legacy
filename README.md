@@ -55,4 +55,18 @@ Temporarily placed here until there is a better place
        - `Failed to authenticate cocoAdmin@admin with mechanism MONGODB-CR: AuthenticationFailed MONGODB-CR credentials missing in the user document`
     - relevant [Stack Overflow](http://stackoverflow.com/questions/29006887/mongodb-cr-authentication-failed)
 
+#### Ansible host unreachable
 
+- There are a few possible reasons ansible may be unable to ssh to the specified hosts
+    - Check the public Elastic IP Address has not changed by comparing the output of terraform (ground truth on infrastructure) with the ansible inventory.
+        - `terrraform show`
+        - `ansible/staging`
+        - If there is a difference, update `ansible/staging` with the corret value from the `terraform` output, and retry.
+    - If the IP addresses are correct, it may be that host keys are incorrect as in the case of a new server being created.
+        - ansible error: `UNREACHABLE! => {"changed": false, "msg": "ERROR! SSH encountered an unknown error during the connection.`
+        - confirm with a manual ssh connection
+            - `ssh -i ~/.ssh/pico_staging_rsa admin@52.73.0.171`
+            - gives: `REMOTE HOST IDENTIFICATION HAS CHANGED!`
+        - Fix by removing the offending key:
+            - `ssh-keygen -f "/home/roy/.ssh/known_hosts" -R 52.73.0.171`
+        - confirm with another manual ssh (accept the new host key)

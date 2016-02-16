@@ -2,7 +2,9 @@
 # Playbook that installs base utilities we would want on any server
 
 - name: Update apt
-  apt: update_cache=yes
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
 
 - name: Install base packages
   apt:
@@ -12,3 +14,4 @@
     - curl
     - vim
     - tmux
+    - git
