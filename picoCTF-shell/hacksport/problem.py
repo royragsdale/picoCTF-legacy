@@ -249,6 +249,18 @@ class FlaskApp(Service):
 
     python_version = "3"
     app = "server:app"
+    num_workers = 1
+
+    @property
+    def flask_secret(self):
+        """
+        Provides flask_secret on-demand with caching
+        """
+        if not hasattr(self, '_flask_secret'):
+            token = str(self.random.randint(1, 1e16))
+            self._flask_secret = md5(token.encode("utf-8")).hexdigest()
+
+        return self._flask_secret
 
     def flask_setup(self):
         """
@@ -266,7 +278,7 @@ class FlaskApp(Service):
             assert False, "Python version {} is invalid".format(python_version)
 
         self.service_files = [File(self.app_file)]
-        self.start_cmd = "uwsgi --protocol=http --plugin python{} -w {} --logto /dev/null".format(plugin_version, self.app)
+        self.start_cmd = "uwsgi --protocol=http --plugin python{} -p {} -w {} --logto /dev/null".format(plugin_version, self.num_workers, self.app)
 
 class PHPApp(Service):
     """
@@ -274,6 +286,7 @@ class PHPApp(Service):
     """
 
     php_root = ""
+    num_workers = 1
 
     def php_setup(self):
         """
@@ -281,4 +294,4 @@ class PHPApp(Service):
         """
 
         web_root = join(self.directory, self.php_root)
-        self.start_cmd = "uwsgi --protocol=http --plugin php --force-cwd {0} --http-socket-modifier1 14 --php-index index.html --php-index index.php --check-static {0} --static-skip-ext php --logto /dev/null".format(web_root)
+        self.start_cmd = "uwsgi --protocol=http --plugin php -p {1} --force-cwd {0} --http-socket-modifier1 14 --php-index index.html --php-index index.php --check-static {0} --static-skip-ext php --logto /dev/null".format(web_root, self.num_workers)
