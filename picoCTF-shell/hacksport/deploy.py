@@ -10,6 +10,7 @@ SYSTEMD_SERVICE_PATH = "/etc/systemd/system/"
 deploy_config = None
 
 port_map = {}
+inv_port_map = {}
 current_problem = None
 current_instance = None
 
@@ -19,11 +20,12 @@ def get_deploy_context():
     config, port_map, problem, instance
     """
 
-    global deploy_config, port_map, current_problem, current_instance
+    global deploy_config, port_map, inv_port_map, current_problem, current_instance
 
     return {
         "config": deploy_config,
         "port_map": port_map,
+        "inv_port_map": inv_port_map,
         "problem": current_problem,
         "instance": current_instance
     }
@@ -54,6 +56,10 @@ def give_port():
     # during real deployment, let's register a port
     if port_random is None:
         port_random = Random(context["config"].deploy_secret)
+
+    # if this instance already has a port, reuse it
+    if (context["problem"], context["instance"]) in inv_port_map:
+        return inv_port_map[(context["problem"], context["instance"])]
 
     if len(context["port_map"].items()) + len(context["config"].banned_ports_parsed) == 65536:
         raise Exception("All usable ports are taken. Cannot deploy any more instances.")
@@ -701,7 +707,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
 def deploy_problems(args, config):
     """ Main entrypoint for problem deployment """
 
-    global deploy_config, port_map
+    global deploy_config, port_map, inv_port_map
     deploy_config = config
 
     try:
@@ -744,6 +750,7 @@ def deploy_problems(args, config):
             already_deployed[path].append(instance["instance_number"])
             if "port" in instance:
                 port_map[instance["port"]] = (problem["name"], instance["instance_number"])
+                inv_port_map[(problem["name"], instance["instance_number"])] = instance["port"]
 
     lock_file = join(HACKSPORTS_ROOT, "deploy.lock")
     if os.path.isfile(lock_file):
