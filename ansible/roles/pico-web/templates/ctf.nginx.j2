@@ -18,6 +18,7 @@ server {
 
         satisfy any;
 
+        # allows direct requests from the shell_server
         allow {{ pico_internal_allow }};
         deny all;
 
@@ -31,7 +32,7 @@ server {
         }
 
         location ~ /api/ {
-            proxy_set_header Host $host;
+            proxy_set_header Host $server_name; # allows internal network requests from shell_server
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_pass {{ pico_api_proxy_pass }};

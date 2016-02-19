@@ -65,9 +65,9 @@ pico_code_dir: "/vagrant"
 pico_http_dir: "/srv/http/ctf"
 
 ## nginx
-pico_server_name: "_"                                 # catch all [TODO]
+pico_server_name: "{{ web_fqdn }}"
 pico_http_alias: "{{ pico_http_dir }}/$1.html"
-pico_api_proxy_pass: "http://localhost:8000"
+pico_api_proxy_pass: "http://127.0.0.1:8000"
 pico_api_auth_user:  "/api/user/authorize/user"
 pico_api_auth_teacher: "/api/user/authorize/teacher"
 pico_api_auth_admin: "/api/user/authorize/admin"
@@ -79,6 +79,7 @@ pico_game_redirect: "http://game.staging.picoctf.com"
 pico_web_api_dir: "{{ web_code_dir }}"
 
 # picoCTF-webapp
+web_fqdn: "staging.picoctf.com"
 web_repo:  "https://github.com/royragsdale/picoCTF-web"
 web_verison: "staging"
 web_code_dir:  "/picoCTF-web"
@@ -122,6 +123,6 @@ sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
 
 
 private_problems_repo: "git@github.com:picoCTF/picoCTF-problems-private.git"
-private_problems_branch: "quick_merge"
+private_problems_branch: "staging"
 private_problems_dir: "/picoCTF-problems-private"
 
