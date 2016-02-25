@@ -84,7 +84,7 @@ from copy import copy, deepcopy
 from spur import RunProcessError
 from jinja2 import Environment, Template, FileSystemLoader
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
-from hacksport.problem import File, ProtectedFile, ExecutableFile, PreTemplatedFile
+from hacksport.problem import File, ProtectedFile, ExecutableFile, PreTemplatedFile, Directory
 from hacksport.operations import create_user, execute
 from hacksport.status import get_all_problems, get_all_problem_instances
 from shell_manager.bundle import get_bundle
@@ -394,12 +394,13 @@ def deploy_files(staging_directory, instance_directory, file_list, username, pro
         if not os.path.isdir(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
 
-        if isinstance(f, PreTemplatedFile):
-            file_source = join(staging_directory, "__pre_templated", f.path)
-        else:
-            file_source = join(staging_directory, f.path)
+        if not isinstance(f, Directory):
+          if isinstance(f, PreTemplatedFile):
+              file_source = join(staging_directory, "__pre_templated", f.path)
+          else:
+              file_source = join(staging_directory, f.path)
 
-        shutil.copy2(file_source, output_path)
+          shutil.copy2(file_source, output_path)
 
         # set the ownership based on the type of file
         if isinstance(f, ProtectedFile) or isinstance(f, ExecutableFile):
@@ -578,7 +579,7 @@ def generate_instance(problem_object, problem_directory, instance_number,
         raise FatalException
 
     for f in all_files:
-        if not os.path.isfile(join(copy_path, f.path)):
+        if not isinstance(f, Directory) and not os.path.isfile(join(copy_path, f.path)):
             logger.error("File '%s' does not exist on the file system!", f)
 
     service_file, socket_file = create_service_files(problem, instance_number, staging_directory)

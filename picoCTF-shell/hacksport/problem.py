@@ -35,6 +35,11 @@ class File(object):
             "group": self.group
         }
 
+class Directory(File):
+    """
+    Wrapper for specifying permissions for your subdirectories
+    """
+
 class PreTemplatedFile(File):
     """
     Wrapper for files that should be served pre-templated.
