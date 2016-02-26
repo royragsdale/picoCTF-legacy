@@ -179,6 +179,7 @@ ExecStart={}
 StandardInput={}
 StandardOutput={}
 NonBlocking={}
+Restart=always
 IgnoreSIGPIPE={}
 
 [Install]
