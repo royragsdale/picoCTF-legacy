@@ -175,11 +175,11 @@ Description={} instance
 User={}
 WorkingDirectory={}
 Type={}
+Restart={}
 ExecStart={}
 StandardInput={}
 StandardOutput={}
 NonBlocking={}
-Restart=always
 IgnoreSIGPIPE={}
 
 [Install]
@@ -202,7 +202,8 @@ WantedBy=shell_manager.target
 
     problem_service_info = problem.service()
     service_content = service_template.format(problem.name, problem.user, problem.directory,
-                              problem_service_info['Type'], problem_service_info['ExecStart'],
+                              problem_service_info['Type'], "no" if problem_service_info["Type"] == "oneshot" else "always",
+                              problem_service_info['ExecStart'],
                               "null" if is_web or not is_service else "socket",
                               "null" if is_web or not is_service else "socket",
                               "true" if is_web or not is_service else "false",
