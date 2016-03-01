@@ -38,7 +38,7 @@ Note:  This will create the necessary server instances and configures networking
     - this is the step that actually destroys the server and creates a new instance
 6. Commit the results 
     - `git add terraform.tfstate*`
-    - `git commit -m "[APPLY] - sucess rebuilding server aws_instance.web"`
+    - `git commit -m "[APPLY] - success rebuilding server aws_instance.web"`
     - this ensures that changes to infrastructure are tracked
 7. Test ssh
     - `ssh -i ~/.ssh/pico_staging_rsa admin@52.72.97.197`
