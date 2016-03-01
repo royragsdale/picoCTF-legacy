@@ -106,6 +106,10 @@ shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
 shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
 shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
 
+# formerly deployed by setup.py data_files
+no_aslr_wrapper_src: "{{ pico_shell_manager_dir }}/extra/no_aslr_wrapper.c"
+securebashrc_src: "{{ pico_shell_manager_dir }}/config/securebashrc"
+
 shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
 shell_manager_verison: "staging"
 pico_shell_manager_dir:  "/picoCTF-shell-manager"

@@ -11,7 +11,7 @@
     executable: pip3
     extra_args: "--upgrade"
 
-- name: Ensure /opt/hacksports directrory exists
+- name: Ensure /opt/hacksports directory exists
   file:
     path: /opt/hacksports
     state: directory
@@ -26,3 +26,31 @@
     group: root
     mode: 0600
 
+# From shell_manager  setup.py data_files
+# [TODO]  consolidate/more elegant
+
+- name: Ensure extra directory exists
+  file:
+    path: /opt/hacksports/extra
+    state: directory
+    owner: root
+    group: root
+
+- name: Copy no_aslr_wrapper.c to deployed location
+  copy:
+    dest: "/opt/hacksports/extra/"
+    src:  "{{ no_aslr_wrapper_src }}"
+    remote_src: True 
+
+- name: Ensure config directory exists
+  file:
+    path: /opt/hacksports/config
+    state: directory
+    owner: root
+    group: root
+
+- name: Copy securebashrc to deployed location
+  copy:
+    dest: "/opt/hacksports/extra/"
+    src:  "{{ securebashrc_src }}"
+    remote_src: True 
