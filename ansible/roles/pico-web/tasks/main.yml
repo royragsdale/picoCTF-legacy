@@ -8,6 +8,7 @@
 - name: Clone picoCTF-platform
   git: 
     repo: "{{ pico_repo }}" 
+    version: "{{ pico_verison }}"
     dest: "{{ pico_code_dir }}"
 
 - name: Ensure admin user owns pico code dir
