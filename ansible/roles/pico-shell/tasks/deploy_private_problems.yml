@@ -38,8 +38,5 @@
     state: directory
     recurse: yes
 
-- name: Run Challenge Deployment Script
-  script: scripts/deploy_challenges.sh
-
 - name: Run Challenge Deployment Script (private)
   script: scripts/deploy_private.sh
