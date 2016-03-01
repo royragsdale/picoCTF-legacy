@@ -1,2 +1,3 @@
 secret.tfvars
 ansible/secret_vars/*
+.vagrant/*

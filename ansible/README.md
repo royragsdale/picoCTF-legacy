@@ -45,3 +45,5 @@ This will be necessary after first brining up the infrastructure with Terraform
 - A side goal of using Ansible to automate the deployment of picoCTF is to clean up the configuration and development environment by contributing back to picoCTF-platform.
 - A completely fresh deployment --check will fail on Install MongoDB meta package
     - this is because we are adding a new repository
+- To run locally with a password ala the default `vagrant` you need sshpass installed
+    - `sudo apt-get install sshpass`
