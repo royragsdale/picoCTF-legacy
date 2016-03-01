@@ -7,7 +7,7 @@ user = "admin"
 
 # Instances
 web_instance_type = "t2.micro"
-shell_instance_type = "t2.micro"
+shell_instance_type = "t2.medium"
 db_instance_type = "t2.micro"
 
 # Network
