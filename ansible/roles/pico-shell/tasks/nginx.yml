@@ -36,10 +36,18 @@
     path: "/etc/nginx/sites-enabled/default"
     state: absent
 
+# [TODO] factor out
+- name: Ensure shellinabox directrory exists
+  file:
+    path: /opt/hacksports/shellinabox/
+    state: directory
+    owner: root
+    group: root
+
 # put shellinabox in the right place
 # [TODO] factor out
-- name: Add shellinabox.js
-  file:
+- name: Copy shellinabox.js to deployed location
+  copy:
     dest: "{{ shellinabox_js_path }}"
     src:  "{{ shellinabox_js_src }}"
-    state: file
+    remote_src: True

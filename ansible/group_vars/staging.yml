@@ -123,6 +123,6 @@ sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
 
 
 private_problems_repo: "git@github.com:picoCTF/picoCTF-problems-private.git"
-private_problems_branch: "staging"
+private_problems_branch: "master"
 private_problems_dir: "/picoCTF-problems-private"
 

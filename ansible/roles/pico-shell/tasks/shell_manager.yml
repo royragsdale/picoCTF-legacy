@@ -11,13 +11,18 @@
     executable: pip3
     extra_args: "--upgrade"
 
-# modify configuration using shell_manager utility
-# configures from scratch every time.
-# [TODO] a template would be better
-- name: Configure shell_manager
-  command: "{{ item }}"
-  with_items:
-    - "shell_manager config new /opt/hacksports/config.json"
-    - "shell_manager config set -f hostname -v {{ shell_hostname }}"
-    - "shell_manager config set -f web_server -v {{ web_address }}"
-    - "shell_manager config set -f deploy_secret -v {{ shell_manager_deploy_secret }}"
+- name: Ensure /opt/hacksports directrory exists
+  file:
+    path: /opt/hacksports
+    state: directory
+    owner: root
+    group: root
+
+- name: Add configuration for shell_manager
+  template: 
+    src: config.json.j2
+    dest: "/opt/hacksports/config.json"
+    owner: root
+    group: root
+    mode: 0600
+
