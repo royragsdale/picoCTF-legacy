@@ -1,6 +1,8 @@
 ---
 # Playbook that installs and configures picoCTF-shell servers
 
+# needed for: shell_admin_password_crypt
+- include_vars: secret_vars/staging_secret.yml
 
 # Don't recurse, clone shell-manager seperately
 # [TODO] - fix should not be nessecary shellinbox related
@@ -38,6 +40,11 @@
     group: "{{ ansible_user }}"
     state: directory
 
+# Needed so picoCTF-web can log in to get deployment information
+- name: Set password for admin user
+  user:
+    name: "{{ ansible_user }}"
+    password: "{{ shell_admin_password_crypt }}"
 
 - include: dependencies.yml
 - include: shell_manager.yml
