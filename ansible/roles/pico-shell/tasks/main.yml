@@ -40,7 +40,7 @@
     group: "{{ ansible_user }}"
     state: directory
 
-# Needed so picoCTF-web can log in to get deployment information
+ Needed so picoCTF-web can log in to get deployment information
 - name: Set password for admin user
   user:
     name: "{{ ansible_user }}"
