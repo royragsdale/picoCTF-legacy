@@ -205,7 +205,7 @@ resource "aws_instance" "shell" {
     }
 
     ami = "${lookup(var.amis, var.region)}"
-    instance_type = "${var.web_instance_type}"
+    instance_type = "${var.shell_instance_type}"
     availability_zone = "${var.availability_zone}"
     key_name = "${aws_key_pair.auth.id}"
 
