@@ -22,6 +22,7 @@
     name: "{{ shellinaboxd_service_name }}"
     state: started
 
+# [TODO] clean up what was formerly setup.py data_files
 - name: Copy over pam configs
   copy:
     src:  "{{ pam_common_auth_src }}"
@@ -30,6 +31,23 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Ensure /lib/security/ directory exists
+  file:
+    path: /lib/security/
+    state: directory
+    owner: root
+    group: root
+
+- name: Copy pam_auth.py to deployed location
+  copy:
+    src:  "{{ pam_auth_src }}"
+    remote_src: yes
+    dest: "/lib/security/pam_auth.py"
+    owner: root
+    group: root
+    mode: 0644
+
 
 # [TODO] should be templated
 - name: Copy over sshd configs

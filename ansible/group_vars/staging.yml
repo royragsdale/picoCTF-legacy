@@ -121,7 +121,9 @@ shellinaboxd_service_name: "shellinaboxd.service"
 shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
 
 
+# formerly deployed by setup.py data_files
 pam_common_auth_src: "{{ pico_shell_manager_dir }}/config/common-auth"
+pam_auth_src: "{{ pico_shell_manager_dir }}/config/pam_auth.py"
 sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
 
 
