@@ -5,7 +5,7 @@
   become: yes
   become_method: sudo
   vars_files:
-    - group_vars/db.yml 
+    - group_vars/db.yml
   roles:
     - common
     - pico-web 

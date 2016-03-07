@@ -1,3 +1,55 @@
 ---
-# Variables shared across all database deloyments
+# Variables shared across all shell server deloyments
 
+###
+# Configure enviromentmantal specific settings in the host_vars 
+###
+
+shell_hostname: "{{ env_shell_hostname }}"
+web_address: "{{ env_web_address }}"
+web_address_internal: "{{ env_web_address_internal }}"
+
+###
+# Git repository configuration
+###
+# To deploy a personal fork, these can be easily changed you your repositories
+shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
+shell_manager_verison: "staging"
+pico_shell_manager_dir:  "/picoCTF-shell-manager"
+
+private_problems_repo: "git@github.com:picoCTF/picoCTF-problems-private.git"
+private_problems_branch: "master"
+private_problems_dir: "/picoCTF-problems-private"
+
+
+##### Should not need to change below this line #####
+
+###
+# Shellinabox configuration
+###
+#[TODO] port over to this repo and clean up path
+shellinabox_deb_path: "{{ pico_code_dir }}/configs/shellinabox/shellinabox_2.18_amd64.deb"
+shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
+shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
+
+# configure nginx
+shell_site_config_name: "shell"
+shellinaboxd_port: "4242"
+shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
+
+# configure systemd service 
+shellinaboxd_service_name: "shellinaboxd.service"
+shell_service_path: "/lib/systemd/system"
+shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
+
+
+###
+# Shellinabox configuration
+###
+# formerly deployed by setup.py data_files
+# [TODO] streamline
+pam_common_auth_src: "{{ pico_shell_manager_dir }}/config/common-auth"
+pam_auth_src: "{{ pico_shell_manager_dir }}/config/pam_auth.py"
+sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
+no_aslr_wrapper_src: "{{ pico_shell_manager_dir }}/extra/no_aslr_wrapper.c"
+securebashrc_src: "{{ pico_shell_manager_dir }}/config/securebashrc"
