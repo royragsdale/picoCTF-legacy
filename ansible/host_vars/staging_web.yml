@@ -1,0 +1,5 @@
+---
+# Host Variables for staging web
+
+ansible_host: 52.73.0.171
+

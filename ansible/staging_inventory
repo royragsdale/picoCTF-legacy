@@ -5,10 +5,10 @@ shell
 db
 
 [web]
-52.73.0.171
+staging_web
 
 [shell]
-52.72.97.197
+staging_shell
 
 [db]
-52.71.93.40
+staging_db

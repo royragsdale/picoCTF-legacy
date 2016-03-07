@@ -1,0 +1,4 @@
+---
+# Host Variables for staging db
+
+ansible_host: 52.71.93.40

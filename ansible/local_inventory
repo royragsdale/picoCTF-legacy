@@ -5,10 +5,10 @@ shell
 db
 
 [web]
-10.0.1.10
+local_web
 
 [shell]
-10.0.1.11
+local_shell
 
 [db]
-10.0.1.20
+local_db
