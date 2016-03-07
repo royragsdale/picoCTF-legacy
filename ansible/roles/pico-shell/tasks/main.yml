@@ -41,6 +41,10 @@
       #group: "{{ ansible_user }}"
       #state: directory
 
+# Need to load passwords from the vault for staging environments
+- include_vars: group_vars/vault_staging.yml
+  when: "'staging' in group_names" 
+
 # Needed so picoCTF-web can log in to get deployment information
 - name: Set password for admin user
   user:

@@ -44,6 +44,11 @@
 - include: dependencies.yml
 - include: nginx.yml
 - include: nodejs.yml
+
+# Need to load passwords from the vault for staging environments
+- include_vars: group_vars/vault_staging.yml
+  when: "'staging' in group_names" 
+  
 - include: picoCTF-webapp.yml
 #- include: monit.yml
 

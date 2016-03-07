@@ -2,7 +2,3 @@
 # Host Variables for local shell
 
 ansible_host: 10.0.1.11
-
-# generated with: mkpasswd --method=SHA-512 vagrant
-# Default insecure "vagrant" password
-shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
