@@ -34,6 +34,16 @@ pico_api_auth_admin: "/api/user/authorize/admin"
 pico_site_config_name: "ctf"
 
 # http access and staging specific
-# [TODO] factor out
+# [todo] factor out
 pico_internal_allow: "10.0.1.0/24"
 pico_game_redirect: "http://game.staging.picoctf.com"
+
+###
+# Gunicorn configuration
+##
+
+gunicorn_user: "{{ ansible_user }}"
+gunicorn_group: "{{ ansible_user }}"
+gunicorn_working_dir: "{{ pico_web_api_dir }}"
+gunicorn_listen_on: "127.0.0.1:8000"
+num_workers: 2
