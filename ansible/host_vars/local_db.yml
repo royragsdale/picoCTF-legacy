@@ -2,3 +2,16 @@
 # Host Variables for local db
 
 ansible_host: 10.0.1.20
+
+picoAdmin_db_password: "insecure-testing-password"
+root_db_password: "insecure-testing-password"
+picoWeb_db_password: "insecure-testing-password"
+
+env_db_users:
+  - {
+    name: picoWeb,
+    password: "{{ picoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
+  }
+

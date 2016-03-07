@@ -2,7 +2,7 @@
 # Playbook that installs and configures picoCTF-shell servers
 
 # needed for: shell_admin_password_crypt
-- include_vars: secret_vars/staging_secret.yml
+#- include_vars: secret_vars/staging_secret.yml
 
 # Don't recurse, clone shell-manager seperately
 # [TODO] - fix should not be nessecary shellinbox related
@@ -52,6 +52,8 @@
 - include: nginx.yml
 - include: pam_and_services.yml
 - include: deploy_private_problems.yml
+  tags:
+    - slow
 
 - name: Ensure nginx is running
   service: 

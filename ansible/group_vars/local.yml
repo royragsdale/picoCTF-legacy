@@ -3,55 +3,11 @@
 ansible_user: vagrant
 ansible_ssh_pass: vagrant
 
-# Defined in Terrafrom (temporarily static)
-db_data_device: "/dev/xvdf"
-db_data_device_fstype: "ext4"
-db_data_path: "/data"
-db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
-
-# Static from Terraform
-db_private_ip: 10.0.1.20
-
-# MongoDB Configuration Variables (used in configure_mongo.yml task)
-mongodb_user: mongodb
-mongodb_daemon_name: mongod
-
-mongodb_apt_keyserver: keyserver.ubuntu.com
-mongodb_apt_key_id: EA312927
-mongodb_repo: 'deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.2 main'
-
-mongodb_conf_auth: true                           # Run with security
-mongodb_conf_bind_ip: "0.0.0.0"                   # IP addresses to listen on (Static)
-mongodb_conf_dbpath: "{{ db_data_path }}"         # Directory for datafiles (Static)
-mongodb_conf_nohttpinterface: true                # Disable http interface
-mongodb_conf_journal: true                        # Enable journaling
-mongodb_conf_logappend: true                      # Append to logpath instead of over-writing
-mongodb_conf_logpath: /var/log/mongodb/{{ mongodb_daemon_name }}.log # Log file to send write to instead of stdout
-mongodb_conf_port: 27017                          # Specify port number
-
-# MongoDB User Variables (used in configure_auth.yml task)
-# Passwords are stored outside version control
-initial_admin_name: picoAdmin
-initial_admin_password: "{{ picoAdmin_db_password }}"
-
-mongodb_root_admin_name: rootAdmin
-mongodb_root_admin_password: "{{ root_db_password }}"
-
-picoCTF_db_name: picoCTF3
-
-# Add additional users here
-mongodb_users:
-  - {
-    name: picoWeb,
-    password: "{{ picoWeb_db_password }}",
-    roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
-  }
 
 # picoCTF-web and picoCTF-shell variables
 pico_repo: "https://github.com/picoCTF/picoCTF-platform"
 pico_verison: "master"
-pico_code_dir: "/vagrant"
+pico_code_dir: "/vagrant2"
 pico_http_dir: "/srv/http/ctf"
 
 ## nginx
