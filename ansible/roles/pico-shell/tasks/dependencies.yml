@@ -19,12 +19,17 @@
     - dpkg
     - dpkg-dev
     - fakeroot
-    - python3
-    - python3-pip
+    - python-pip      # used for pam module dependencies
+    - python3         # used by shell_manager
+    - python3-pip     # used for shell_manager dependencies
     - socat
     - php5-cli
     - gcc-multilib
 
+- name: Install requests
+  pip:
+    name: requests
+    
 # [TODO] check if these are relevant for challene templates, or what?
 # document need
 - name: Install uwsgi and plugins for shell server

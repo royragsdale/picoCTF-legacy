@@ -34,12 +34,12 @@
     state: directory
     recurse: yes
 
-- name: Ensure admin user owns pico http dir
-  file:
-    path: "{{ pico_http_dir }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    state: directory
+    #- name: Ensure admin user owns pico http dir
+    #file:
+      #path: "{{ pico_http_dir }}"
+      #owner: "{{ ansible_user }}"
+      #group: "{{ ansible_user }}"
+      #state: directory
 
 # Needed so picoCTF-web can log in to get deployment information
 - name: Set password for admin user

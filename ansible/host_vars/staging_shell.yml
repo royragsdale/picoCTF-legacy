@@ -2,9 +2,3 @@
 # Host Variables for staging shell
 
 ansible_host: 52.72.97.197
-
-
-# Enviromentmantal specific settings
-shell_hostname: "52.72.97.197"
-web_address: "http://52.73.0.171"
-web_address_internal: "http://10.0.1.10"

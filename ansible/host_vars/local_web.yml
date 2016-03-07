@@ -2,4 +2,3 @@
 # Host Variables for local web
 
 ansible_host: 10.0.1.10
-

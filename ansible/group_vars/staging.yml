@@ -1,45 +1,24 @@
 ---
-# Variables shared across all staging playbooks
+# Variables shared across all staging hosts
+
+# admin is the default user for the AWS Debian Jessie AMI
 ansible_user: admin
 
-# Defined in Terrafrom (temporarily static)
-db_data_device: "/dev/xvdf"
-db_data_device_fstype: "ext4"
-db_data_path: "/data"
-db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
 
-# Static from Terraform
-db_private_ip: 10.0.1.20
+# Enviromentmantal specific web settings
+web_fqdn: "staging.picoctf.com"
+nginx_server_name: "{{ web_fqdn }}"
+flask_app_server_name: "{{ web_fqdn }}"
+web_address: "http://52.73.0.171"
+web_address_internal: "http://10.0.1.10"
 
-# MongoDB Configuration Variables (used in configure_mongo.yml task)
-mongodb_user: mongodb
-mongodb_daemon_name: mongod
 
-mongodb_apt_keyserver: keyserver.ubuntu.com
-mongodb_apt_key_id: EA312927
-mongodb_repo: 'deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.2 main'
+# Enviromentmantal specific shell settings
+shell_hostname: "52.72.97.197"
 
-mongodb_conf_auth: true                           # Run with security
-mongodb_conf_bind_ip: "0.0.0.0"                   # IP addresses to listen on (Static)
-mongodb_conf_dbpath: "{{ db_data_path }}"         # Directory for datafiles (Static)
-mongodb_conf_nohttpinterface: true                # Disable http interface
-mongodb_conf_journal: true                        # Enable journaling
-mongodb_conf_logappend: true                      # Append to logpath instead of over-writing
-mongodb_conf_logpath: /var/log/mongodb/{{ mongodb_daemon_name }}.log # Log file to send write to instead of stdout
-mongodb_conf_port: 27017                          # Specify port number
 
-# MongoDB User Variables (used in configure_auth.yml task)
-# Passwords are stored outside version control
-initial_admin_name: picoAdmin
-initial_admin_password: "{{ picoAdmin_db_password }}"
-
-mongodb_root_admin_name: rootAdmin
-mongodb_root_admin_password: "{{ root_db_password }}"
-
-picoCTF_db_name: picoCTF3
-
-# Add additional users here
-mongodb_users:
+# Enviromentmantal specific database settings
+env_db_users:
   - {
     name: picoWeb,
     password: "{{ picoWeb_db_password }}",
@@ -59,77 +38,8 @@ mongodb_users:
     database: "admin"
   }
 
-# picoCTF-web and picoCTF-shell variables
+
+# [TODO] remove dependence on platform
 pico_repo: "https://github.com/picoCTF/picoCTF-platform"
-pico_code_dir: "/vagrant"
-pico_http_dir: "/srv/http/ctf"
-
-## nginx
-pico_server_name: "{{ web_fqdn }}"
-pico_http_alias: "{{ pico_http_dir }}/$1.html"
-pico_api_proxy_pass: "http://127.0.0.1:8000"
-pico_api_auth_user:  "/api/user/authorize/user"
-pico_api_auth_teacher: "/api/user/authorize/teacher"
-pico_api_auth_admin: "/api/user/authorize/admin"
-pico_site_config_name: "ctf"
-
-pico_internal_allow: "10.0.1.0/24"
-pico_game_redirect: "http://game.staging.picoctf.com"
-
-pico_web_api_dir: "{{ web_code_dir }}"
-
-# picoCTF-webapp
-web_fqdn: "staging.picoctf.com"
-web_repo:  "https://github.com/royragsdale/picoCTF-web"
-web_verison: "staging"
-web_code_dir:  "/picoCTF-web"
-web_config_dir:  "/picoCTF-web-config"
-
-pico_web_js_out_path: "{{ pico_web_api_dir}}/web/js/"
-pico_web_coffescript_in_path: "{{ pico_web_api_dir}}/web/coffee/"
-
-pico_web_backup_dir: "/backup"
-
-
-# picoCTF-shell-manager
-shellinabox_deb_path: "{{ pico_code_dir }}/configs/shellinabox/shellinabox_2.18_amd64.deb"
-
-shell_hostname: "52.72.97.197"
-web_address: "http://52.73.0.171"
-web_address_internal: "http://10.0.1.10"
-
-shell_site_config_name: "shell"
-
-shellinaboxd_port: "4242"
-shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
-
-# [TODO] fix this path
-shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
-shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
-
-# formerly deployed by setup.py data_files
-no_aslr_wrapper_src: "{{ pico_shell_manager_dir }}/extra/no_aslr_wrapper.c"
-securebashrc_src: "{{ pico_shell_manager_dir }}/config/securebashrc"
-
-shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
-shell_manager_verison: "staging"
-pico_shell_manager_dir:  "/picoCTF-shell-manager"
-
-shell_service_path: "/lib/systemd/system"
-
-shellinaboxd_service_name: "shellinaboxd.service"
-#shellinaboxd_src: "{{ pico_code_dir }}/scripts/{{ shellinaboxd_service_name }}"
-shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
-
-
-# formerly deployed by setup.py data_files
-pam_common_auth_src: "{{ pico_shell_manager_dir }}/config/common-auth"
-pam_auth_src: "{{ pico_shell_manager_dir }}/config/pam_auth.py"
-sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
-
-
-
-private_problems_repo: "git@github.com:picoCTF/picoCTF-problems-private.git"
-private_problems_branch: "master"
-private_problems_dir: "/picoCTF-problems-private"
-
+pico_verison: "master"
+pico_code_dir: "/picoCTF-platform"

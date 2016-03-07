@@ -31,9 +31,6 @@
   shell: "cd {{ pico_web_api_dir }}/web && jekyll build"
   become: yes
 
-# Include the passwords needed in deploy settings
-- include_vars: secret_vars/staging_secret.yml
-
 - name: Ensure admin user owns pico web config dir
   file:
     path: "{{ web_config_dir }}"

@@ -1,24 +1,4 @@
 ---
-# Host Variables for staging db
+# Host Variables for staging database
 
 ansible_host: 52.71.93.40
-
-env_db_users:
-  - {
-    name: picoWeb,
-    password: "{{ picoWeb_db_password }}",
-    roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
-  }
-  - {
-    name: cocoWeb,
-    password: "{{ cocoWeb_db_password }}",
-    roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
-  }
-  - {
-    name: cocoAdmin,
-    password: "{{ cocoAdmin_db_password }}",
-    roles: "userAdminAnyDatabase,readWriteAnyDatabase",
-    database: "admin"
-  }

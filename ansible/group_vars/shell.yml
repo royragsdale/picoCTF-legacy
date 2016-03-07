@@ -2,17 +2,9 @@
 # Variables shared across all shell server deloyments
 
 ###
-# Configure enviromentmantal specific settings in the host_vars 
-###
-
-shell_hostname: "{{ env_shell_hostname }}"
-web_address: "{{ env_web_address }}"
-web_address_internal: "{{ env_web_address_internal }}"
-
-###
 # Git repository configuration
 ###
-# To deploy a personal fork, these can be easily changed you your repositories
+# To deploy a personal fork, these can be easily changed to your repositories
 shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
 shell_manager_verison: "staging"
 pico_shell_manager_dir:  "/picoCTF-shell-manager"
@@ -44,7 +36,7 @@ shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
 
 
 ###
-# Shellinabox configuration
+# Shell server configurations
 ###
 # formerly deployed by setup.py data_files
 # [TODO] streamline
