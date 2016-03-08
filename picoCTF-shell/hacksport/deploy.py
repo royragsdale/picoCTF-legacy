@@ -170,12 +170,15 @@ def create_service_files(problem, instance_number, path):
 
     service_template = """[Unit]
 Description={} instance
+JobTimeoutSec=10
 
 [Service]
 User={}
 WorkingDirectory={}
 Type={}
 Restart={}
+TimeoutSec=10
+RestartSec=30
 ExecStart={}
 StandardInput={}
 StandardOutput={}
@@ -202,7 +205,7 @@ WantedBy=shell_manager.target
 
     problem_service_info = problem.service()
     service_content = service_template.format(problem.name, problem.user, problem.directory,
-                              problem_service_info['Type'], "no" if problem_service_info["Type"] == "oneshot" else "always",
+                              problem_service_info['Type'], "no" if problem_service_info["Type"] == "oneshot" else "on-failure",
                               problem_service_info['ExecStart'],
                               "null" if is_web or not is_service else "socket",
                               "null" if is_web or not is_service else "socket",
