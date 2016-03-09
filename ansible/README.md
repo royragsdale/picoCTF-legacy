@@ -47,3 +47,10 @@ This will be necessary after first brining up the infrastructure with Terraform
     - this is because we are adding a new repository
 - To run locally with a password ala the default `vagrant` you need sshpass installed
     - `sudo apt-get install sshpass`
+
+### For use with private repos
+
+In order to deploy the picoCTF platform from a private repository you will need a read only deploy key added to the repo.
+
+Generate a key with no passphrase and place in deploy_keys:
+`ssh-keygen -f deploy.picoCTF.public-repo.id_rsa -C "deploy@picoCTF.public-repo" -N ""`

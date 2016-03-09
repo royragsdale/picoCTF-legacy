@@ -42,9 +42,3 @@ env_db_users:
     roles: "userAdminAnyDatabase,readWriteAnyDatabase",
     database: "admin"
   }
-
-
-# [TODO] remove dependence on platform
-pico_repo: "https://github.com/picoCTF/picoCTF-platform"
-pico_verison: "master"
-pico_code_dir: "/picoCTF-platform"
