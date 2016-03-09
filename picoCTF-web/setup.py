@@ -75,9 +75,11 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=["Flask", "py3k-bcrypt", "pymongo==2.7.1", "pyzmq", "py",
+    install_requires=["Flask", "py3k-bcrypt", "pymongo==3.2.1", "pyzmq", "py",
                       "pytest", "voluptuous", "gunicorn", "spur", "line_profiler",
-                      "selenium", "Flask-Mail"],
+                      "Flask-Mail"],
+
+    tests_require = ["selenium"],
 
     entry_points={
         'console_scripts': [

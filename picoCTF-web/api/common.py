@@ -7,6 +7,8 @@ from werkzeug.contrib.cache import SimpleCache
 from voluptuous import Invalid, MultipleInvalid
 from hashlib import md5
 
+import api
+
 allowed_protocols = []
 allowed_ports = []
 
@@ -15,10 +17,6 @@ admin_emails = None
 
 __connection = None
 __client = None
-
-mongo_addr = "127.0.0.1"
-mongo_port = 27017
-mongo_db_name = ""
 
 external_client = None
 
@@ -36,8 +34,23 @@ def get_conn():
     global __client, __connection
     if not __connection:
         try:
-            __client = MongoClient(mongo_addr, mongo_port)
-            __connection = __client[mongo_db_name]
+            # Allow more complex mongodb connections
+            conf = api.app.app.config
+            if conf["MONGO_USER"] and conf["MONGO_PW"]:
+                uri = "mongodb://{}:{}@{}:{}/{}?authMechanism=SCRAM-SHA-1".format(
+                        conf["MONGO_USER"],
+                        conf["MONGO_PW"],
+                        conf["MONGO_ADDR"],
+                        conf["MONGO_PORT"],
+                        conf["MONGO_DB_NAME"])
+            else:
+                uri = "mongodb://{}:{}/{}".format(
+                        conf["MONGO_ADDR"],
+                        conf["MONGO_PORT"],
+                        conf["MONGO_DB_NAME"])
+
+            __client = MongoClient(uri)
+            __connection = __client[conf["MONGO_DB_NAME"]]
         except ConnectionFailure:
             raise SevereInternalException("Could not connect to mongo database {} at {}:{}".format(mongo_db_name, mongo_addr, mongo_port))
         except InvalidName as error:

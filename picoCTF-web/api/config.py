@@ -27,10 +27,8 @@ api.common.allowed_protocols = ["https", "http"]
 api.common.allowed_ports = [8080]
 
 """ MONGO """
+# moved to api/default_settings.py to enable environmental configuration
 
-api.common.mongo_db_name = "ctf"
-api.common.mongo_addr = "127.0.0.1"
-api.common.mongo_port = 27017
 
 """ TESTING """
 

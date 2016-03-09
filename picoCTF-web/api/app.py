@@ -6,8 +6,6 @@ from flask import Flask, request, session, send_from_directory, render_template
 from werkzeug.contrib.fixers import ProxyFix
 from flask_mail import Mail
 
-app = Flask(__name__, static_path="/")
-app.wsgi_app = ProxyFix(app.wsgi_app)
 
 import api
 import json
@@ -27,6 +25,18 @@ import api.routes.admin
 import api.routes.group
 import api.routes.problem
 import api.routes.achievements
+
+
+app = Flask(__name__, static_path="/")
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
+# Loads default_settings
+app.config.from_pyfile('default_settings.py')
+
+# Override defaults with settings file passed in the environment variable
+# Ensure if you using a custom configuration that you have this set for all
+# uses of the api, including things like picoCTF-platform/scripts/load_problems.py
+app.config.from_envvar('APP_SETTINGS_FILE', silent=True)
 
 log = api.logger.use(__name__)
 
