@@ -1,14 +1,15 @@
 
 [staging:children]
-web
-shell
 db
+shell
+web
 
-[web]
-staging_web
+[db]
+staging_db
 
 [shell]
 staging_shell
 
-[db]
-staging_db
+[web]
+staging_web
+

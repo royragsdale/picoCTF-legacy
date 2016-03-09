@@ -1,14 +1,14 @@
 
 [local:children]
-web
-shell
 db
+shell
+web
 
-[web]
-local_web
+[db]
+local_db
 
 [shell]
 local_shell
 
-[db]
-local_db
+[web]
+local_web
