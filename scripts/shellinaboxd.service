@@ -1,0 +1,10 @@
+[Unit]
+Description=ShellInABox
+
+[Service]
+Type=forking
+ExecStart=/bin/bash -c 'shellinaboxd -p 4242 -u nobody -t -b -s /:SSH:localhost'
+User=root
+
+[Install]
+WantedBy=multi-user.target

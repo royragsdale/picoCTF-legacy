@@ -1,0 +1,11 @@
+[Unit]
+Description=CTF Web API
+Requires=vagrant.mount
+
+[Service]
+Type=forking
+ExecStart=/bin/bash -c "sleep 10 && /vagrant/picoCTF-web/scripts/devploy"
+User=vagrant
+
+[Install]
+WantedBy=multi-user.target
