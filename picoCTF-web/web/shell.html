@@ -1,0 +1,32 @@
+---
+layout: default
+title: Shell
+post_scripts:
+ - js/shell.js
+startup_functions:
+ - redirectIfNotLoggedIn()
+---
+
+<script type="text/template" id="shell-servers-template">
+    <% _.each(servers, function(server){ %>
+      <% var url = server.protocol.toLowerCase() + "://" + server.host + "/shell"; %>
+      <div class="well">
+        <h3 class="text-center"><%- server.host %> - <a href="<%- url %>">Full Screen</a> </h3>
+        <iframe src="<%- url %>" width="100%" height="600px"></iframe>
+      </div>
+    <% }); %>
+</script>
+
+<div class="container">
+  <div class="row">
+    <div class="well">
+      <p class="text-center">
+        Your account credentials are the same for the website and shell server.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div id="shell-servers"></div>
+  </div>
+</div>
+
