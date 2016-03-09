@@ -24,6 +24,9 @@
     owner: root
     group: root
 
+- name: Get systemd-tmpfiles to create /run/gunicorn
+  command: systemd-tmpfiles --create
+
 - name: Get systemd to pickup gunicorn.service
   command: systemctl daemon-reload
 

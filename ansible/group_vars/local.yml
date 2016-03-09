@@ -21,12 +21,11 @@ shell_hostname: "10.0.1.11"
 # generated with: mkpasswd --method=SHA-512 vagrant
 # Default insecure "vagrant" password
 shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
-shell_manager_deploy_secret: "**insecure-testing-secret**"
+shell_manager_deploy_secret: "**insecure-secret**"
 
 # Enviromentmantal specific database settings
-picoAdmin_db_password: "insecure-testing-password"
-root_db_password: "insecure-testing-password"
-picoWeb_db_password: "insecure-testing-password"
+picoAdmin_db_password: "insecure-password"
+picoWeb_db_password: "insecure-password"
 env_db_users:
   - {
     name: picoWeb,
