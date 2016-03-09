@@ -23,13 +23,14 @@
 
 # HTTP Basic Auth used to secure the staging competition site
 - name: Setup HTTP basic auth
-  htpaasswd:
+  htpasswd:
     path: "/etc/nginx/.htpasswd"
     name: "{{ item.user }}"
     password: "{{ item.password }}"
     owner: root
     group: root
     mode: 0640
+  no_log: True
   with_items: "{{ htpasswd_accounts }}"
 
 - name: Enable picoCTF site configuration
