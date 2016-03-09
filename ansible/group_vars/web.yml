@@ -1,16 +1,10 @@
 ---
 # Variables shared across all web server deloyments
 
-###
-# Git repository configuration
-###
-# To deploy a personal fork, this can be easily changed to your repository
-web_repo:  "https://github.com/royragsdale/picoCTF-web"
-web_verison: "staging"
-web_code_dir:  "/picoCTF-web"
+# Should not need to change this file. Environmental specific configurations
+# should be made in the group specific variables file, ex: local.yml or staging.yml
 
-
-##### Should not need to change below this line #####
+web_code_dir:  "/picoCTF/picoCTF-web"
 
 ###
 # picoCTF-web and API configuration

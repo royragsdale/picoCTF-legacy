@@ -1,24 +1,7 @@
 ---
 # Variables shared across all shell server deloyments
 
-###
-# Git repository configuration
-###
-# To deploy a personal fork, these can be easily changed to your repositories
-shell_manager_repo:  "https://github.com/royragsdale/picoCTF-shell-manager"
-shell_manager_verison: "staging"
-pico_shell_manager_dir:  "/picoCTF-shell-manager"
-
-private_problems_repo: "git@github.com:picoCTF/picoCTF-problems-private.git"
-private_problems_branch: "master"
-private_problems_dir: "/picoCTF-problems-private"
-
-# ssh for git (key should be copied under secret_vars, ignored from version control)
-# [TODO] use vault
-git_ssh_private_key_file: "id_rsa.github-picoctf"
-git_ssh_public_key_file: "id_rsa.github-picoctf.pub"
-
-##### Should not need to change below this line #####
+pico_shell_manager_dir:  "/picoCTF/picoCTF-shell-manager"
 
 ###
 # Shellinabox configuration
