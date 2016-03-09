@@ -1,10 +1,6 @@
 ---
 # Playbook that installs all challenges in the private problems repo
 
-# Extracted from picoCTF-platform/scripts/shell_setup.sh
-
-- include_vars: secret_vars/staging_secret.yml
-
 - name: Copy over git SSH public key file
   copy:
     src: "secret_vars/{{ git_ssh_public_key_file }}"

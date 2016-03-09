@@ -22,14 +22,16 @@
     mode: 0644
 
 # HTTP Basic Auth used to secure the staging competition site
-# [TODO] http://docs.ansible.com/ansible/htpasswd_module.html
 - name: Setup HTTP basic auth
-  copy:
-    src: "secret_vars/htpasswd"
-    dest: "/etc/nginx/.htpasswd"
+  htpasswd:
+    path: "/etc/nginx/.htpasswd"
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
     owner: root
     group: root
-    mode: 0644
+    mode: 0640
+  no_log: True
+  with_items: "{{ htpasswd_accounts }}"
 
 - name: Enable picoCTF site configuration
   file:

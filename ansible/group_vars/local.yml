@@ -12,7 +12,8 @@ nginx_server_name: "_"
 flask_app_server_name: "{{ web_fqdn }}"
 web_address: "http://10.0.1.10"
 web_address_internal: "http://10.0.1.10"
-
+htpasswd_accounts: 
+  - { user: "vagrant", password: "vagrant" }
 
 # Enviromentmantal specific shell settings
 shell_hostname: "10.0.1.11"

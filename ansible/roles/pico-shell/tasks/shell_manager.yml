@@ -1,9 +1,6 @@
 ---
 # Playbook that installs and configures the picoCTF shell_manager from sourrce
 
-# needed for: shell_manager_deploy_secret
-- include_vars: secret_vars/staging_secret.yml
-
 # Source was cloned in main
 - name: Install picoCTF-shell-manager from source
   pip:
