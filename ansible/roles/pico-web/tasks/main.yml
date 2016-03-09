@@ -50,6 +50,7 @@
   when: "'staging' in group_names" 
   
 - include: picoCTF-webapp.yml
+- include: gunicorn.yml
 #- include: monit.yml
 
 - name: Ensure nginx is running
