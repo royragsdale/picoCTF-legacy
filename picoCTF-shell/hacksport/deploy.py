@@ -75,7 +75,7 @@ def give_port():
 from os.path import join, isdir, isfile, commonprefix
 from random import Random, randint
 from abc import ABCMeta
-from hashlib import md5
+from hashlib import md5,sha1
 from imp import load_source
 from pwd import getpwnam
 from grp import getgrnam
@@ -520,6 +520,7 @@ def generate_instance(problem_object, problem_directory, instance_number,
 
     # reseed and generate flag
     problem.flag = problem.generate_flag(Random(seed))
+    problem.flag_sha1 = sha1(problem.flag.encode("utf-8")).hexdigest()
     logger.debug("...Instance %d flag is '%s'.", instance_number, problem.flag)
 
     logger.debug("...Running problem initialize.")
@@ -693,6 +694,7 @@ def deploy_problem(problem_directory, instances=[0], test=False, deployment_dire
             "server": problem.server,
             "description": problem.description,
             "flag": problem.flag,
+            "flag_sha1": problem.flag_sha1,
             "instance_number": instance_number,
             "should_symlink": not isinstance(problem, Service) and len(instance["files"]) > 0,
             "files": [f.to_dict() for f in instance["files"]]
