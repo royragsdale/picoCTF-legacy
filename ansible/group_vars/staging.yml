@@ -4,7 +4,6 @@
 # admin is the default user for the AWS Debian Jessie AMI
 ansible_user: admin
 
-
 # Enviromentmantal specific web settings
 web_fqdn: "staging.picoctf.com"
 nginx_server_name: "{{ web_fqdn }}"
@@ -21,7 +20,6 @@ shell_manager_deploy_secret: " {{ vault_shell_manager_deploy_secret }}"
 
 # Enviromentmantal specific database settings
 picoAdmin_db_password: "{{ vault_picoAdmin_db_password}}"
-root_db_password: "{{ vault_root_db_password }}"
 picoWeb_db_password: "{{vault_picoWeb_db_password }}"
 env_db_users:
   - {

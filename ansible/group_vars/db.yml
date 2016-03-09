@@ -40,8 +40,6 @@ mongodb_conf_port: 27017                          # Specify port number
 initial_admin_name: picoAdmin
 initial_admin_password: "{{ picoAdmin_db_password }}"
 
-mongodb_root_admin_name: rootAdmin
-mongodb_root_admin_password: "{{ root_db_password }}"
 
 picoCTF_db_name: picoCTF3
 

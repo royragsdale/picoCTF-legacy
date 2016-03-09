@@ -6,15 +6,22 @@
 # Include the passwords
 #- include_vars: secret_vars/staging_secret.yml
 
+# Restart to ensure Client Access Control configuration is enabled
+- name: mongodb restart
+  service:
+    name: "{{ mongodb_daemon_name }}"
+    state: restarted
+
 # uses Client Access Control Localhost Exception for first user
+# as described: https://docs.mongodb.org/manual/tutorial/enable-authentication/
 # ignore errors so subsequent runs don't fail due to the lack of 
-# a login_user and login_password
+# a login_user and login_password [TODO] add a check if the user is enabled
 - name: Create intital administrative user
   mongodb_user:
     database: admin
     name: "{{ initial_admin_name }}"
     password: "{{ initial_admin_password }}"
-    roles: "userAdminAnyDatabase,readWriteAnyDatabase"
+    roles: "userAdminAnyDatabase"
     login_port: "{{ mongodb_conf_port }}"
   ignore_errors: True
 
