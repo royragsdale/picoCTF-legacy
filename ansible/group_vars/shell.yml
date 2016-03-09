@@ -1,13 +1,17 @@
 ---
 # Variables shared across all shell server deloyments
 
-pico_shell_manager_dir:  "/picoCTF/picoCTF-shell-manager"
+# Should not need to change this file. Environmental specific configurations
+# should be made in the group specific variables file, eg: local.yml or staging.yml
+
+# pico_base_dir set in common.yml
+pico_shell_manager_dir:  "{{pico_base_dir}}/picoCTF-shell"
 
 ###
 # Shellinabox configuration
 ###
 #[TODO] port over to this repo and clean up path
-shellinabox_deb_path: "{{ pico_code_dir }}/configs/shellinabox/shellinabox_2.18_amd64.deb"
+shellinabox_deb_path: "{{ pico_base_dir}}/configs/shellinabox/shellinabox_2.18_amd64.deb"
 shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
 shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
 

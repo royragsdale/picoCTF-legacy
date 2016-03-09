@@ -3,3 +3,6 @@
 
 - include: upgrade.yml
 - include: utils.yml
+
+- include_vars: group_vars/common.yml
+- include: clone_repo.yml

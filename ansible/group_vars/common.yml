@@ -1,0 +1,17 @@
+---
+# Variables shared across all groups
+
+###
+# Git repository configuration
+###
+# To deploy a personal fork, these can be easily changed to your repositories
+
+pico_repo: "git@github.com:picoCTF/picoCTF.git"
+pico_branch: "master"
+pico_base_dir: "/picoCTF" 
+
+private_repo: true 
+
+# This key should be stored under group_vars/deploy_keys, ignored from version control
+# [TODO] use vault
+deploy_private_key_file: "deploy.picoCTF.public-repo.id_rsa" 

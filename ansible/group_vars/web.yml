@@ -2,9 +2,10 @@
 # Variables shared across all web server deloyments
 
 # Should not need to change this file. Environmental specific configurations
-# should be made in the group specific variables file, ex: local.yml or staging.yml
+# should be made in the group specific variables file, eg: local.yml or staging.yml
 
-web_code_dir:  "/picoCTF/picoCTF-web"
+# pico_base_dir set in common.yml
+web_code_dir:  "{{pico_base_dir}}/picoCTF-web"
 
 ###
 # picoCTF-web and API configuration

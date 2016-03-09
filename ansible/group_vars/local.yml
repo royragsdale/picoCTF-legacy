@@ -34,8 +34,3 @@ env_db_users:
     roles: readWrite,
     database: "{{ picoCTF_db_name }}"
   }
-
-# [TODO] remove dependence on platform
-pico_repo: "https://github.com/picoCTF/picoCTF-platform"
-pico_verison: "master"
-pico_code_dir: "/picoCTF-platform"
