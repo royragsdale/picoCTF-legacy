@@ -1,0 +1,54 @@
+---
+# Playbook that installs and configures nginx
+# This is the base  picoCTF shell nginx configuration
+
+- name: Update apt
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure nginx is installed
+  apt:
+    pkg: nginx
+    state: present
+
+- name: Add picoCTF site configuration to nginx
+  template: 
+    src: shell.nginx.j2
+    dest: "/etc/nginx/sites-available/{{ shell_site_config_name }}"
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable picoCTF-shell site configuration
+  file:
+    src: "/etc/nginx/sites-available/{{ shell_site_config_name }}"
+    dest: "/etc/nginx/sites-enabled/{{ shell_site_config_name }}"
+    owner: root
+    group: root
+    state: link
+  notify :
+    - nginx restart
+
+- name: Disable default nginx site configuration
+  file:
+    path: "/etc/nginx/sites-enabled/default"
+    state: absent
+
+# From shell_manager data files
+# [TODO] factor out
+- name: Ensure shellinabox directrory exists
+  file:
+    path: /opt/hacksports/shellinabox/
+    state: directory
+    owner: root
+    group: root
+
+# put shellinabox in the right place
+# [TODO] factor out
+- name: Copy shellinabox.js to deployed location
+  copy:
+    dest: "{{ shellinabox_js_path }}"
+    src:  "{{ shellinabox_js_src }}"
+    remote_src: True

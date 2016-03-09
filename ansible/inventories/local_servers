@@ -1,0 +1,14 @@
+
+[local:children]
+web
+shell
+db
+
+[web]
+local_web
+
+[shell]
+local_shell
+
+[db]
+local_db

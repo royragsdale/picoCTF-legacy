@@ -1,0 +1,14 @@
+
+[staging:children]
+web
+shell
+db
+
+[web]
+staging_web
+
+[shell]
+staging_shell
+
+[db]
+staging_db

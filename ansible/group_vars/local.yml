@@ -1,0 +1,40 @@
+---
+# Variables shared across all localhosts
+
+# vagrant/vagrant is the default configuration for Vagrant boxes
+ansible_user: vagrant
+ansible_ssh_pass: vagrant
+
+
+# Enviromentmantal specific web settings
+web_fqdn: "localhost"
+nginx_server_name: "_"
+flask_app_server_name: "{{ web_fqdn }}"
+web_address: "http://10.0.1.10"
+web_address_internal: "http://10.0.1.10"
+
+
+# Enviromentmantal specific shell settings
+shell_hostname: "10.0.1.11"
+
+# generated with: mkpasswd --method=SHA-512 vagrant
+# Default insecure "vagrant" password
+shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
+shell_manager_deploy_secret: "**insecure-testing-secret**"
+
+# Enviromentmantal specific database settings
+picoAdmin_db_password: "insecure-testing-password"
+root_db_password: "insecure-testing-password"
+picoWeb_db_password: "insecure-testing-password"
+env_db_users:
+  - {
+    name: picoWeb,
+    password: "{{ picoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
+  }
+
+# [TODO] remove dependence on platform
+pico_repo: "https://github.com/picoCTF/picoCTF-platform"
+pico_verison: "master"
+pico_code_dir: "/picoCTF-platform"

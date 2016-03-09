@@ -1,0 +1,5 @@
+---
+# Playbook that runs tasks common across all servers
+
+- include: upgrade.yml
+- include: utils.yml

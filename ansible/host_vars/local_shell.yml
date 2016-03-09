@@ -1,0 +1,4 @@
+---
+# Host Variables for local shell
+
+ansible_host: 10.0.1.11

@@ -1,0 +1,56 @@
+---
+# Playbook that installs and configures the picoCTF shell_manager from sourrce
+
+# needed for: shell_manager_deploy_secret
+- include_vars: secret_vars/staging_secret.yml
+
+# Source was cloned in main
+- name: Install picoCTF-shell-manager from source
+  pip:
+    name: "file://{{ pico_shell_manager_dir }}"
+    executable: pip3
+    extra_args: "--upgrade"
+
+- name: Ensure /opt/hacksports directory exists
+  file:
+    path: /opt/hacksports
+    state: directory
+    owner: root
+    group: root
+
+- name: Add configuration for shell_manager
+  template: 
+    src: config.json.j2
+    dest: "/opt/hacksports/config.json"
+    owner: root
+    group: root
+    mode: 0600
+
+# From shell_manager  setup.py data_files
+# [TODO]  consolidate/more elegant
+
+- name: Ensure extra directory exists
+  file:
+    path: /opt/hacksports/extra
+    state: directory
+    owner: root
+    group: root
+
+- name: Copy no_aslr_wrapper.c to deployed location
+  copy:
+    dest: "/opt/hacksports/extra/"
+    src:  "{{ no_aslr_wrapper_src }}"
+    remote_src: True 
+
+- name: Ensure config directory exists
+  file:
+    path: /opt/hacksports/config
+    state: directory
+    owner: root
+    group: root
+
+- name: Copy securebashrc to deployed location
+  copy:
+    dest: "/opt/hacksports/extra/"
+    src:  "{{ securebashrc_src }}"
+    remote_src: True 

@@ -1,0 +1,50 @@
+---
+# Variables shared across all staging hosts
+
+# admin is the default user for the AWS Debian Jessie AMI
+ansible_user: admin
+
+
+# Enviromentmantal specific web settings
+web_fqdn: "staging.picoctf.com"
+nginx_server_name: "{{ web_fqdn }}"
+flask_app_server_name: "{{ web_fqdn }}"
+web_address: "http://52.73.0.171"
+web_address_internal: "http://10.0.1.10"
+
+
+# Enviromentmantal specific shell settings
+shell_hostname: "52.72.97.197"
+shell_admin_password_crypt: "{{ vault_shell_admin_password_crypt }}"
+shell_manager_deploy_secret: " {{ vault_shell_manager_deploy_secret }}"
+
+
+# Enviromentmantal specific database settings
+picoAdmin_db_password: "{{ vault_picoAdmin_db_password}}"
+root_db_password: "{{ vault_root_db_password }}"
+picoWeb_db_password: "{{vault_picoWeb_db_password }}"
+env_db_users:
+  - {
+    name: picoWeb,
+    password: "{{ picoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
+  }
+  - {
+    name: cocoWeb,
+    password: "{{ vault_cocoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
+  }
+  - {
+    name: cocoAdmin,
+    password: "{{ vault_cocoAdmin_db_password }}",
+    roles: "userAdminAnyDatabase,readWriteAnyDatabase",
+    database: "admin"
+  }
+
+
+# [TODO] remove dependence on platform
+pico_repo: "https://github.com/picoCTF/picoCTF-platform"
+pico_verison: "master"
+pico_code_dir: "/picoCTF-platform"
