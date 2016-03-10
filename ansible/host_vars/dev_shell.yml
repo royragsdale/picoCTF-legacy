@@ -1,0 +1,5 @@
+---
+# Host Variables for local dev shell
+
+ansible_connection: local
+#ansible_host: 192.168.2.3

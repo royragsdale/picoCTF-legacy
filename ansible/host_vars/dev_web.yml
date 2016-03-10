@@ -1,0 +1,4 @@
+---
+# Host Variables for local dev web
+
+ansible_host: 192.168.2.3

@@ -4,5 +4,9 @@
 - include: upgrade.yml
 - include: utils.yml
 
+# Developement settings are the only environment where the platform should
+# be loaded in directly without being cloned from a specific source and
+# branch
 - include_vars: group_vars/common.yml
 - include: clone_repo.yml
+  when: "'dev' not in group_names"
