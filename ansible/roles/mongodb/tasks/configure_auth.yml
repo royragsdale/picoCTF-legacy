@@ -35,6 +35,6 @@
     login_port: "{{ mongodb_conf_port }}"
     login_user: "{{ initial_admin_name }}"
     login_password: "{{ initial_admin_password }}"
-    login_database: admin
+    #    login_database: admin
   with_items:
     - "{{ mongodb_users }}"

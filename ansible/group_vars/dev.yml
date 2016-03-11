@@ -13,9 +13,8 @@ nginx_server_name: "_"
 flask_app_server_name: "{{ web_fqdn }}"
 #[TODO] refactor based on "facts"
 web_address: "http://192.168.2.2"
-web_address_internal: "http://192.168.2.2"
-htpasswd_accounts: 
-  - { user: "vagrant", password: "vagrant" }
+web_address_internal: "{{ web_address }}"
+enable_basic_auth: false
 
 # Enviromentmantal specific shell settings
 shell_hostname: "192.168.2.3"
@@ -26,6 +25,7 @@ shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwH
 shell_manager_deploy_secret: "**insecure-secret**"
 
 # Enviromentmantal specific database settings
+db_private_ip: 127.0.0.1
 picoAdmin_db_password: "insecure-password"
 picoWeb_db_password: "insecure-password"
 

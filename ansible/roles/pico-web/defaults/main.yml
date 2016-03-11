@@ -1,0 +1,6 @@
+---
+# Defaults for the picoCTF-web role. These are the loweset prioirty varaibles
+# and can easily be overridden in group_vars, host_vars, or command line
+
+enable_basic_auth: false
+htpasswd_accounts: []

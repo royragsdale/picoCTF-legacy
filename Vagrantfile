@@ -15,8 +15,6 @@ Vagrant.configure("2") do |config|
 
     shell.vm.provision "shell", path: "ansible/scripts/install_ansible.sh"
 	shell.vm.provision :ansible_local do |ansible|
-        ansible.verbose             = true
-        ansible.install             = true
         ansible.playbook            = "site.yml"
         ansible.limit               = "shell"
 	    ansible.provisioning_path   = "/picoCTF/ansible/"
@@ -38,7 +36,12 @@ Vagrant.configure("2") do |config|
     web.vm.synced_folder ".", "/picoCTF"
 
     web.vm.provision "shell", path: "ansible/scripts/install_ansible.sh"
-
+	web.vm.provision :ansible_local do |ansible|
+        ansible.playbook            = "site.yml"
+        ansible.limit               = ["db","web"]
+	    ansible.provisioning_path   = "/picoCTF/ansible/"
+        ansible.inventory_path      = "/picoCTF/ansible/inventories/dev_servers"
+    end
 
     web.vm.provider "virtualbox" do |vb|
         vb.name = "picoCTF-web-dev"

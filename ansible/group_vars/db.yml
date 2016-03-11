@@ -5,18 +5,13 @@
 ###
 # AWS specific mount points
 ##
-
 # Defined in Terrafrom (temporarily static)
 db_data_device: "/dev/xvdf"
 db_data_device_fstype: "ext4"
 db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
 
-
 db_data_path: "/data"
 
-
-# Static from Terraform
-db_private_ip: 10.0.1.20
 
 # MongoDB Configuration Variables (used in configure_mongo.yml task)
 mongodb_user: mongodb
