@@ -2,6 +2,8 @@
 # Playbook that installs and configures picoCTF-shell servers
 
 - include_vars:  group_vars/common.yml
+  tags:
+    - always
 
 # Need to load passwords from the vault for staging environments
 - include_vars: group_vars/vault_staging.yml
@@ -14,6 +16,10 @@
     password: "{{ shell_admin_password_crypt }}"
 
 - include: dependencies.yml
+  tags:
+    - network
+    - dependency
+
 - include: shell_manager.yml
 - include: nginx.yml
 - include: pam_and_services.yml
@@ -23,6 +29,7 @@
 #  tags:
   #    - slow
 
+# [TODO] - refactor
 - name: Ensure nginx is running
   service: 
     name: nginx
@@ -38,7 +45,6 @@
 # any hardening
 #pip2 install requests 
 # mkdir /tmp/hacksports/ 
-# sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
 # hostname setting
 
 #chmod -R 1710 /var/cache/apt

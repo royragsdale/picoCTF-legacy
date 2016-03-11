@@ -2,7 +2,14 @@
 # Playbook that runs tasks common across all servers
 
 - include: upgrade.yml
+  tags:
+    - network
+    - dependency
+
 - include: utils.yml
+  tags:
+    - network
+    - dependency
 
 # Developement settings are the only environment where the platform should
 # be loaded in directly without being cloned from a specific source and
@@ -10,3 +17,5 @@
 - include_vars: group_vars/common.yml
 - include: clone_repo.yml
   when: "'dev' not in group_names"
+  tags:
+    - network

@@ -11,6 +11,10 @@
   when: "'staging' in group_names" 
 
 - include: install.yml
+  tags:
+    - network
+    - dependency
+
 - include: configure_storage.yml
 - include: configure_mongo.yml
 - include: configure_auth.yml

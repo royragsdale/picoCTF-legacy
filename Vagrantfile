@@ -5,9 +5,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "shell", primary: true do |shell|
 
-    # Vanilla debian base box from: https://atlas.hashicorp.com/debian/
-    # includes vboxsf module for synchronization
-    shell.vm.box = "debian/contrib-jessie64"
+    shell.vm.box = "picoCTF/shell-base"
     shell.vm.network "private_network", ip: "192.168.2.3"
 
     shell.vm.synced_folder ".", "/vagrant", disabled: true
@@ -29,7 +27,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "web", primary: true do |web|
     
-    web.vm.box = "debian/contrib-jessie64"
+    web.vm.box = "picoCTF/web-base"
     web.vm.network "private_network", ip: "192.168.2.2"
 
     web.vm.synced_folder ".", "/vagrant", disabled: true
