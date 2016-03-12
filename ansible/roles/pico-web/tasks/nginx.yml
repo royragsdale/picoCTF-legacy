@@ -1,16 +1,6 @@
 ---
-# Playbook that installs and configures nginx
+# Playbook that configures nginx for picoCTF-web
 # This is the base  picoCTF web nginx configuration
-
-- name: Update apt
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Ensure nginx is installed
-  apt:
-    pkg: nginx
-    state: present
 
 - name: Add picoCTF site configuration to nginx
   template: 
@@ -32,6 +22,7 @@
     mode: 0640
   no_log: True
   with_items: "{{ htpasswd_accounts }}"
+  when: enable_basic_auth
 
 - name: Enable picoCTF site configuration
   file:

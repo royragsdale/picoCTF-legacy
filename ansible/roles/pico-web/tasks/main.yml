@@ -2,24 +2,24 @@
 # Playbook that installs and configures picoCTF-web servers
 
 - include_vars:  group_vars/common.yml
-
-# [TODO] move to better place
-- name: Ensure admin user owns pico http dir
-  file:
-    path: "{{ pico_http_dir }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    state: directory
-
-
-- include: dependencies.yml
-- include: nginx.yml
-- include: nodejs.yml
+  tags:
+    - always
 
 # Need to load passwords from the vault for staging environments
 - include_vars: group_vars/vault_staging.yml
-  when: "'staging' in group_names" 
-  
+  when: "'staging' in group_names"
+
+- include: dependencies.yml
+  tags:
+    - network
+    - dependency
+
+- include: nodejs.yml
+  tags:
+    - network
+    - dependency
+
+- include: nginx.yml
 - include: picoCTF-webapp.yml
 - include: gunicorn.yml
 #- include: monit.yml

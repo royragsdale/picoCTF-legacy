@@ -1,7 +1,8 @@
 ---
-# Variables shared across all localhosts
+# Variables shared across all development hosts
 
 # vagrant/vagrant is the default configuration for Vagrant boxes
+# [TODO] refactor for all local hosts
 ansible_user: vagrant
 ansible_ssh_pass: vagrant
 
@@ -10,14 +11,13 @@ ansible_ssh_pass: vagrant
 web_fqdn: "localhost"
 nginx_server_name: "_"
 flask_app_server_name: "{{ web_fqdn }}"
-web_address: "http://10.0.1.10"
+#[TODO] refactor based on "facts"
+web_address: "http://192.168.2.2"
 web_address_internal: "{{ web_address }}"
-enable_basic_auth: true
-htpasswd_accounts: 
-  - { user: "vagrant", password: "vagrant" }
+enable_basic_auth: false
 
 # Enviromentmantal specific shell settings
-shell_hostname: "10.0.1.11"
+shell_hostname: "192.168.2.3"
 
 # generated with: mkpasswd --method=SHA-512 vagrant
 # Default insecure "vagrant" password
@@ -25,9 +25,11 @@ shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwH
 shell_manager_deploy_secret: "**insecure-secret**"
 
 # Enviromentmantal specific database settings
-db_private_ip: 10.0.1.20
+db_private_ip: 127.0.0.1
 picoAdmin_db_password: "insecure-password"
 picoWeb_db_password: "insecure-password"
+
+# [TODO] remove auth for development
 env_db_users:
   - {
     name: picoWeb,

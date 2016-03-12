@@ -25,10 +25,8 @@
     - socat
     - php5-cli
     - gcc-multilib
+    - nginx           # used to serve shellinabox and challenge binaries
 
-- name: Install requests
-  pip:
-    name: requests
     
 # [TODO] check if these are relevant for challene templates, or what?
 # document need
@@ -56,3 +54,8 @@
   with_items:
     - libpam-python
     - python-setuptools
+
+# [TODO] needed for pam module
+- name: Install requests
+  pip:
+    name: requests

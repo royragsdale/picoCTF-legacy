@@ -1,6 +1,13 @@
 ---
 # Playbook that installs and configures the picoCTF API/webapp
 
+- name: Ensure admin user owns pico http dir
+  file:
+    path: "{{ pico_http_dir }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+
 # Source was cloned in main
 - name: Install picoCTF-web api from source
   pip:
@@ -37,7 +44,6 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     state: directory
-
 
 - name: Template deployment settings
   template:

@@ -15,9 +15,10 @@
     - python3-pip
     - gunicorn
     - jekyll 
+    - nginx
 
 # The following will still be installed but elsewhere
-# individual roles: nginx, mongodb, nodejs-legacy, npm , monit
+# individual roles: mongodb, nodejs-legacy, npm , monit
 # in common: tmux, git
 
 # Needs review [TODO]
