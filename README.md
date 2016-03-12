@@ -1,10 +1,13 @@
 # picoCTF
 
-The picoCTF platform is the infrastructure which is used to run [picoCTF](https://picoctf.com/). The platform is designed to be easily adapted to other CTF or programming competitions.
+The picoCTF platform is the infrastructure which is used to run [picoCTF](https://picoctf.com/).
 
-Additional documentation can be found on the [wiki](https://github.com/picoCTF/picoCTF/wiki).
+The platform is designed to be easily adapted to other CTF or programming competitions. Additional documentation can be found on the [wiki](https://github.com/picoCTF/picoCTF/wiki).
 
 ## Quick Start
+
+The following steps will use [Vagrant](https://www.vagrantup.com/) to get you  quickly up and running with the picoCTF platform by deploying the code base to two local virtual machines.
+
 1. `git clone https://github.com/picoCTF/picoCTF.git`
 2. `cd picoCTF`
 3. `vagrant up`
@@ -28,13 +31,19 @@ This project is broken down into a few discreet components that compose to build
 5. local deployment [examples](./vagrant)
 
 ### picoCTF-web
-The competitor facing web site, the API for running a CTF, and the management functionality for CTF organizers.  The development [Vagrantfile](./Vagrantfile)) deploys picoCTF-web to a virtual machine (web) at http://192.168.2.2/.
+The competitor facing web site, the API for running a CTF, and the management functionality for CTF organizers.  The development [Vagrantfile](./Vagrantfile)) deploys picoCTF-web to a virtual machine (web) at http://192.168.2.2/. If you want to modify the look and feel of the website, this is the place to start.
 
 ### picoCTF-shell-manager
-The tools to create, package, and deploy challenges for use with the picoCTF platform. This supports the deployment of auto-generated challenge instances and provides competitors shell access to aid in challenge solving. The development [Vagrantfile](./Vagrantfile) deploys the shell-server as a second virtual machine (shell) at http://192.168.2.3/. 
+The tools to create, package, and deploy challenges for use with the picoCTF platform. This supports the deployment of auto-generated challenge instances and provides competitors shell access to aid in challenge solving. The development [Vagrantfile](./Vagrantfile) deploys the shell-server as a second virtual machine (shell) at http://192.168.2.3/. If you want to modify challenge deployment primitives, this is the place to start.
 
 ### picoCTF-problems
-Example challenges that are compatible with the picoCTF platform.  These challenges can be easily shared, deployed, or adapted for use in a CTF.  The development [Vagrantfile](./Vagrantfile) installs these examples to the shell server and loads them into the web interface.
+Example challenges that are compatible with the picoCTF platform.  These challenges can be easily shared, deployed, or adapted for use in a CTF.  The development [Vagrantfile](./Vagrantfile) installs these examples to the shell server and loads them into the web interface.  If you want to see how to create challenges or leverage the hacksport library, this is the place to start.
+
+### Provisioning with Ansible
+The tool we use to install, configure, deploy, and administer the picoCTF platform is [Ansible](https://www.ansible.com/).  This allows us to create flexible, parameterized, automated playbooks and roles that apply across development, staging, and production environments.  If you want to modify way the platform is configured, this is the place to start.
+
+### AWS deployment with Terraform
+The tool we use to codify our infrastructure as code is [Terraform](https://www.terraform.io/). This allows a simple process for creating, destroying, and managing a public deployment of the platform.  If you want to run a live competition on AWS, this is the place to start.
 
 ## Contact
 
