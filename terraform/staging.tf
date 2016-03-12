@@ -136,21 +136,6 @@ resource "aws_security_group" "staging_db" {
     }
 }
 
-# Additional Database security group to allow Code Combat sync
-resource "aws_security_group" "staging_db_coco_sync" {
-    name        = "staging_db_coco"
-    description = "Allows DB access to Code Combat over internet"
-    vpc_id      = "${aws_vpc.staging.id}"
-
-    # Mongo access from fixed Code Combat IP address
-    ingress {
-        from_port   = 27017
-        to_port     = 27017
-        protocol    = "tcp"
-        cidr_blocks = ["${var.coco_db_cidr}","${var.home_test_db_cidr}"]
-    }
-}
-
 # Key which will be inserted in the instances
 resource "aws_key_pair" "auth" {
     key_name   = "${var.key_name}"
@@ -258,8 +243,7 @@ resource "aws_instance" "db" {
     instance_type = "${var.db_instance_type}"
     availability_zone = "${var.availability_zone}"
     key_name = "${aws_key_pair.auth.id}"
-    vpc_security_group_ids = ["${aws_security_group.staging_db.id}",
-        "${aws_security_group.staging_db_coco_sync.id}"]
+    vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
     subnet_id = "${aws_subnet.staging_public.id}"
     private_ip = "${var.db_private_ip}"
 

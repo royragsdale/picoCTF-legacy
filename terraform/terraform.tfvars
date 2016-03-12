@@ -7,7 +7,7 @@ user = "admin"
 
 # Instances
 web_instance_type = "t2.micro"
-shell_instance_type = "t2.medium"
+shell_instance_type = "t2.micro"
 db_instance_type = "t2.micro"
 
 # Network
@@ -17,9 +17,6 @@ public_subnet_cidr = "10.0.1.0/24"
 web_private_ip = "10.0.1.10"
 shell_private_ip = "10.0.1.11"
 db_private_ip = "10.0.1.20"
-
-coco_db_cidr = "52.0.243.3/32"
-home_test_db_cidr = "71.182.149.63/32"
 
 # EBS Volumes
 db_ebs_data_size = "50"

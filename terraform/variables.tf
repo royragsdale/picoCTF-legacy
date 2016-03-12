@@ -8,7 +8,6 @@ variable "key_name" {}
 variable "public_key_path" {}
 
 
-
 ########################################
 # Public Variables - terraform.tfvars
 ########################################
@@ -38,8 +37,6 @@ variable "public_subnet_cidr" {}
 variable "web_private_ip" {}
 variable "shell_private_ip" {}
 variable "db_private_ip" {}
-variable "coco_db_cidr" {}
-variable "home_test_db_cidr" {}
 
 # EBS Volumes
 variable "db_ebs_data_size" {}
@@ -52,4 +49,3 @@ variable "web_name" {}
 variable "shell_name" {}
 variable "db_name" {}
 variable "db_ebs_data_name" {}
-
