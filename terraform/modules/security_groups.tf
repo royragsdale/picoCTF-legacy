@@ -1,4 +1,18 @@
-# This module configures the security groups for running picoCTF on AWS
+# This module configures security groups (firewall rules) for running picoCTF on AWS
+
+# Inputs:
+variable "vpc_id" {}
+
+# Outputs:
+output "sg_web_id" {
+    value=aws_security_group.web.id
+}
+output "sg_shell_id" {
+    value=aws_security_group.shell.id
+}
+output "sg_db_access_id" {
+    value=aws_security_group.db_access.id
+}
 
 ###
 # Security Group configuration:
@@ -12,7 +26,7 @@
 resource "aws_security_group" "web" {
     name        = "web"
     description = "Allows SSH, HTTP, and HTTPS to web servers"
-    vpc_id      = "${aws_vpc.private_network.id}"
+    vpc_id      = "${vpc_id}"
 
     # SSH access from anywhere
     ingress {
@@ -52,7 +66,7 @@ resource "aws_security_group" "web" {
 resource "aws_security_group" "shell" {
     name        = "shell"
     description = "Allows full acces from internet to shell servers"
-    vpc_id      = "${aws_vpc.private_network.id}"
+    vpc_id      = "${vpc_id}"
 
     # Allow inbound access to all ports from anywhere 
     ingress {
@@ -76,5 +90,5 @@ resource "aws_security_group" "shell" {
 resource "aws_security_group" "db_access" {
     name        = "db_access"
     description = "Identifies servers allowed acess to the database"
-    vpc_id      = "${aws_vpc.private_network.id}"
+    vpc_id      = "${vpc_id}"
 }

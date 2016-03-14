@@ -1,5 +1,17 @@
 # This module configures persistent public IP addresses running picoCTF on AWS
 
+# Inputs:
+variable "web_id" {}
+variable "shell_id" {}
+
+# Outputs:
+output "web_eip" {
+    value=aws_eip.web.public_ip
+}
+output "shell_eip" {
+    value=aws_eip.shell.public_ip
+}
+
 ###
 # Elastic IP:
 # This simplifies configuration and administration by allowing us to rebuild
@@ -8,12 +20,12 @@
 
 # Create Elastic IP for web server
 resource "aws_eip" "web" {
-    instance = "${aws_instance.web.id}"
+    instance = "${var.web_id}"
     vpc = true
 }
 
 # Create Elastic IP for shell server
 resource "aws_eip" "shell" {
-    instance = "${aws_instance.shell.id}"
+    instance = "${var.shell_id}"
     vpc = true
 }

@@ -1,11 +1,24 @@
 # This module configures the network resources for running picoCTF on AWS
 
+# Inputs:
+variable "vpc_cidr" {}
+variable "public_subnet_cidr" {}
+
+# Outputs:
+output "vpc_id" {
+    value=aws_vpc.private_network.id
+}
+output "public_subnet_id" {
+    value=aws_subnet.public.id
+}
+
 ###
 # Network configuration:
 # This is a simple network configuration where all machines are on a virtual network
 # that is attached via an gateway to the internet. All machines placed in this public
 # subnet receive a public IP address
 ###
+
 
 # Create a VPC (private netork) to launch our instances into
 resource "aws_vpc" "private_network" {

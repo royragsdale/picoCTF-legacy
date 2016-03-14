@@ -1,5 +1,15 @@
 # This module configures the EBS resources for running picoCTF on AWS
 
+# Inputs:
+variable "availability_zone" {}
+variable "db_ebs_data_size" {}
+variable "db_ebs_data_device_name" {}
+variable "db_host_id" {}
+
+variable "db_ebs_name" {}
+variable "competition_tag" {}
+variable "env_tag" {}
+
 ###
 # Elastic Block Storage:
 # This allows competition data such as the database and user home directories
@@ -13,8 +23,9 @@ resource "aws_ebs_volume" "db_data_journal" {
     availability_zone = "${var.availability_zone}"
     size = "${var.db_ebs_data_size}"
     tags {
-        Name = "${var.db_ebs_data_name}"
-        Year = "${var.year}"
+        Name = "${var.db_ebs_name}"
+        Competition = "${var.competition_tag}"
+        Environment =  "${var.env_tag}"
     }
 }
 
@@ -22,6 +33,5 @@ resource "aws_ebs_volume" "db_data_journal" {
 resource "aws_volume_attachment" "db_data_journal" {
   device_name = "${var.db_ebs_data_device_name}"
   volume_id = "${aws_ebs_volume.db_data_journal.id}"
-  instance_id = "${aws_instance.db.id}"
+  instance_id = "${var.db_host_id}"
 }
-
