@@ -6,10 +6,10 @@ variable "shell_id" {}
 
 # Outputs:
 output "web_eip" {
-    value=aws_eip.web.public_ip
+    value = "${aws_eip.web.public_ip}"
 }
 output "shell_eip" {
-    value=aws_eip.shell.public_ip
+    value = "${aws_eip.shell.public_ip}"
 }
 
 ###

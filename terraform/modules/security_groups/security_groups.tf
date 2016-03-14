@@ -5,13 +5,13 @@ variable "vpc_id" {}
 
 # Outputs:
 output "sg_web_id" {
-    value=aws_security_group.web.id
+    value = "${aws_security_group.web.id}"
 }
 output "sg_shell_id" {
-    value=aws_security_group.shell.id
+    value = "${aws_security_group.shell.id}"
 }
 output "sg_db_access_id" {
-    value=aws_security_group.db_access.id
+    value = "${aws_security_group.db_access.id}"
 }
 
 ###

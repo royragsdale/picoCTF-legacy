@@ -8,12 +8,12 @@ variable "ami" {}
 variable "availability_zone" {}
 
 variable "web_instance_type" {}
-variable "web_private_ip"
-variable "web_name"
+variable "web_private_ip" {}
+variable "web_name" {}
 
 variable "shell_instance_type" {}
-variable "shell_private_ip"
-variable "shell_name"
+variable "shell_private_ip" {}
+variable "shell_name" {}
 
 variable "subnet_id" {}
 variable "sg_web_id" {}
@@ -25,9 +25,9 @@ variable "env_tag" {}
 
 # Outputs:
 output "web_id" {
-    value=aws_instance.web.id
+    value = "${aws_instance.web.id}"
 }output "shell_id" {
-    value=aws_instance.shell.id
+    value = "${aws_instance.shell.id}"
 }
 
 ###

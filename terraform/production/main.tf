@@ -2,16 +2,16 @@
 
 ###
 # This deployment configuration composes the referenced modules into a platform
-# fully capable of hosting a CTF. Once deployed these machines should be 
+# fully capable of hosting a CTF. Once deployed these machines should be
 # provisioned, configured, and administered with the included ansible playbooks.
 ###
 
 # AWS Specific config (single region)
-provider "aws" {
-    access_key = "${var.access_key}"
-    secret_key = "${var.secret_key}"
-    region = "${var.region}"
-}
+provider "aws" {}
+#    access_key = "${var.access_key}"
+#    secret_key = "${var.secret_key}"
+#    region = "${var.region}"
+#}
 
 # Add SSH key which will be inserted as authorized in each machine
 resource "aws_key_pair" "auth" {
@@ -21,16 +21,17 @@ resource "aws_key_pair" "auth" {
 
 # Create virtual network
 module "network" {
-    source = "../modules/network.tf"
+    source = "../modules/network"
 
-    # Variables from terraform.tfvars
+    # Variables from varaibles.tf and terraform.tfvars
     vpc_cidr = "${var.vpc_cidr}"
     public_subnet_cidr = "${var.public_subnet_cidr}"
+    availability_zone = "${var.availability_zone}"
 }
 
 # Create virtual firewall rules
 module "security_groups" {
-    source = "../modules/security_groups.tf"
+    source = "../modules/security_groups"
 
     # Variables output from prior modules
     vpc_id = "${module.network.vpc_id}"
@@ -38,9 +39,9 @@ module "security_groups" {
 
 # Create virtual machines
 module "servers" {
-    source = "../modules/servers.tf"
+    source = "../modules/servers"
 
-    # Variables from terraform.tfvars
+    # Variables from varaibles.tf and terraform.tfvars
     user = "${var.user}"
     key_pair_id = "${aws_key_pair.auth.id}"
 
@@ -67,7 +68,7 @@ module "servers" {
 
 # Create persistent IP addresses
 module "elastic_ip" {
-    source = "../modules/elastic_ip.tf"
+    source = "../modules/elastic_ip"
 
     # Variables output from prior modules
     web_id= "${module.servers.web_id}"
@@ -76,9 +77,9 @@ module "elastic_ip" {
 
 # Create persistent data stores
 module "ebs_volumes" {
-    source = "../modules/ebs_volumes.tf"
+    source = "../modules/ebs_volumes"
 
-    # Variables from terraform.tfvars
+    # Variables from varaibles.tf and terraform.tfvars
     availability_zone = "${var.availability_zone}"
     db_ebs_data_size = "${var.db_ebs_data_size}"
     db_ebs_data_device_name = "${var.db_ebs_data_device_name}"
@@ -88,15 +89,15 @@ module "ebs_volumes" {
     env_tag = "${var.env_tag}"
 
     # Variables output from prior modules
-    # Host both the web server and the database on the same machine
+    # Host the web server and the database on the same machine
     db_host_id ="${module.servers.web_id}"
 }
 
 # Important variables to highlight at the end for provisioning the machines
 # These should be added to the appropriate ansible inventory
 output "Web Elastic IP address" {
-    value = "${modules.elastic_ip.web_eip}"
+    value = "${module.elastic_ip.web_eip}"
 }
 output "Shell Elastic IP address" {
-    value = "${modules.elastic_ip.shell_eip}"
+    value = "${module.elastic_ip.shell_eip}"
 }

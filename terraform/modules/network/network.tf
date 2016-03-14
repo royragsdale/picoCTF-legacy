@@ -3,13 +3,14 @@
 # Inputs:
 variable "vpc_cidr" {}
 variable "public_subnet_cidr" {}
+variable "availability_zone" {}
 
 # Outputs:
 output "vpc_id" {
-    value=aws_vpc.private_network.id
+    value = "${aws_vpc.private_network.id}"
 }
 output "public_subnet_id" {
-    value=aws_subnet.public.id
+    value = "${aws_subnet.public.id}"
 }
 
 ###
