@@ -8,6 +8,8 @@
 
 # AWS Specific config (single region)
 provider "aws" {}
+# Currently configured to use environment variables. Consult the documentation
+# for additional configuration methods. https://www.terraform.io/docs/providers/aws/
 #    access_key = "${var.access_key}"
 #    secret_key = "${var.secret_key}"
 #    region = "${var.region}"

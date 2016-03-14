@@ -26,7 +26,6 @@ Each primary Terraform configuration file creates and manages the following elem
 
 ### Other Files
 - `outputs.tf` : a place to put important actionable attribute information you want readily at hand about the deployed infrastructure. Like IP addresses. These are shown at the end of every `terraform apply` or `terraform show`
-- `secret.tfvars.example` : tracks the secret configuration variables that are kept out of version control. This can be copied to `secret.tfvars` and filled in to actually deploy this infrastructure.
 - `terraform.tfvars` : tracks non-sensitive configuration variables.
 - `variables.tf` : captures all the possible configurations. These will be filled in by the various `*.tfvars` files.
 
@@ -91,3 +90,7 @@ Note:  This will create the necessary server instances and configures networking
     - `ssh-keygen -f "/home/user/.ssh/known_hosts" -R 52.72.97.197`
 9. Re-provision/Configure
     - run the relevant ansible playbooks
+
+### Quick Start
+1. Generate SSH deployment key
+    - `ssh-keygen -f ~/.ssh/picoCTF_production_rsa -C "admin@picoCTF_production" -N ""`

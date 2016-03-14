@@ -2,6 +2,8 @@
 # provided defaults can be overridden in terraform.tfvars
 
 # AWS Credentials
+# Currently configured to use environment variables. Consult the documentation
+# for additional configuration methods. https://www.terraform.io/docs/providers/aws/
 #variable "access_key" {}
 #variable "secret_key" {}
 
@@ -13,7 +15,7 @@ variable "key_name" {
 }
 variable "public_key_path" {
     description = "Local path to SSH public key"
-    default = "~/.ssh/pico_production_rsa.pub"
+    default = "~/.ssh/picoCTF_production_rsa.pub"
 }
 
 

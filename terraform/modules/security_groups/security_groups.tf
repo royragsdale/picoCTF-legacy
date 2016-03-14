@@ -26,7 +26,7 @@ output "sg_db_access_id" {
 resource "aws_security_group" "web" {
     name        = "web"
     description = "Allows SSH, HTTP, and HTTPS to web servers"
-    vpc_id      = "${vpc_id}"
+    vpc_id      = "${var.vpc_id}"
 
     # SSH access from anywhere
     ingress {
@@ -65,8 +65,8 @@ resource "aws_security_group" "web" {
 # for the shell server only, and further locked down if possible.
 resource "aws_security_group" "shell" {
     name        = "shell"
-    description = "Allows full acces from internet to shell servers"
-    vpc_id      = "${vpc_id}"
+    description = "Allows full access from internet to shell servers"
+    vpc_id      = "${var.vpc_id}"
 
     # Allow inbound access to all ports from anywhere 
     ingress {
@@ -89,6 +89,6 @@ resource "aws_security_group" "shell" {
 # This is typically only web.
 resource "aws_security_group" "db_access" {
     name        = "db_access"
-    description = "Identifies servers allowed acess to the database"
-    vpc_id      = "${vpc_id}"
+    description = "Identifies servers allowed access to the database"
+    vpc_id      = "${var.vpc_id}"
 }
