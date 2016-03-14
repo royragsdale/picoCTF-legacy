@@ -1,5 +1,31 @@
 # This module configures a remote database option for running picoCTF on AWS
 
+# Inputs:
+variable "user" {}
+variable "key_pair_id" {}
+
+variable "ami" {}
+variable "availability_zone" {}
+
+variable "db_instance_type" {}
+variable "db_private_ip" {}
+variable "db_name" {}
+
+variable "vpc_id" {}
+variable "subnet_id" {}
+variable "sg_db_access_id" {}
+
+variable "competition_tag" {}
+variable "env_tag" {}
+
+# Outputs:
+output "db_id" {
+    value = "${aws_instance.db.id}"
+}
+output "db_eip" {
+    value = "${aws_eip.db.public_ip}"
+}
+
 ###
 # Remote Database:
 # This provides the option to run the backend database on a separate machine
@@ -12,17 +38,18 @@ resource "aws_instance" "db" {
         user = "${var.user}"
     }
 
-    ami = "${lookup(var.amis, var.region)}"
+    ami = "${var.ami}"
     instance_type = "${var.db_instance_type}"
     availability_zone = "${var.availability_zone}"
-    key_name = "${aws_key_pair.auth.id}"
-    vpc_security_group_ids = ["${aws_security_group.staging_db.id}"]
-    subnet_id = "${aws_subnet.staging_public.id}"
+    key_name = "${var.key_pair_id}"
+    vpc_security_group_ids = ["${aws_security_group.db.id}"]
+    subnet_id = "${var.subnet_id}"
     private_ip = "${var.db_private_ip}"
 
     tags {
         Name = "${var.db_name}"
-        Year = "${var.year}"
+        Competition = "${var.competition_tag}"
+        Environment =  "${var.env_tag}"
     }
 }
 
@@ -37,7 +64,7 @@ resource "aws_eip" "db" {
 resource "aws_security_group" "db" {
     name        = "db"
     description = "Allows SSH from web, and Mongo access from machines in db_acess"
-    vpc_id      = "${aws_vpc.private_network.id}"
+    vpc_id      = "${var.vpc_id}"
 
     # SSH access from anywhere
     ingress {
@@ -52,7 +79,7 @@ resource "aws_security_group" "db" {
         from_port   = 27017
         to_port     = 27017
         protocol    = "tcp"
-        security_groups = ["${aws_security_group.db_access.id}"]
+        security_groups = ["${var.sg_db_access_id}"]
     }
 
     # Allow outbound internet access for provisioning and updates

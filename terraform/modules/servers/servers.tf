@@ -26,7 +26,8 @@ variable "env_tag" {}
 # Outputs:
 output "web_id" {
     value = "${aws_instance.web.id}"
-}output "shell_id" {
+}
+output "shell_id" {
     value = "${aws_instance.shell.id}"
 }
 
