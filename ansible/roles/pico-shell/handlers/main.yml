@@ -1,5 +1,6 @@
 ---
 # Handlers that reload and restart a runnning nginx server 
+# [TODO] factor out to common
 
 - name: nginx reload
   service: 
