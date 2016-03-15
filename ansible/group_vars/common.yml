@@ -6,7 +6,7 @@
 ###
 # To deploy a personal fork, these can be easily changed to your repositories
 
-pico_repo: "git@github.com:picoCTF/picoCTF.git"
+pico_repo: "https://github.com/picoCTF/picoCTF.git"
 pico_branch: "master"
 pico_base_dir: "/picoCTF" 
 
