@@ -44,7 +44,7 @@ env_db_users:
     database: "{{ picoCTF_db_name }}"
   }
 
-# Enviromentmantal specific database settings
+# Enviromentmantal specific problem settings
 deb_dir:    "/picoCTF-debs"
 bundle_dir: "/picoCTF-bundles"
 
