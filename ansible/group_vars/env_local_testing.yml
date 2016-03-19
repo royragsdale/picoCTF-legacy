@@ -19,8 +19,9 @@ htpasswd_accounts:
 # Enviromentmantal specific shell settings
 shell_hostname: "10.0.1.11"
 
-auto_add_shell: True
-auto_load_problems: True
+auto_add_shell:         True
+auto_load_problems:     True
+auto_start_competition: True
 
 shell_name: Local-Testing-Shell     # no spaces
 shell_host: "{{ shell_hostname }}"

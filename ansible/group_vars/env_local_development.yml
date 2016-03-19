@@ -19,8 +19,9 @@ enable_basic_auth: false
 # Enviromentmantal specific shell settings
 shell_hostname: "192.168.2.3"
 
-auto_add_shell: True
-auto_load_problems: True
+auto_add_shell:         True
+auto_load_problems:     True
+auto_start_competition: True
 
 
 shell_name: Local-Development-Shell   # no spaces

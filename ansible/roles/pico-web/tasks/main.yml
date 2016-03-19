@@ -22,29 +22,10 @@
 - include: nginx.yml
 - include: picoCTF-webapp.yml
 - include: gunicorn.yml
+- include: auto_configure.yml
 
 - name: Ensure nginx is running
   service: 
     name: nginx
     state: started
     enabled: yes
-
-- name: Autoload Shell Server into web interface
-  script: >
-    scripts/add_shell_server.py
-    {{ shell_name }}
-    {{ shell_host }}
-    {{ shell_user }}
-    {{ shell_pass }}
-    {{ shell_port }}
-    {{ shell_proto }}
-  environment:
-    APP_SETTINGS_FILE: "{{ web_config_dir }}/deploy_settings.py"
-  when: auto_add_shell
-  no_log: True
-
-- name: Autoload Problems into web interface
-  script: scripts/load_problems.py {{ shell_name }}
-  environment:
-    APP_SETTINGS_FILE: "{{ web_config_dir }}/deploy_settings.py"
-  when: auto_load_problems
