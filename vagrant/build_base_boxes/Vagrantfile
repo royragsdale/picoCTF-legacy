@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
         ansible.limit               = "shell"
         ansible.tags                = "dependency"
 	    ansible.provisioning_path   = "/picoCTF/ansible/"
-        ansible.inventory_path      = "/picoCTF/ansible/inventories/dev_servers"
+        ansible.inventory_path      = "/picoCTF/ansible/inventories/local_development"
     end
 
     shell.vm.provision "shell", path: "minimize_box.sh"
@@ -54,7 +54,7 @@ Vagrant.configure("2") do |config|
         ansible.limit               = ["db","web"]
         ansible.tags                = "dependency"
 	    ansible.provisioning_path   = "/picoCTF/ansible/"
-        ansible.inventory_path      = "/picoCTF/ansible/inventories/dev_servers"
+        ansible.inventory_path      = "/picoCTF/ansible/inventories/local_development"
     end
 
     web.vm.provision "shell", path: "minimize_box.sh"
