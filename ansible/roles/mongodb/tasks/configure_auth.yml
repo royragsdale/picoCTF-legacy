@@ -3,9 +3,6 @@
 # Heavily influenced by: https://github.com/UnderGreen/ansible-role-mongodb
 # Using a subset of @UnderGreen's work
 
-# Include the passwords
-#- include_vars: secret_vars/staging_secret.yml
-
 # Restart to ensure Client Access Control configuration is enabled
 - name: mongodb restart
   service:
@@ -35,6 +32,5 @@
     login_port: "{{ mongodb_conf_port }}"
     login_user: "{{ initial_admin_name }}"
     login_password: "{{ initial_admin_password }}"
-    #    login_database: admin
   with_items:
     - "{{ mongodb_users }}"

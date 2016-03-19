@@ -1,5 +1,5 @@
 ---
-# Variables shared across all staging hosts
+# Variables shared across all remote_testing hosts
 
 # admin is the default user for the AWS Debian Jessie AMI
 ansible_user: admin
@@ -18,7 +18,6 @@ shell_hostname: "203.0.113.254"
 shell_admin_password_crypt: "{{ vault_shell_admin_password_crypt }}"
 shell_manager_deploy_secret: " {{ vault_shell_manager_deploy_secret }}"
 
-
 # Enviromentmantal specific database settings
 db_private_ip: 10.0.1.20
 picoAdmin_db_password: "{{ vault_picoAdmin_db_password}}"
@@ -29,16 +28,4 @@ env_db_users:
     password: "{{ picoWeb_db_password }}",
     roles: readWrite,
     database: "{{ picoCTF_db_name }}"
-  }
-  - {
-    name: cocoWeb,
-    password: "{{ vault_cocoWeb_db_password }}",
-    roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
-  }
-  - {
-    name: cocoAdmin,
-    password: "{{ vault_cocoAdmin_db_password }}",
-    roles: "userAdminAnyDatabase,readWriteAnyDatabase",
-    database: "admin"
   }

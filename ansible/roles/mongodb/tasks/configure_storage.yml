@@ -5,12 +5,12 @@
 
 
 # For AWS we want to setup mongo to store to an EBS block device
-# 'staging' is a group that we use to refer to our AWS instances
+# only perform for specific remote groups
 - name: Ensure filesystem exists on EBS Block device for MongoDB data and journal
   filesystem: 
     fstype: "{{ db_data_device_fstype }}"
     dev: "{{ db_data_device }}"
-  when: "'staging' in group_names"
+  when: "'env_remote_testing' in group_names"
 
 - name: Ensure EBS device for MongoDB data and journal is mounted
   mount: 
@@ -19,7 +19,7 @@
     fstype: "{{ db_data_device_fstype }}"
     opts:  "{{ db_data_mount_opts }}"
     state: mounted
-  when: "'staging' in group_names"
+  when: "'env_remote_testing' in group_names"
 
 - name:  Ensure mongod user owns data and journal directory
   file:

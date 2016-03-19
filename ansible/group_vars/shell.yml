@@ -2,7 +2,7 @@
 # Variables shared across all shell server deloyments
 
 # Should not need to change this file. Environmental specific configurations
-# should be made in the group specific variables file, eg: local.yml or staging.yml
+# should be made in the group specific variables file, eg: local.yml or remote_testing.yml
 
 # pico_base_dir set in common.yml
 pico_shell_manager_dir:  "{{pico_base_dir}}/picoCTF-shell"

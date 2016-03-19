@@ -1,8 +1,8 @@
----
+--
 # Variables shared across all web server deloyments
 
 # Should not need to change this file. Environmental specific configurations
-# should be made in the group specific variables file, eg: local.yml or staging.yml
+# should be made in the group specific variables file, eg: local.yml or remote_testing.yml
 
 # pico_base_dir set in common.yml
 web_code_dir:  "{{pico_base_dir}}/picoCTF-web"
@@ -28,8 +28,8 @@ pico_api_auth_teacher: "/api/user/authorize/teacher"
 pico_api_auth_admin: "/api/user/authorize/admin"
 pico_site_config_name: "ctf"
 
-# http access and staging specific
-# [todo] factor out
+# http access and remote specific
+# [TODO] factor out
 pico_internal_allow: "10.0.1.0/24"
 pico_game_redirect: "http://game.staging.picoctf.com"
 
