@@ -20,7 +20,7 @@ if 'bdist_wheel' in sys.argv:
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.md'), encoding='utf-8') as f:
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
@@ -35,14 +35,14 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/picoCTF/picoCTF-shell-manager',
+    url='https://github.com/picoCTF/picoCTF',
 
     # Author details
     author='Christopher Ganas',
     author_email='cganas@forallsecure.com',
 
     # Choose your license
-    license='',
+    license='MIT',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
