@@ -22,10 +22,26 @@
 - include: nginx.yml
 - include: picoCTF-webapp.yml
 - include: gunicorn.yml
-#- include: monit.yml
 
 - name: Ensure nginx is running
   service: 
     name: nginx
     state: started
     enabled: yes
+
+# Adds a shell server then loads problems and bundles from it.
+- name: Autoload Shell Server into web interface
+  script: >
+    scripts/add_shell_server.py
+    "{{ shell_name }}"
+    {{ shell_host }}
+    {{ shell_user }}
+    {{ shell_pass }}
+    {{ shell_port }}
+    {{ shell_prot }}
+  environment:
+    APP_SETTINGS_FILE: "{{ web_config_dir }}/deploy_settings.py"
+  when: auto_add_shell
+  register: command_result
+  changed_when: "command_result.stdout_lines[0] == 'Loaded problems and bundles successfully'"
+  no_log: True

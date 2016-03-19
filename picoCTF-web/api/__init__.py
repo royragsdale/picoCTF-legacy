@@ -24,4 +24,6 @@ import api.token
 # MUST BE LAST
 import api.config
 
-api.setup.index_mongo()
+# Should not touch DB when just initializing the api
+# this prevents programatically importing the api
+#api.setup.index_mongo()

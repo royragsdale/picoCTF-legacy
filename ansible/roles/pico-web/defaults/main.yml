@@ -2,5 +2,15 @@
 # Defaults for the picoCTF-web role. These are the loweset prioirty varaibles
 # and can easily be overridden in group_vars, host_vars, or command line
 
+# Default Shell Server
+auto_add_shell: False
+shell_name: ""
+shell_host: ""
+shell_user: ""
+shell_pass: ""
+shell_port: "22"
+shell_prot: "HTTP"
+
+# HTTP Basic Auth
 enable_basic_auth: false
 htpasswd_accounts: []

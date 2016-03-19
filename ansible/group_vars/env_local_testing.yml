@@ -19,6 +19,12 @@ htpasswd_accounts:
 # Enviromentmantal specific shell settings
 shell_hostname: "10.0.1.11"
 
+auto_add_shell: True
+shell_name: "'Local Testing Shell'"
+shell_host: "{{ shell_hostname }}"
+shell_user: "{{ ansible_user }}"
+shell_pass: "{{ ansible_ssh_pass }}"
+
 # generated with: mkpasswd --method=SHA-512 vagrant
 # Default insecure "vagrant" password
 shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
