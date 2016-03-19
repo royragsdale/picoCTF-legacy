@@ -1,0 +1,14 @@
+
+[local_testing:children]
+db
+shell
+web
+
+[db]
+local_db        ansible_host=10.0.1.20
+
+[shell]
+local_shell     ansible_host=10.0.1.11
+
+[web]
+local_web       ansible_host=10.0.1.10
