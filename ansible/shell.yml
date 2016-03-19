@@ -1,9 +1,0 @@
----
-# Playbook that assigns all the necessary roles to provision the shell server
-- hosts: shell
-  remote_user: "{{ ansible_user }}"
-  become: yes
-  become_method: sudo
-  roles:
-    - common
-    - pico-shell
