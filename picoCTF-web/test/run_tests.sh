@@ -1,4 +1,5 @@
 #!/bin/bash
+# [TODO] - remove /vagrant and update directories
 
 test_path="./unit_tests"
 output_results_prefix="unit"
