@@ -1,4 +1,0 @@
----
-# Host Variables for local dev shell
-
-ansible_connection: local

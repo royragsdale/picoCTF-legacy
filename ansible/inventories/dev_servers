@@ -4,11 +4,14 @@ db
 shell
 web
 
+
+# In a development environement, or simple deployment the database is collocated
+# with the web server
 [db]
-dev_web
+dev_web     ansible_connection=local
 
 [shell]
-dev_shell
+dev_shell   ansible_connection=local
 
 [web]
-dev_web
+dev_web     ansible_connection=local
