@@ -20,7 +20,10 @@ enable_basic_auth: false
 shell_hostname: "192.168.2.3"
 
 auto_add_shell: True
-shell_name: "'Local Development Shell'"
+auto_load_problems: True
+
+
+shell_name: Local-Development-Shell   # no spaces
 shell_host: "{{ shell_hostname }}"
 shell_user: "{{ ansible_user }}"
 shell_pass: "{{ ansible_ssh_pass }}"
