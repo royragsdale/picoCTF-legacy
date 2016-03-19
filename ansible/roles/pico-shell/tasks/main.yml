@@ -14,6 +14,7 @@
   user:
     name: "{{ ansible_user }}"
     password: "{{ shell_admin_password_crypt }}"
+  no_log: True
 
 - include: dependencies.yml
   tags:

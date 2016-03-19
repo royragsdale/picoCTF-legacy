@@ -21,7 +21,7 @@
     roles: "userAdminAnyDatabase"
     login_port: "{{ mongodb_conf_port }}"
   ignore_errors: True
-
+  no_log: True
 
 - name: Create normal users
   mongodb_user:
@@ -34,3 +34,4 @@
     login_password: "{{ initial_admin_password }}"
   with_items:
     - "{{ mongodb_users }}"
+  no_log: True
