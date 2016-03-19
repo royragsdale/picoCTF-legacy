@@ -1,5 +1,5 @@
 
-[local_testing:children]
+[env_local_testing:children]
 db
 shell
 web
