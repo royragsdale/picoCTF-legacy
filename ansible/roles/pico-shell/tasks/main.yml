@@ -24,11 +24,7 @@
 - include: shell_manager.yml
 - include: nginx.yml
 - include: pam_and_services.yml
-
-# [TODO]  reintroduce challenge deployment post repo reshuffling
-#- include: deploy_private_problems.yml
-#  tags:
-  #    - slow
+- include: deploy_problems.yml
 
 # [TODO] - refactor
 - name: Ensure nginx is running
@@ -39,14 +35,8 @@
     
     
 # Missing
-# monit
 # journald
-# any services
-  # sudo systemctl add-wants default.target shell_manager.target 
-# any hardening
-#pip2 install requests 
-# mkdir /tmp/hacksports/ 
-# hostname setting
+# services
+#   sudo systemctl add-wants default.target shell_manager.target 
+# hardening
 
-#chmod -R 1710 /var/cache/apt
-#chmod 1710 /etc/apt/sources.list 
