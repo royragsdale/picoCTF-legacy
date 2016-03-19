@@ -1,5 +1,5 @@
 
-[dev:children]
+[local_development:children]
 db
 shell
 web

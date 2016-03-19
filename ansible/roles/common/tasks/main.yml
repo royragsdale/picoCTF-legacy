@@ -16,6 +16,6 @@
 # branch
 - include_vars: group_vars/common.yml
 - include: clone_repo.yml
-  when: "'dev' not in group_names"
+  when: "'local_development' not in group_names"
   tags:
     - network
