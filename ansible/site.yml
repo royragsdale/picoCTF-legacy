@@ -1,7 +1,28 @@
 ---
-# Playbook to deploy the entire staging environment
+# Playbook to deploy the entire picoCTF environment
 
+- hosts: db
+  remote_user: "{{ ansible_user }}"
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+    - mongodb
 
-- include: db.yml
-- include: shell.yml
-- include: web.yml
+- hosts: shell
+  remote_user: "{{ ansible_user }}"
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+    - pico-shell
+
+- hosts: web
+  remote_user: "{{ ansible_user }}"
+  become: yes
+  become_method: sudo
+  vars_files:
+    - group_vars/db.yml
+  roles:
+    - common
+    - pico-web 

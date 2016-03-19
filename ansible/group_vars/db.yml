@@ -1,7 +1,7 @@
 ---
 # Variables shared across all database deloyments
 
-# [TODO] consider moving to staging_db
+# [TODO] consider how to abstract
 ###
 # AWS specific mount points
 ##
@@ -38,6 +38,5 @@ initial_admin_password: "{{ picoAdmin_db_password }}"
 
 picoCTF_db_name: picoCTF3
 
-# Add additional users in the environement specific host_vars file
-# eg: host_vars/local_db or host_vars/staging_db
+# Add additional users in the environement specific group_vars file
 mongodb_users: "{{ env_db_users }}"

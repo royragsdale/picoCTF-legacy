@@ -5,15 +5,16 @@
   tags:
     - always
 
-# Need to load passwords from the vault for staging environments
-- include_vars: group_vars/vault_staging.yml
-  when: "'staging' in group_names" 
+# Need to load passwords from the vault for remote environments
+- include_vars: group_vars/vault_remote_testing.yml
+  when: "'env_remote_testing' in group_names" 
 
 # Needed so picoCTF-web can log in to get deployment information
 - name: Set password for admin user
   user:
     name: "{{ ansible_user }}"
     password: "{{ shell_admin_password_crypt }}"
+  no_log: True
 
 - include: dependencies.yml
   tags:

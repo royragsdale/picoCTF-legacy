@@ -22,20 +22,18 @@ This is merely to demonstrate that such a configuration is possible in case it i
 
 [TODO] Not yet implemented.
 
-### [Local Staging Simulation](./local_staging)
-This configuration matches the two tier staging/production configuration that is defined in [terraform](../terraform).  It is useful to ensure the competition could deploy to the cloud without having to incur any expense or network overhead. Also, even with terraform, local vms are much easier to create and destroy than AWS instances.
+### [Local Testing](./local_testing)
+This configuration matches the two tier testing/production configuration that is defined in [terraform](../terraform).  It is useful to ensure the competition could deploy to the cloud without having to incur any expense or network overhead. Also, even with terraform, local vms are much easier to create and destroy than AWS instances.
 
-Since this configuration is intended for end to end testing of the automation process, it does not automatically conduct any provisioning. Once you have brough the virtual machines up with `vagrant up` get it provisioned and running with the following command from the ansible directory:
+Since this configuration is intended for end to end testing of the automation process, it does not automatically conduct any provisioning. Once you have brought the virtual machines up with `vagrant up` you should provision it with the following command from the `ansible` directory:
     
-    ansible-playbook -i inventories/local_servers site.yml
+    ansible-playbook -i inventories/local_testing site.yml
 
 If you are on a Windows host, you will not be able to use `ansible` directly, but thanks to vagrant we have you taken care of with the [Deployment Jump Box](#deployment-jump-box) above.
 
-### [Packaged Staging Simulation](./packaged_staging)
-This configuration complements the [Local Staging Simulation](#local-staging-simulation) but rather than striving to accurately test the provisioning process, it utilizes pre-built images that have already been fully provisioned.  This greatly accelerates the speed with which you can create and destroy machine to test various changes.  The downside is that you are no longer starting from a clean slate.
+#### [Local Testing Packaged](./local_testing_packaged)
+This configuration complements [Local Testing](#local-testing) but rather than striving to accurately test the provisioning process, it utilizes pre-built images that already have the dependencies installed.  This greatly accelerates the speed with which you can create and destroy machines to test various changes.  The downside is that you are no longer starting from a clean slate.
 
-This requires first building the provisioned vagrant boxes.
- 
 [TODO] Not yet implemented.
 
 ## Other Configurations?

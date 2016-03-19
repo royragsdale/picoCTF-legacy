@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
         ansible.playbook            = "site.yml"
         ansible.limit               = "shell"
 	    ansible.provisioning_path   = "/picoCTF/ansible/"
-        ansible.inventory_path      = "/picoCTF/ansible/inventories/dev_servers"
+        ansible.inventory_path      = "/picoCTF/ansible/inventories/local_development"
     end
 
     shell.vm.provider "virtualbox" do |vb|
@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
         ansible.playbook            = "site.yml"
         ansible.limit               = ["db","web"]
 	    ansible.provisioning_path   = "/picoCTF/ansible/"
-        ansible.inventory_path      = "/picoCTF/ansible/inventories/dev_servers"
+        ansible.inventory_path      = "/picoCTF/ansible/inventories/local_development"
     end
 
     web.vm.provider "virtualbox" do |vb|

@@ -11,20 +11,13 @@ This automation drastically simplifies the process of getting blank machines to 
 ### Provisioning Production on AWS 
 If you are using the included Terraform configurations to create your infrastructure on AWS, these are the steps necessary to actually install, configure and launch the picoCTF platform.
 
-1. Update the inventory (`inventories/staging_servers`) matches what Terraform has deployed.
+1. Update the inventory (`inventories/remote_testing`) matches what Terraform has deployed.
     - This is required until we pull a dynamic inventory. 
     - `terraform show`
 2. Check that syntax is correct and that playbooks and roles will all run
-    - `ansible-playbook site.yml --check -i inventories/staging_servers`
-3. Run the playbook for the site with on the staging hosts
-    - `ansible-playbook site.yml -i inventories/staging_servers`
-
-## Setup Ansible
-1. Install
-    - <http://docs.ansible.com/ansible/intro_installation.html#getting-ansible> 
-    - pip option  
-        - `sudo apt-get install python-pip`
-        - `sudo pip install ansible`
+    - `ansible-playbook site.yml --check -i inventories/remote_testing`
+3. Run the playbook for the site with on the remote testing hosts
+    - `ansible-playbook site.yml -i inventories/remote_testing`
 
 ### For use with private repos
 In order to deploy the picoCTF platform from a private repository you will need a read only deploy key added to the repo.

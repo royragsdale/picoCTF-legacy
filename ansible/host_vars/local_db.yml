@@ -1,4 +1,0 @@
----
-# Host Variables for local db
-
-ansible_host: 10.0.1.20

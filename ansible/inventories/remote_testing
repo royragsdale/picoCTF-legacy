@@ -1,0 +1,19 @@
+
+# These are simply example IP addresses. In order to use this inventory
+# please first change these values to match the results from Terraform
+# or your own manual configuration of remote servers
+
+[env_remote_testing:children]
+db
+shell
+web
+
+[db]
+remote_testing_db      ansible_host=203.0.113.254
+
+[shell]
+remote_testing_shell   ansible_host=203.0.113.254
+
+[web]
+remote_testing_web     ansible_host=203.0.113.254
+

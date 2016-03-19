@@ -10,8 +10,9 @@
     owner: root
     group: root
     mode: 0644
+  no_log: True
 
-# HTTP Basic Auth used to secure the staging competition site
+# HTTP Basic Auth used to secure remote testing competition sites
 - name: Setup HTTP basic auth
   htpasswd:
     path: "/etc/nginx/.htpasswd"
