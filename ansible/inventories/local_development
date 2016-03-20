@@ -1,11 +1,13 @@
 
+[common:children]
+env_local_development
+
 [env_local_development:children]
 db
 shell
 web
 
-
-# In a development environement, or simple deployment the database is collocated
+# In a development environement, or simple deployment collocate the database
 # with the web server
 [db]
 dev_web     ansible_connection=local
