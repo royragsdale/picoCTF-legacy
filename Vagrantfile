@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
     shell.vm.synced_folder ".", "/vagrant", disabled: true
     shell.vm.synced_folder ".", "/picoCTF"
 
-    shell.vm.provision "shell", path: "ansible/scripts/install_ansible.sh"
+    shell.vm.provision "shell", path: "vagrant/provision_scripts/install_ansible.sh"
 	shell.vm.provision :ansible_local do |ansible|
         ansible.playbook            = "site.yml"
         ansible.limit               = "shell"
@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
     web.vm.synced_folder ".", "/vagrant", disabled: true
     web.vm.synced_folder ".", "/picoCTF"
 
-    web.vm.provision "shell", path: "ansible/scripts/install_ansible.sh"
+    web.vm.provision "shell", path: "vagrant/provision_scripts/install_ansible.sh"
 	web.vm.provision :ansible_local do |ansible|
         ansible.playbook            = "site.yml"
         ansible.limit               = ["db","web"]
