@@ -16,8 +16,13 @@
     - dependency
 
 - include: nginx.yml
+
 - include: picoCTF-webapp.yml
+  tags:
+    - devploy
+
 - include: gunicorn.yml
+
 - include: auto_configure.yml
 
 - name: Ensure nginx is running

@@ -1,0 +1,18 @@
+# inventory to run provisioning on local development from host
+
+[common:children]
+env_local_development
+
+[env_local_development:children]
+db
+shell
+web
+
+[db]
+dev_web     ansible_host=192.168.2.2
+
+[shell]
+dev_shell   ansible_host=192.168.2.3
+
+[web]
+dev_web     ansible_host=192.168.2.2 

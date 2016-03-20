@@ -53,3 +53,12 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
   no_log: True
+
+
+# [TODO] possible from devploy
+##Start Stats caching daemon
+#daemon_manager -d $ROOT/daemons cache_stats
+
+# Clear the cache
+#api_manager database clear cache
+
