@@ -1,0 +1,45 @@
+---
+# Playbook to deploy problems on the shell server
+
+- name: Ensure deb and bundle directories exists
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ deb_dir }}"
+    - "{{ bundle_dir }}"
+
+- name: Package problem sources
+  command: "shell_manager package -o {{ deb_dir }} {{ item }}"
+  with_items: "{{ problem_source_dirs }}"
+
+- name: Get a list of deb packages
+  shell: "ls {{ deb_dir }}/*.deb"
+  register: deb_files
+
+- name: Install problems
+  apt:
+    deb: "{{ item }}"
+  with_items: deb_files.stdout_lines
+
+- name: Package bundle sources
+  command: "shell_manager bundle -o {{ bundle_dir }} {{ item.source }}"
+  with_items: "{{ bundles }}"
+
+- name: Get a list of bundle packages
+  shell: "ls {{ bundle_dir }}/*.deb"
+  register: bundle_files
+
+- name: Install bundles
+  apt:
+    deb: "{{ item }}"
+  with_items: bundle_files.stdout_lines
+
+- name: Install any missing dependencies
+  apt:
+    upgrade: full
+    force: yes
+
+- name: Deploy Bundles
+  command: "shell_manager deploy -n {{ item.instances }} -b {{item.name}}"
+  with_items: "{{ bundles }}"

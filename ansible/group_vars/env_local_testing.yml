@@ -19,6 +19,15 @@ htpasswd_accounts:
 # Enviromentmantal specific shell settings
 shell_hostname: "10.0.1.11"
 
+auto_add_shell:         True
+auto_load_problems:     True
+auto_start_competition: True
+
+shell_name: Local-Testing-Shell     # no spaces
+shell_host: "{{ shell_hostname }}"
+shell_user: "{{ ansible_user }}"
+shell_pass: "{{ ansible_ssh_pass }}"
+
 # generated with: mkpasswd --method=SHA-512 vagrant
 # Default insecure "vagrant" password
 shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
@@ -34,4 +43,23 @@ env_db_users:
     password: "{{ picoWeb_db_password }}",
     roles: readWrite,
     database: "{{ picoCTF_db_name }}"
+  }
+
+# Enviromentmantal specific problem settings
+deb_dir:    "/picoCTF-debs"
+bundle_dir: "/picoCTF-bundles"
+
+problem_source_dirs:
+  - "{{ pico_base_dir }}/picoCTF-problems/Examples"
+
+bundles:
+  - {
+    source: "{{ pico_base_dir }}/picoCTF-problems/Examples/Bundles/challenge-sampler.json",
+    name: "challenge-sampler",
+    instances: 2
+  }
+  - {
+    source: "{{ pico_base_dir }}/picoCTF-problems/Examples/Bundles/challenge-sampler-tools.json",
+    name: "challenge-sampler-tools",
+    instances: 1
   }

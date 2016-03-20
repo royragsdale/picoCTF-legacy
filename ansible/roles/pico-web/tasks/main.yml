@@ -22,7 +22,7 @@
 - include: nginx.yml
 - include: picoCTF-webapp.yml
 - include: gunicorn.yml
-#- include: monit.yml
+- include: auto_configure.yml
 
 - name: Ensure nginx is running
   service: 
