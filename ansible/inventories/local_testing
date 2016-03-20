@@ -8,10 +8,10 @@ shell
 web
 
 [db]
-local_db        ansible_host=10.0.1.20
+local_db        ansible_host=10.0.1.20      hostname=pico-local-testing-db
 
 [shell]
-local_shell     ansible_host=10.0.1.11
+local_shell     ansible_host=10.0.1.11      hostname=pico-local-testing-shell
 
 [web]
-local_web       ansible_host=10.0.1.10
+local_web       ansible_host=10.0.1.10      hostname=pico-local-testing-web

@@ -12,11 +12,11 @@ shell
 web
 
 [db]
-remote_testing_db      ansible_host=203.0.113.254
+remote_testing_db      ansible_host=203.0.113.254   hostname=pico-aws-testing-db
 
 [shell]
-remote_testing_shell   ansible_host=203.0.113.254
+remote_testing_shell   ansible_host=203.0.113.254   hostname=pico-aws-testing-shell
 
 [web]
-remote_testing_web     ansible_host=203.0.113.254
+remote_testing_web     ansible_host=203.0.113.254   hostname=pico-aws-testing-web
 
