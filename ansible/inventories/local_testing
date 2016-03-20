@@ -1,4 +1,7 @@
 
+[common:children]
+env_local_testing
+
 [env_local_testing:children]
 db
 shell

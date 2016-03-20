@@ -3,6 +3,9 @@
 # please first change these values to match the results from Terraform
 # or your own manual configuration of remote servers
 
+[common:children]
+env_remote_testing
+
 [env_remote_testing:children]
 db
 shell
