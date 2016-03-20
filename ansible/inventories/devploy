@@ -9,10 +9,10 @@ shell
 web
 
 [db]
-dev_web     ansible_host=192.168.2.2
+dev_web     ansible_host=192.168.2.2    hostname=pico-local-dev-web-db
 
 [shell]
-dev_shell   ansible_host=192.168.2.3
+dev_shell   ansible_host=192.168.2.3    hostname=pico-local-dev-shell
 
 [web]
-dev_web     ansible_host=192.168.2.2 
+dev_web     ansible_host=192.168.2.2    hostname=pico-local-dev-web-db

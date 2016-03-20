@@ -10,10 +10,10 @@ web
 # In a development environement, or simple deployment collocate the database
 # with the web server
 [db]
-dev_web     ansible_connection=local
+dev_web     ansible_connection=local    hostname=pico-local-dev-web-db
 
 [shell]
-dev_shell   ansible_connection=local
+dev_shell   ansible_connection=local    hostname=pico-local-dev-shell
 
 [web]
-dev_web     ansible_connection=local
+dev_web     ansible_connection=local    hostname=pico-local-dev-web-db
