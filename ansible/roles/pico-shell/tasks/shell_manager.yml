@@ -48,6 +48,6 @@
 
 - name: Copy securebashrc to deployed location
   copy:
-    dest: "/opt/hacksports/extra/"
+    dest: "/opt/hacksports/config/"
     src:  "{{ securebashrc_src }}"
     remote_src: True 
