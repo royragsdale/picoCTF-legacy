@@ -56,20 +56,20 @@ LoginForm = React.createClass
               {if @props.emailFilter.length > 0 and not @props.rid then showEmailFilter() else <span/>}
             </div>
             <Col md={6}>
-              <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name"/>
+              <Input type="text" id="first-name" valueLink={@props.firstname} label="First Name" placeholder="Jane"/>
             </Col>
             <Col md={6}>
-              <Input type="text" id="last-name" valueLink={@props.lastname} label="Last Name"/>
+              <Input type="text" id="last-name" valueLink={@props.lastname} label="Last Name" placeholder="Doe"/>
             </Col>
           </Row>
           <Row>
             <Col md={12}>
-              <Input type="email" id="email" valueLink={@props.email} label="E-mail"/>
+              <Input type="email" id="email" valueLink={@props.email} label="E-mail" placeholder="email@example.com"/>
             </Col>
           </Row>
           <Row>
             <Col md={6}>
-              <Input type="text" id="affiliation" valueLink={@props.affiliation} label="Affiliation"/>
+              <Input type="text" id="affiliation" valueLink={@props.affiliation} label="Affiliation" placeholder="Example School, Pittsbugh, PA"/>
             </Col>
             <Col md={6}>
               <Input type="select" label="Status" placeholder="Competitor" valueLink={@props.eligibility}>
