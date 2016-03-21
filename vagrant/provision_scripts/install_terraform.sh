@@ -32,5 +32,3 @@ then
 else
     echo "Terraform already in PATH" 
 fi
-
-echo "Done"
