@@ -5,12 +5,13 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "jump", primary: true do |jump|
 
-    jump.vm.box = "debian/contrib-jessie64"
+    jump.vm.box = "picoCTF/shell-base"
 
     jump.vm.synced_folder ".", "/vagrant", disabled: true
     jump.vm.synced_folder ".", "/picoCTF"
 
     jump.vm.provision "shell", path: "../provision_scripts/install_ansible.sh"
+    jump.vm.provision "shell", path: "../provision_scripts/install_terraform.sh", privileged: false
 
     jump.vm.provider "virtualbox" do |vb|
         vb.name = "picoCTF-jump-dev"
