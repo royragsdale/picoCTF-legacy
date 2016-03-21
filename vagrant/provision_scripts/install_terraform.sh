@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Minimal script to install Terraform as described:
 # https://www.terraform.io/intro/getting-started/install.html
@@ -9,14 +9,28 @@ TERRAFORM_URL=https://releases.hashicorp.com/terraform/0.6.13/terraform_0.6.13_l
 TERRAFORM_ZIP=terraform_0.6.13_linux_amd64.zip
 
 sudo apt-get install -y unzip
+
 sudo mkdir -p /usr/local/terraform
 
+# Check if Terraform is already installed
 if [ ! -f /usr/local/terraform/terraform ]
 then
-    wget -nv $TERRAFORM_URL
+    # remove any failed downloads
+    rm $TERRAFORM_ZIP
+    echo "Downloading Terraform Binary"
+    wget $TERRAFORM_URL
     sudo unzip $TERRAFORM_ZIP -d /usr/local/terraform
+else
+    echo "Terraform is already installed"
 fi
 
-# [TODO] puts as root
-echo "#Add Terraform to path" >> $HOME/.profile
-echo "PATH=$PATH:/usr/local/terraform" >> $HOME/.profile
+if [[ ! $(grep terraform ~/.profile) ]]
+then
+    echo "Adding Terraform to PATH"
+    echo "#Add Terraform to path" >> $HOME/.profile
+    echo "PATH=$PATH:/usr/local/terraform" >> $HOME/.profile
+else
+    echo "Terraform already in PATH" 
+fi
+
+echo "Done"

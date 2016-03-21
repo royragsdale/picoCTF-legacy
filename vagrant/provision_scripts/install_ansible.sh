@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Minimal script to install ansible via pip as described:
 # http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip
