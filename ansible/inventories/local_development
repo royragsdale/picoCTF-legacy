@@ -1,8 +1,11 @@
+# Inventory to provision/administer the local development environment
+# Used by the toplevel Vagrantfile
+# Also for manual provisioning when ansible is used within a vm
 
 [common:children]
-env_local_development
+local_development
 
-[env_local_development:children]
+[local_development:children]
 db
 shell
 web

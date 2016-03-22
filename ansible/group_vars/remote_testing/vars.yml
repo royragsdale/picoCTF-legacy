@@ -5,7 +5,7 @@
 ansible_user: admin
 
 # Enviromentmantal specific web settings
-web_fqdn: "staging.picoctf.com"
+web_fqdn: "example.picoctf.com"
 nginx_server_name: "{{ web_fqdn }}"
 flask_app_server_name: "{{ web_fqdn }}"
 web_address: "http://203.0.113.254"
@@ -29,3 +29,7 @@ env_db_users:
     roles: readWrite,
     database: "{{ picoCTF_db_name }}"
   }
+
+# This key should be stored under group_vars/deploy_keys, ignored from version control
+# [TODO] use vault
+#deploy_private_key_file: "deploy.picoCTF.public-repo.id_rsa" 

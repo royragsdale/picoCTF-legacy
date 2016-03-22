@@ -1,8 +1,9 @@
+# Inventory to provision/administer the local testing environment
 
 [common:children]
-env_local_testing
+local_testing
 
-[env_local_testing:children]
+[local_testing:children]
 db
 shell
 web
