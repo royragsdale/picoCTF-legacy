@@ -1,12 +1,13 @@
+# Inventory to provision/administer a remote development environment
 
-# These are simply example IP addresses. In order to use this inventory
+# These are example IP addresses. In order to use this inventory
 # please first change these values to match the results from Terraform
-# or your own manual configuration of remote servers
+# or your own manual configuration of remote servers.
 
 [common:children]
-env_remote_testing
+remote_testing
 
-[env_remote_testing:children]
+[remote_testing:children]
 db
 shell
 web

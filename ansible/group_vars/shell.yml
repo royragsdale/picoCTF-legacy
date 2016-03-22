@@ -36,3 +36,7 @@ pam_auth_src: "{{ pico_shell_manager_dir }}/config/pam_auth.py"
 sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
 no_aslr_wrapper_src: "{{ pico_shell_manager_dir }}/extra/no_aslr_wrapper.c"
 securebashrc_src: "{{ pico_shell_manager_dir }}/config/securebashrc"
+
+# problem settings
+deb_dir:    "/picoCTF-debs"
+bundle_dir: "/picoCTF-bundles"

@@ -1,9 +1,10 @@
-# inventory to run provisioning on local development from host
+# Inventory to provision/administer local development environment
+# Use external to the virtual machines (host machine or jump box)
 
 [common:children]
-env_local_development
+local_development
 
-[env_local_development:children]
+[local_development:children]
 db
 shell
 web

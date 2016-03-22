@@ -1,0 +1,5 @@
+---
+# Defaults for the common role. These are the loweset prioirty varaibles
+# and can easily be overridden in group_vars, host_vars, or command line.
+
+private_repo: False

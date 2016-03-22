@@ -3,14 +3,12 @@
 # per the MongoDB on EC2 recommendations
 # https://docs.mongodb.org/ecosystem/platforms/amazon-ec2/#manually-deploy-mongodb-on-ec2
 
-
 # For AWS we want to setup mongo to store to an EBS block device
-# only perform for specific remote groups
 - name: Ensure filesystem exists on EBS Block device for MongoDB data and journal
   filesystem: 
     fstype: "{{ db_data_device_fstype }}"
     dev: "{{ db_data_device }}"
-  when: "'env_remote_testing' in group_names"
+  when: on_aws
 
 - name: Ensure EBS device for MongoDB data and journal is mounted
   mount: 
@@ -19,7 +17,7 @@
     fstype: "{{ db_data_device_fstype }}"
     opts:  "{{ db_data_mount_opts }}"
     state: mounted
-  when: "'env_remote_testing' in group_names"
+  when: on_aws
 
 - name:  Ensure mongod user owns data and journal directory
   file:
