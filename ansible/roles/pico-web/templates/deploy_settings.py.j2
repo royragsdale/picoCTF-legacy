@@ -1,7 +1,7 @@
 
 MONGO_DB_NAME = "{{ picoCTF_db_name }}"
 MONGO_ADDR = "{{ db_private_ip }}"
-MONGO_PORT = "{{ mongodb_conf_port}}"
+MONGO_PORT = "{{ mongodb_conf_port | default(27017)}}"
 MONGO_USER = "picoWeb"
 MONGO_PW = "{{ picoWeb_db_password }}"
 

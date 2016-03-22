@@ -59,7 +59,7 @@ bundles:
 ##
 # Database settings (env specific)
 ##
-db_private_ip: 127.0.0.1
+db_private_ip: 10.0.1.20
 picoAdmin_db_password:  "insecure-password"
 picoWeb_db_password:    "insecure-password"
 
