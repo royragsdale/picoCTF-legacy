@@ -1,10 +1,6 @@
 ---
 # Playbook that installs and configures picoCTF-shell servers
 
-# Need to load passwords from the vault for remote environments
-- include_vars: group_vars/vault_remote_testing.yml
-  when: "'env_remote_testing' in group_names" 
-
 # Needed so picoCTF-web can log in to get deployment information
 - name: Set password for admin user
   user:
@@ -18,8 +14,11 @@
     - dependency
 
 - include: shell_manager.yml
+
 - include: nginx.yml
+
 - include: pam_and_services.yml
+
 - include: deploy_problems.yml
 
 # [TODO] - refactor
@@ -35,4 +34,3 @@
 # services
 #   sudo systemctl add-wants default.target shell_manager.target 
 # hardening
-

@@ -26,6 +26,7 @@ mongodb_conf_dbpath: "{{ db_data_path }}"                             # Director
 ###
 # AWS specific mount points (defined in Terrafrom - static)
 ##
+on_aws: False
 db_data_device: "/dev/xvdf"
 db_data_device_fstype: "ext4"
 db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"

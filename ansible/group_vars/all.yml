@@ -9,4 +9,3 @@
 pico_repo: "https://github.com/picoCTF/picoCTF.git"
 pico_branch: "master"
 pico_base_dir: "/picoCTF" 
-private_repo: false

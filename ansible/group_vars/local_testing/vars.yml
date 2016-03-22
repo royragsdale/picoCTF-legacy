@@ -1,54 +1,45 @@
 ---
-# Variables shared across all localhosts
+# Variables shared across all local testing hosts
 
 # vagrant/vagrant is the default configuration for Vagrant boxes
-ansible_user: vagrant
+ansible_user:     vagrant
 ansible_ssh_pass: vagrant
 
 
-# Enviromentmantal specific web settings
+##
+# Web settings (env specific)
+##
 web_fqdn: "localhost"
 nginx_server_name: "_"
 flask_app_server_name: "{{ web_fqdn }}"
+#[TODO] refactor based on "facts"
 web_address: "http://10.0.1.10"
 web_address_internal: "{{ web_address }}"
-enable_basic_auth: true
-htpasswd_accounts: 
-  - { user: "vagrant", password: "vagrant" }
 
-# Enviromentmantal specific shell settings
-shell_hostname: "10.0.1.11"
-
+# optional web automation
+enable_basic_auth:      False
 auto_add_shell:         True
 auto_load_problems:     True
 auto_start_competition: True
 
-shell_name: Local-Testing-Shell     # no spaces
+
+###
+# Shell Settings (env specific)
+###
+shell_hostname: "10.0.1.11"
+shell_name: Local-Development-Shell   # no spaces
 shell_host: "{{ shell_hostname }}"
 shell_user: "{{ ansible_user }}"
 shell_pass: "{{ ansible_ssh_pass }}"
-
-# generated with: mkpasswd --method=SHA-512 vagrant
-# Default insecure "vagrant" password
-shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
 shell_manager_deploy_secret: "**insecure-secret**"
 
-# Enviromentmantal specific database settings
-db_private_ip: 10.0.1.20
-picoAdmin_db_password: "insecure-password"
-picoWeb_db_password: "insecure-password"
-env_db_users:
-  - {
-    name: picoWeb,
-    password: "{{ picoWeb_db_password }}",
-    roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
-  }
+# default insecure "vagrant" password (mkpasswd --method=SHA-512 vagrant)
+shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
 
-# Enviromentmantal specific problem settings
-deb_dir:    "/picoCTF-debs"
-bundle_dir: "/picoCTF-bundles"
 
+##
+# Problem Settings (env specific)
+##
 problem_source_dirs:
   - "{{ pico_base_dir }}/picoCTF-problems/Examples"
 
@@ -62,4 +53,20 @@ bundles:
     source: "{{ pico_base_dir }}/picoCTF-problems/Examples/Bundles/challenge-sampler-tools.json",
     name: "challenge-sampler-tools",
     instances: 1
+  }
+
+
+##
+# Database settings (env specific)
+##
+db_private_ip: 127.0.0.1
+picoAdmin_db_password:  "insecure-password"
+picoWeb_db_password:    "insecure-password"
+
+env_db_users:
+  - {
+    name: picoWeb,
+    password: "{{ picoWeb_db_password }}",
+    roles: readWrite,
+    database: "{{ picoCTF_db_name }}"
   }

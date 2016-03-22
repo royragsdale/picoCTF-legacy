@@ -1,10 +1,6 @@
 ---
 # Playbook that installs and configures picoCTF-web servers
 
-# Need to load passwords from the vault for remote environments
-- include_vars: group_vars/vault_remote_testing.yml
-  when: "'env_remote_testing' in group_names"
-
 - include: dependencies.yml
   tags:
     - network

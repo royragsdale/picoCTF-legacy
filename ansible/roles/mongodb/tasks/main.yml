@@ -4,11 +4,6 @@
 # https://github.com/ansible/ansible-examples/tree/master/mongodb
 # https://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian/
 # https://docs.mongodb.org/ecosystem/platforms/amazon-ec2/
-# This does not include adding any content
-
-# Need to load passwords from the vault for remote environments
-- include_vars: group_vars/vault_remote_testing.yml
-  when: "'env_remote_testing' in group_names" 
 
 - include: install.yml
   tags:
@@ -16,7 +11,9 @@
     - dependency
 
 - include: configure_storage.yml
+
 - include: configure_mongo.yml
+
 - include: configure_auth.yml
 
 - name: Ensure mongodb is started
