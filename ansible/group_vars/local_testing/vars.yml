@@ -13,7 +13,7 @@ web_fqdn: "localhost"
 nginx_server_name: "_"
 flask_app_server_name: "{{ web_fqdn }}"
 #[TODO] refactor based on "facts"
-web_address: "http://10.0.1.10"
+web_address: "http://10.0.5.10"
 web_address_internal: "{{ web_address }}"
 
 # optional web automation
@@ -26,7 +26,7 @@ auto_start_competition: True
 ###
 # Shell Settings (env specific)
 ###
-shell_hostname: "10.0.1.11"
+shell_hostname: "10.0.5.11"
 shell_name: Local-Development-Shell   # no spaces
 shell_host: "{{ shell_hostname }}"
 shell_user: "{{ ansible_user }}"
@@ -59,7 +59,7 @@ bundles:
 ##
 # Database settings (env specific)
 ##
-db_private_ip: 10.0.1.20
+db_private_ip: 10.0.5.20
 picoAdmin_db_password:  "insecure-password"
 picoWeb_db_password:    "insecure-password"
 
