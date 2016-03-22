@@ -1,42 +1,18 @@
 ---
 # Variables shared across all database deloyments
 
-# [TODO] consider how to abstract
-###
-# AWS specific mount points
-##
-# Defined in Terrafrom (temporarily static)
-db_data_device: "/dev/xvdf"
-db_data_device_fstype: "ext4"
-db_data_mount_opts: "defaults,auto,noatime,noexec 0 0"
+# These are variables you are most likely to consider changing or overloading
+# in an environemental specific group_vars file.  Addtional varaibles that can
+# be overloaded are contained in roles/mongodb/defaults/main.yml
 
+picoCTF_db_name: picoCTF3
 db_data_path: "/data"
 
-
-# MongoDB Configuration Variables (used in configure_mongo.yml task)
-mongodb_user: mongodb
-mongodb_daemon_name: mongod
-
-mongodb_apt_keyserver: keyserver.ubuntu.com
-mongodb_apt_key_id: EA312927
-mongodb_repo: 'deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.2 main'
-
-mongodb_conf_auth: true                           # Run with security
-mongodb_conf_bind_ip: "0.0.0.0"                   # IP addresses to listen on (Static)
-mongodb_conf_dbpath: "{{ db_data_path }}"         # Directory for datafiles (Static)
-mongodb_conf_nohttpinterface: true                # Disable http interface
-mongodb_conf_journal: true                        # Enable journaling
-mongodb_conf_logappend: true                      # Append to logpath instead of over-writing
-mongodb_conf_logpath: /var/log/mongodb/{{ mongodb_daemon_name }}.log # Log file to send write to instead of stdout
-mongodb_conf_port: 27017                          # Specify port number
-
 # MongoDB User Variables (used in configure_auth.yml task)
-# Passwords are stored outside version control [TODO] move to vault
+# Passwords should be stored outside version control or in an 
+# ansible-vault protected file.
 initial_admin_name: picoAdmin
 initial_admin_password: "{{ picoAdmin_db_password }}"
 
-
-picoCTF_db_name: picoCTF3
-
-# Add additional users in the environement specific group_vars file
+# Add additional users an environement specific group_vars file
 mongodb_users: "{{ env_db_users }}"
