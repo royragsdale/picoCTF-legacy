@@ -27,7 +27,7 @@ Vagrant.configure("2") do |config|
         ansible.inventory_path      = "/picoCTF/ansible/inventories/local_development"
     end
 
-    shell.vm.provision "shell", path: "minimize_box.sh"
+    shell.vm.provision "shell", path: "../provision_scripts/minimize_box.sh"
     
     shell.vm.provider "virtualbox" do |vb|
         vb.name = "picoCTF-shell-base-builder"
@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
         ansible.inventory_path      = "/picoCTF/ansible/inventories/local_development"
     end
 
-    web.vm.provision "shell", path: "minimize_box.sh"
+    web.vm.provision "shell", path: "../provision_scripts/minimize_box.sh"
 
     web.vm.provider "virtualbox" do |vb|
         vb.name = "picoCTF-web-base-builder"
