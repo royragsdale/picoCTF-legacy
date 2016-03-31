@@ -1,12 +1,10 @@
-# Variables to deploy picoCTF to AWS
-# provided defaults can be overridden in terraform.tfvars
+# Varaibles used by the single_tier_aws module
 
-# AWS Credentials
-# Currently configured to use environment variables. Consult the documentation
-# for additional configuration methods. https://www.terraform.io/docs/providers/aws/
-#variable "access_key" {}
-#variable "secret_key" {}
-
+###
+# Input Variables:
+# These are sane defaults that can be overloaded in an environment specific 
+# configuration (eg: production, testing).
+###
 
 # SSH
 variable "key_name" {
@@ -18,7 +16,6 @@ variable "public_key_path" {
     default = "~/.ssh/picoCTF_production_rsa.pub"
 }
 
-
 # AWS Configuration
 variable "region" {
     description = "AWS Region to launch resources in"
@@ -26,13 +23,12 @@ variable "region" {
 }
 variable "availability_zone" {
     description = "AWS Availability zone to launch resources in"
-    default = "us-east-1d"
+    default = "us-east-1b"
 }
 variable "user" {
     description = "User to connect to machines with"
     default = "admin"
 }
-
 
 # Network
 variable "vpc_cidr" {
@@ -52,7 +48,6 @@ variable "shell_private_ip" {
     default = "10.0.1.11"
 }
 
-
 # Instances
 variable "web_instance_type" {
     description = "AWS instance type for web server"
@@ -63,7 +58,6 @@ variable "shell_instance_type" {
     default = "t2.micro"
 }
 
-
 # EBS Volumes
 variable "db_ebs_data_size" {
     description = "Size for database persistent store"
@@ -73,7 +67,6 @@ variable "db_ebs_data_device_name" {
     description = "Device to map database persistent store to"
     default = "/dev/xvdf"
 }
-
 
 # Tags
 variable "competition_tag" {
@@ -94,7 +87,6 @@ variable "db_ebs_name" {
     description = "Name tag of database Elastic Block Storage"
     default = "picoCTF-db-ebs"
 }
-
 
 # Default AMI mapping
 # Debian Jessie 8.3 hvm x86_64 ebs
