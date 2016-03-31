@@ -12,6 +12,7 @@ Vagrant.configure("2") do |config|
 
     jump.vm.provision "shell", path: "../provision_scripts/install_ansible.sh"
     jump.vm.provision "shell", path: "../provision_scripts/install_terraform.sh", privileged: false
+    jump.vm.provision "shell", path: "../provision_scripts/install_jump_utilities.sh"
 
     jump.vm.provider "virtualbox" do |vb|
         vb.name = "picoCTF-jump-dev"
