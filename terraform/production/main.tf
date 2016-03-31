@@ -1,13 +1,10 @@
-# The primary terraform configuration to deploy picoCTF to AWS
+# Terraform configuration to deploy picoCTF to AWS (production)
 
 ###
-# This deployment configuration instantiates a single tier infrastructure for
-# running the picoCTF platform on AWS.  This infrastructure is fully capable 
-# of hosting a live CTF. Once deployed (with terraform) this infrastructure
-# should be provisioned, configured, and administered with the included ansible 
-# playbooks.
+# This configuration instantiates a single tier infrastructure for running the
+# picoCTF platform on AWS. Once deployed this infrastructure can be
+# provisioned, configured, and administered with ansible.
 ###
-
 
 # These are the only variables you must explicitly configure as they determine
 # where AWS will launch your resources
@@ -20,25 +17,20 @@ variable "availability_zone" {
     default = "us-east-1b"
 }
 
-
 # AWS Specific config (single region)
-# Currently configured to use environment variables for access_key and secret_key.
-# Consult the documentation for additional configuration methods
-# https://www.terraform.io/docs/providers/aws/
+# Configured to get access_key and secret_key from  environment variables
+# For additional methods: https://www.terraform.io/docs/providers/aws/
 provider "aws" {
+    region = "${var.region}"
     #access_key = "${var.access_key}"
     #secret_key = "${var.secret_key}"
-    region = "${var.region}"
 }
 
 ###
 # Environmental Configuration
 # All variables are currently commented out because the defaults for the
 # single_tier_aws module match a production deployment configuration.
-# If you want to make changes it is recommended that you copy this 
-# directory to something named for your competition and then uncomment
-# accordingly. See the testing environment for an example of variables
-# being overloaded.
+# See the testing environment for an example of variables being overloaded.
 ###
 
 # Create single tier infrastructure with environmental configuration
@@ -52,7 +44,7 @@ module "single_tier_aws" {
 
     ## SSH
     #key_name = "pico_production"
-    #public_key_path = "~/.ssh/pico_production_rsa.pub"     # Ensure this is created
+    #public_key_path = "~/.ssh/picoCTF_production_rsa.pub"     # Ensure this is created
 
     ## Network
     #vpc_cidr = "10.0.0.0/16"
@@ -75,7 +67,6 @@ module "single_tier_aws" {
     #shell_name = "picoCTF-shell"
     #db_ebs_name = "picoCTF-db-ebs"
 }
-
 
 ###
 # Output:

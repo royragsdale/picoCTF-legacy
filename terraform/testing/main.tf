@@ -1,105 +1,65 @@
-# The primary terraform configuration to deploy picoCTF to AWS
+# Terraform configuration to deploy picoCTF to AWS (testing)
 
 ###
-# This deployment configuration composes the referenced modules into a platform
-# fully capable of hosting a CTF. Once deployed these machines should be
-# provisioned, configured, and administered with the included ansible playbooks.
+# This configuration instantiates a single tier infrastructure for running the
+# picoCTF platform on AWS. Once deployed this infrastructure can be
+# provisioned, configured, and administered with ansible.
 ###
+
+# These are the only variables you must explicitly configure as they determine
+# where AWS will launch your resources.
+variable "region" {
+    # Choose best for where your CTF is
+    default = "us-east-1"
+}
+variable "availability_zone" {
+    # Determine using the AWS CLI or Dashboard
+    default = "us-east-1b"
+}
 
 # AWS Specific config (single region)
-provider "aws" {}
-# Currently configured to use environment variables. Consult the documentation
-# for additional configuration methods. https://www.terraform.io/docs/providers/aws/
-#    access_key = "${var.access_key}"
-#    secret_key = "${var.secret_key}"
-#    region = "${var.region}"
-#}
-
-# Add SSH key which will be inserted as authorized in each machine
-resource "aws_key_pair" "auth" {
-    key_name   = "${var.key_name}"
-    public_key = "${file(var.public_key_path)}"
+# Configured to get access_key and secret_key from  environment variables
+# For additional methods: https://www.terraform.io/docs/providers/aws/
+provider "aws" {
+    region = "${var.region}"
+    #access_key = "${var.access_key}"
+    #secret_key = "${var.secret_key}"
 }
 
-# Create virtual network
-module "network" {
-    source = "../modules/network"
+###
+# Environmental Configuration
+# This demonstrates how the defaults for the single_tier_aws module can
+# optionally be customized and overloaded for different environements.
+###
 
-    # Variables from varaibles.tf and terraform.tfvars
-    vpc_cidr = "${var.vpc_cidr}"
-    public_subnet_cidr = "${var.public_subnet_cidr}"
-    availability_zone = "${var.availability_zone}"
-}
+# Create single tier infrastructure with environmental configuration
+module "single_tier_aws" {
+    source = "../modules/single_tier_aws"
 
-# Create virtual firewall rules
-module "security_groups" {
-    source = "../modules/security_groups"
-
-    # Variables output from prior modules
-    vpc_id = "${module.network.vpc_id}"
-}
-
-# Create virtual machines
-module "servers" {
-    source = "../modules/servers"
-
-    # Variables from varaibles.tf and terraform.tfvars
-    user = "${var.user}"
-    key_pair_id = "${aws_key_pair.auth.id}"
-
-    ami = "${lookup(var.amis, var.region)}"
+    ## AWS Configuration
+    region = "${var.region}"
     availability_zone = "${var.availability_zone}"
 
-    web_instance_type = "${var.web_instance_type}"
-    web_private_ip = "${var.web_private_ip}"
-    web_name = "${var.web_name}"
+    ## SSH
+    key_name = "pico_testing"
+    public_key_path = "~/.ssh/picoCTF_testing_rsa.pub"
 
-    shell_instance_type = "${var.shell_instance_type}"
-    shell_private_ip = "${var.shell_private_ip}"
-    shell_name = "${var.shell_name}"
+    ## Tags (use most module defaults)
+    env_tag = "testing"
 
-    competition_tag = "${var.competition_tag}"
-    env_tag = "${var.env_tag}"
-
-    # Variables output from prior modules
-    subnet_id = "${module.network.public_subnet_id}"
-    sg_web_id = "${module.security_groups.sg_web_id}"
-    sg_shell_id = "${module.security_groups.sg_shell_id}"
-    sg_db_access_id = "${module.security_groups.sg_db_access_id}"
+    ## Network (use module defaults, "10.0.0.0/16")
+    ## Instances (use module defaults "t2.micro")
+    ## EBS Volumes (use module defaults "10")
 }
 
-# Create persistent IP addresses
-module "elastic_ip" {
-    source = "../modules/elastic_ip"
+###
+# Output:
+# Return the following to the user for configuring the ansible inventory
+###
 
-    # Variables output from prior modules
-    web_id= "${module.servers.web_id}"
-    shell_id="${module.servers.shell_id}"
-}
-
-# Create persistent data stores
-module "ebs_volumes" {
-    source = "../modules/ebs_volumes"
-
-    # Variables from varaibles.tf and terraform.tfvars
-    availability_zone = "${var.availability_zone}"
-    db_ebs_data_size = "${var.db_ebs_data_size}"
-    db_ebs_data_device_name = "${var.db_ebs_data_device_name}"
-
-    db_ebs_name = "${var.db_ebs_name}"
-    competition_tag = "${var.competition_tag}"
-    env_tag = "${var.env_tag}"
-
-    # Variables output from prior modules
-    # Host the web server and the database on the same machine
-    db_host_id ="${module.servers.web_id}"
-}
-
-# Important variables to highlight at the end for provisioning the machines
-# These should be added to the appropriate ansible inventory
 output "Web Elastic IP address" {
-    value = "${module.elastic_ip.web_eip}"
+    value = "${module.single_tier_aws.web_eip}"
 }
 output "Shell Elastic IP address" {
-    value = "${module.elastic_ip.shell_eip}"
+    value = "${module.single_tier_aws.shell_eip}"
 }
