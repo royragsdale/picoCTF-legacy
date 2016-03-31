@@ -5,8 +5,9 @@
 
 # This will get the jump box to where it can deploy infrastrucutre to AWS
 
-TERRAFORM_URL=https://releases.hashicorp.com/terraform/0.6.13/terraform_0.6.13_linux_amd64.zip
-TERRAFORM_ZIP=terraform_0.6.13_linux_amd64.zip
+TERRAFORM_URL=https://releases.hashicorp.com/terraform/0.6.14/terraform_0.6.14_linux_amd64.zip
+TERRAFORM_ZIP=terraform_0.6.14_linux_amd64.zip
+
 
 sudo apt-get install -y unzip
 
