@@ -6,17 +6,17 @@ ansible_user: admin
 
 # If you are the picoCTF platform remotely you may have a private repository.
 # You likely want to configure a read only deployment key, or a machine key.
-#private_repo: True
-#deploy_private_key_file: "deploy.picoCTF.private-repo.id_rsa"
+private_repo: True
+deploy_private_key_file: "deploy.picoCTF.private-repo.id_rsa"
 
 ##
 # Web settings (env specific)
 ##
-web_fqdn: "example.picoctf.com"
+web_fqdn: "CHANGE_ME"
 nginx_server_name: "{{ web_fqdn }}"
 flask_app_server_name: "{{ web_fqdn }}"
 #[TODO] refactor based on "facts"
-web_address: "http://203.0.113.254"
+web_address: "{{ web_fqdn }}"
 web_address_internal: "http://10.0.1.10"
 htpasswd_accounts: "{{ vault_htpasswd_accounts }}"
 
@@ -30,7 +30,7 @@ auto_start_competition: True
 ###
 # Shell Settings (env specific)
 ###
-shell_hostname: "203.0.113.254"
+shell_hostname: "CHANGE_ME"
 shell_name: Remote-Testing-Shell
 shell_host: "{{ shell_hostname }}"
 shell_user: "{{ ansible_user }}"
@@ -67,7 +67,7 @@ bundles:
 # Database settings (env specific)
 ##
 on_aws: True
-db_private_ip: 10.0.1.20
+db_private_ip: 127.0.0.1
 picoAdmin_db_password:  "insecure-password"
 picoWeb_db_password:    "insecure-password"
 

@@ -16,3 +16,4 @@
     - tmux
     - git
     - python-passlib    # required for htpasswd module
+    - aptitude          # required for apt module
