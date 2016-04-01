@@ -40,9 +40,9 @@ app.config.from_envvar('APP_SETTINGS_FILE', silent=True)
 
 log = api.logger.use(__name__)
 
-session_cookie_domain = None
-session_cookie_path = "/"
-session_cookie_name = "flask"
+#session_cookie_domain = None
+#session_cookie_path = "/"
+#session_cookie_name = "flask"
 
 secret_key = ""
 
@@ -54,10 +54,10 @@ def config_app(*args, **kwargs):
 
     settings = api.config.get_settings()
 
-    app.secret_key = secret_key
-    app.config["SESSION_COOKIE_DOMAIN"] = session_cookie_domain
-    app.config["SESSION_COOKIE_PATH"] = session_cookie_path
-    app.config["SESSION_COOKIE_NAME"] = session_cookie_name
+#    app.secret_key = secret_key
+#    app.config["SESSION_COOKIE_DOMAIN"] = session_cookie_domain
+#    app.config["SESSION_COOKIE_PATH"] = session_cookie_path
+#    app.config["SESSION_COOKIE_NAME"] = session_cookie_name
 
     if settings["email"]["enable_email"]:
         app.config["MAIL_SERVER"] = settings["email"]["smtp_url"]
