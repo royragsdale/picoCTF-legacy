@@ -5,6 +5,10 @@
 ansible_user:     vagrant
 ansible_ssh_pass: vagrant
 
+# If you are the picoCTF platform remotely you may have a private repository.
+# You likely want to configure a read only deployment key, or a machine key.
+private_repo: True
+deploy_private_key_file: "deploy.picoCTF.private-repo.id_rsa"
 
 ##
 # Web settings (env specific)

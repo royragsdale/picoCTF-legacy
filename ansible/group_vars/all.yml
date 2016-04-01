@@ -6,6 +6,6 @@
 ###
 
 # To deploy a personal fork change to match your repository information
-pico_repo: "https://github.com/picoCTF/picoCTF.git"
+pico_repo: "git@github.com:picoCTF/picoCTF.git"
 pico_branch: "master"
 pico_base_dir: "/picoCTF" 
