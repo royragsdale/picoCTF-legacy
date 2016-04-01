@@ -18,8 +18,8 @@
     path: "/etc/nginx/.htpasswd"
     name: "{{ item.user }}"
     password: "{{ item.password }}"
-    owner: root
-    group: root
+    owner: www-data
+    group: www-data
     mode: 0640
   no_log: True
   with_items: "{{ htpasswd_accounts }}"
