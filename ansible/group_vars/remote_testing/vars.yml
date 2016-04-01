@@ -9,15 +9,11 @@ ansible_user: admin
 private_repo: True
 deploy_private_key_file: "deploy.picoCTF.private-repo.id_rsa"
 
-## Minimal Changes
-web_fqdn: "CHANGE_ME"
-shell_hostname: "CHANGE_ME"
-
 ##
 # Web settings (env specific)
 ##
+web_fqdn: "{{ ansible_host }}"
 nginx_server_name: "{{ web_fqdn }}"
-#[TODO] refactor based on "facts"
 web_address: "{{ web_fqdn }}"
 web_address_internal: "http://10.0.1.10"
 htpasswd_accounts: "{{ vault_htpasswd_accounts }}"
@@ -36,6 +32,7 @@ auto_start_competition: True
 ###
 # Shell Settings (env specific)
 ###
+shell_hostname: "{{ ansible_host }}"
 shell_name: Remote-Testing-Shell
 shell_host: "{{ shell_hostname }}"
 shell_user: "{{ ansible_user }}"
