@@ -23,7 +23,7 @@ web_address_internal: "http://10.0.1.10"
 htpasswd_accounts: "{{ vault_htpasswd_accounts }}"
 
 flask_app_server_name: "{{ web_fqdn }}"
-flask_app_cookie_domain: "{{ web_fqdn }}"
+flask_app_cookie_domain: "\"{{ web_fqdn }}\""
 flask_app_secret_key: "{{ vault_flask_app_secret_key }}"
 
 # optional web automation
