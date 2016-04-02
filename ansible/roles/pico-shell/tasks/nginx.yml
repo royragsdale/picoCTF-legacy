@@ -27,7 +27,6 @@
     state: absent
 
 # From shell_manager data files
-# [TODO] factor out
 - name: Ensure shellinabox directrory exists
   file:
     path: /opt/hacksports/shellinabox/
@@ -35,10 +34,7 @@
     owner: root
     group: root
 
-# put shellinabox in the right place
-# [TODO] factor out
 - name: Copy shellinabox.js to deployed location
   copy:
+    src:  "ShellInABox.js"
     dest: "{{ shellinabox_js_path }}"
-    src:  "{{ shellinabox_js_src }}"
-    remote_src: True

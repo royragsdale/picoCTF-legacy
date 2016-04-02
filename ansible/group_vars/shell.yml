@@ -10,32 +10,12 @@ pico_shell_manager_dir:  "{{pico_base_dir}}/picoCTF-shell"
 ###
 # Shellinabox configuration
 ###
-#[TODO] port over to this repo and clean up path
-shellinabox_deb_path: "{{ pico_base_dir}}/configs/shellinabox/shellinabox_2.18_amd64.deb"
 shellinabox_js_path: "/opt/hacksports/shellinabox/ShellInABox.js"
-shellinabox_js_src: "{{ pico_shell_manager_dir }}/config/ShellInABox.js"
 
 # configure nginx
 shell_site_config_name: "shell"
 shellinaboxd_port: "4242"
 shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
-
-# configure systemd service 
-shellinaboxd_service_name: "shellinaboxd.service"
-shell_service_path: "/lib/systemd/system"
-shellinaboxd_dst: "{{ shell_service_path }}/{{ shellinaboxd_service_name }}"
-
-
-###
-# Shell server configurations
-###
-# formerly deployed by setup.py data_files
-# [TODO] streamline
-pam_common_auth_src: "{{ pico_shell_manager_dir }}/config/common-auth"
-pam_auth_src: "{{ pico_shell_manager_dir }}/config/pam_auth.py"
-sshd_config_src: "{{ pico_shell_manager_dir }}/config/sshd_config"
-no_aslr_wrapper_src: "{{ pico_shell_manager_dir }}/extra/no_aslr_wrapper.c"
-securebashrc_src: "{{ pico_shell_manager_dir }}/config/securebashrc"
 
 # problem settings
 deb_dir:    "/picoCTF-debs"

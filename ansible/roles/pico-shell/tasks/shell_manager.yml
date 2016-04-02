@@ -24,8 +24,6 @@
     mode: 0600
 
 # From shell_manager  setup.py data_files
-# [TODO]  consolidate/more elegant
-
 - name: Ensure extra directory exists
   file:
     path: /opt/hacksports/extra
@@ -35,9 +33,8 @@
 
 - name: Copy no_aslr_wrapper.c to deployed location
   copy:
+    src:  "no_aslr_wrapper.c"
     dest: "/opt/hacksports/extra/"
-    src:  "{{ no_aslr_wrapper_src }}"
-    remote_src: True 
 
 - name: Ensure config directory exists
   file:
@@ -48,6 +45,5 @@
 
 - name: Copy securebashrc to deployed location
   copy:
-    dest: "/opt/hacksports/config/"
-    src:  "{{ securebashrc_src }}"
-    remote_src: True 
+    src:  "securebashrc"
+    dest: "/opt/hacksports/config/securebashrc"
