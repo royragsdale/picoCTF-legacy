@@ -7,9 +7,6 @@
     cache_valid_time: 3600
 
 # Extracted from picoCTF-platform/scripts/shell_setup.sh
-# [TODO] document need (why)
-# factored out to own 
-# nginx, shellinabox
 - name: Install picoCTF-shell system dependencies
   apt:
     name: "{{ item }}"
@@ -26,9 +23,10 @@
     - php5-cli
     - gcc-multilib
     - nginx           # used to serve shellinabox and challenge binaries
+    - shellinabox
 
     
-# [TODO] check if these are relevant for challene templates, or what?
+# [TODO] check if these are relevant for challenge templates, or what?
 # document need
 - name: Install uwsgi and plugins for shell server
   apt:
@@ -40,11 +38,6 @@
     - uwsgi-plugin-python3
     - uwsgi-plugin-python
     - python-flask
-
-# [TODO] factor out
-- name: Install shellinabox from .deb
-  apt:
-    deb: "{{ shellinabox_deb_path }}"
 
 # [TODO] factor out
 - name: Install pam dependencies

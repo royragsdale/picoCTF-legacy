@@ -3,30 +3,27 @@
 
 # Extracted from picoCTF-platform/scripts/shell_setup.sh
 # [TODO] service files need examination
-
-- name: Copy over shellinaboxd Service file
+- name: Template shellinaboxd Service file
   template: 
-    src: shellinaboxd.service.j2
-    dest: "{{ shellinaboxd_dst}}"
+    src: "shellinaboxd.service.j2"
+    dest: "/lib/systemd/system/shellinaboxd.service"
     owner: root
     group: root
     mode: 0644
 
 - name: Enable shellinaboxd Service
   service:
-    name: "{{ shellinaboxd_service_name }}"
+    name: "shellinaboxd.service"
     enabled: yes
 
 - name: Start shellinaboxd Service
   service:
-    name: "{{ shellinaboxd_service_name }}"
+    name: "shellinaboxd.service"
     state: started
 
-# [TODO] clean up what was formerly setup.py data_files
 - name: Copy over pam configs
   copy:
-    src:  "{{ pam_common_auth_src }}"
-    remote_src: yes
+    src: common-auth
     dest: /etc/pam.d/common-auth
     owner: root
     group: root
@@ -41,8 +38,7 @@
 
 - name: Copy pam_auth.py to deployed location
   copy:
-    src:  "{{ pam_auth_src }}"
-    remote_src: yes
+    src: pam_auth.py
     dest: "/lib/security/pam_auth.py"
     owner: root
     group: root
@@ -52,23 +48,18 @@
 # [TODO] should be templated
 - name: Copy over sshd configs
   copy:
-    src:  "{{ sshd_config_src }}"
-    remote_src: yes
+    src: sshd_config
     dest: /etc/ssh/sshd_config
     owner: root
     group: root
     mode: 0644
-
 
 - name: Restart ssh service to pickup new configs
   service:
     name: sshd
     state: restarted
 
-# TODO where should this go
 - name: Add competitiors group
   group: 
     name: competitors
     state: present
-
-
