@@ -2,6 +2,7 @@
 Problem deployment.
 """
 
+
 PROBLEM_FILES_DIR = "problem_files"
 STATIC_FILE_ROOT = "static"
 SYSTEMD_SERVICE_PATH = "/etc/systemd/system/"
@@ -72,6 +73,8 @@ def give_port():
                 context["port_map"][port] = (context["problem"], context["instance"])
                 return port
 
+# These are below because of a cirucular import issue with problem.py and give_port
+# [TODO] cleanup
 from os.path import join, isdir, isfile, commonprefix
 from random import Random, randint
 from abc import ABCMeta
@@ -83,19 +86,21 @@ from time import sleep
 from copy import copy, deepcopy
 from spur import RunProcessError
 from jinja2 import Environment, Template, FileSystemLoader
+
 from hacksport.problem import Remote, Compiled, Service, FlaskApp, PHPApp
 from hacksport.problem import File, ProtectedFile, ExecutableFile, PreTemplatedFile, Directory
 from hacksport.operations import create_user, execute
 from hacksport.status import get_all_problems, get_all_problem_instances
-from shell_manager.bundle import get_bundle
 
 from shell_manager.bundle import get_bundle, get_bundle_root
-from shell_manager.problem import get_problem, get_problem_root
+
+from shell_manager.util import get_problem, get_problem_root
 from shell_manager.util import HACKSPORTS_ROOT, STAGING_ROOT, DEPLOYED_ROOT, sanitize_name, get_attributes
 from shell_manager.util import FatalException
 
 import os, json, shutil, logging
 import functools, traceback
+
 
 logger = logging.getLogger(__name__)
 

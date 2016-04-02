@@ -11,7 +11,6 @@ import json
 from argparse import ArgumentParser
 from shell_manager.package import problem_builder
 from shell_manager.bundle import bundle_problems
-from shell_manager.problem import migrate_problems
 from shell_manager.problem_repo import update_repo
 from shell_manager.util import get_hacksports_config, place_default_config, FatalException
 from shell_manager.config import print_configuration, set_configuration_option, new_configuration_file
@@ -42,16 +41,6 @@ def main():
     publish_repo_parser.add_argument("repo_type", choices=["local", "remote"])
     publish_repo_parser.add_argument("package_paths", nargs="+", type=str, help="problem packages to publish.")
     publish_repo_parser.set_defaults(func=update_repo)
-
-    migration_parser = subparsers.add_parser("migrate", help="migrate legacy problem formats")
-    migration_parser.add_argument("-i", "--interactive", action="store_true", help="update problem fields interactively")
-    migration_parser.add_argument("-d", "--dry", action="store_true", help="don't make persistent changes.")
-    migration_parser.add_argument("-l", "--legacy-format", default="cyberstakes2014", choices=["cyberstakes2014"],
-                                  help="what format the problems are currently in.")
-    migration_parser.add_argument("-s", "--set-defaults", type=str, action="append",
-                                  default=[], help="field:value used to override new defaults.")
-    migration_parser.add_argument("problem_paths", nargs="+", type=str, help="paths to problems.")
-    migration_parser.set_defaults(func=migrate_problems)
 
     bundle_parser = subparsers.add_parser("bundle", help="create a bundle of problems")
     bundle_parser.add_argument("bundle_path", type=str, help="the name of the bundle.")

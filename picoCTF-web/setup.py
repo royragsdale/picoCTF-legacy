@@ -36,7 +36,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/picoCTF/picoCTF-web',
+    url='https://github.com/picoCTF/picoCTF',
 
     # Author details
     author='Christopher Ganas',
