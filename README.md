@@ -25,8 +25,8 @@ If you are coming from [picoCTF-Platform-2](https://github.com/picoCTF/picoCTF-p
 This project is broken down into a few discreet components that compose to build a robust and featureful CTF platform that remains flexible for adaptation. Specifically the project is consists of the following:
 
 1. [picoCTF-web](./picoCTF-web)
-2. [picoCTF-shell](.//picoCTF-shell)
-3. [picoCTF-problems](./picoCTF-problems)
+2. [picoCTF-shell](./picoCTF-shell)
+3. [problems](./problems)
 4. automation for [provisioning](./ansible) and [AWS deployment](./terraform)
 5. local deployment [examples](./vagrant)
 
@@ -36,14 +36,14 @@ The competitor facing web site, the API for running a CTF, and the management fu
 ### picoCTF-shell-manager
 The tools to create, package, and deploy challenges for use with the picoCTF platform. This supports the deployment of auto-generated challenge instances and provides competitors shell access to aid in challenge solving. The development [Vagrantfile](./Vagrantfile) deploys the shell-server as a second virtual machine (shell) at http://192.168.2.3/. If you want to modify challenge deployment primitives, this is the place to start.
 
-### picoCTF-problems
+### picoCTF Compatible Problems
 Example challenges that are compatible with the picoCTF platform.  These challenges can be easily shared, deployed, or adapted for use in a CTF.  The development [Vagrantfile](./Vagrantfile) installs these examples to the shell server and loads them into the web interface.  If you want to see how to create challenges or leverage the hacksport library, this is the place to start.
 
-### Provisioning with Ansible
-The tool we use to install, configure, deploy, and administer the picoCTF platform is [Ansible](https://www.ansible.com/).  This allows us to create flexible, parameterized, automated playbooks and roles that apply across development, staging, and production environments.  If you want to modify way the platform is configured, this is the place to start.
-
-### AWS deployment with Terraform
+### Terraform for deployment to AWS
 The tool we use to codify our infrastructure as code is [Terraform](https://www.terraform.io/). This allows a simple process for creating, destroying, and managing a public deployment of the platform.  If you want to run a live competition on AWS, this is the place to start.
+
+### Ansible for Provisioning
+The tool we use to install, configure, deploy, and administer the picoCTF platform is [Ansible](https://www.ansible.com/).  This allows us to create flexible, parameterized, automated playbooks and roles that apply across development, staging, and production environments.  If you want to modify way the platform is configured, this is the place to start.
 
 ## Contact
 
@@ -56,6 +56,8 @@ Copyright: Carnegie Mellon University
 License: [MIT](./LICENSE)
 
 Credits: David Brumley, Tim Becker, Chris Ganas, Peter Chapman, Jonathan Burket
+
+Email: opensource@picoctf.com
 
 ## Additional Credits
 
