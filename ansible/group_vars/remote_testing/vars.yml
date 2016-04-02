@@ -46,24 +46,6 @@ shell_pass: "{{ vault_shell_pass }}"
 shell_admin_password_crypt: "{{ vault_shell_admin_password_crypt }}"
 shell_manager_deploy_secret: " {{ vault_shell_manager_deploy_secret }}"
 
-##
-# Problem Settings (env specific)
-##
-problem_source_dirs:
-  - "{{ pico_base_dir }}/picoCTF-problems/Examples"
-
-bundles:
-  - {
-    source: "{{ pico_base_dir }}/picoCTF-problems/Examples/Bundles/challenge-sampler.json",
-    name: "challenge-sampler",
-    instances: 2
-  }
-  - {
-    source: "{{ pico_base_dir }}/picoCTF-problems/Examples/Bundles/challenge-sampler-tools.json",
-    name: "challenge-sampler-tools",
-    instances: 1
-  }
-
 
 ##
 # Database settings (env specific)
@@ -81,3 +63,8 @@ env_db_users:
     database: "{{ picoCTF_db_name }}"
     }
 mongodb_web_user: "picoWeb"
+
+##
+# Problem Settings
+# use role defaults (example problems and challenge-sampler bundle)
+##
