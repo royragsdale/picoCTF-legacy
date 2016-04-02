@@ -36,26 +36,6 @@ shell_manager_deploy_secret: "**insecure-secret**"
 # default insecure "vagrant" password (mkpasswd --method=SHA-512 vagrant)
 shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwHo4.vSUlvWt6aA7PBH1oGDsOQlykFNScEdEhrirD5oFLOHH011"
 
-
-##
-# Problem Settings (env specific)
-##
-problem_source_dirs:
-  - "{{ pico_base_dir }}/problems/Examples"
-
-bundles:
-  - {
-    source: "{{ pico_base_dir }}/problems/Examples/Bundles/challenge-sampler.json",
-    name: "challenge-sampler",
-    instances: 2
-  }
-  - {
-    source: "{{ pico_base_dir }}/problems/Examples/Bundles/challenge-sampler-tools.json",
-    name: "challenge-sampler-tools",
-    instances: 1
-  }
-  
-
 ##
 # Database settings (env specific)
 ##
@@ -71,3 +51,8 @@ env_db_users:
     roles: readWrite,
     database: "{{ picoCTF_db_name }}"
   }
+
+##
+# Problem Settings
+# use role defaults (example problems and challenge-sampler bundle)
+##
