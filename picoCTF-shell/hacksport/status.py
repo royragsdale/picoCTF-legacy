@@ -1,6 +1,6 @@
 from shell_manager.util import HACKSPORTS_ROOT, PROBLEM_ROOT, STAGING_ROOT, DEPLOYED_ROOT, BUNDLE_ROOT
+from shell_manager.util import get_problem, get_problem_root
 from shell_manager.bundle import get_bundle, get_bundle_root
-from shell_manager.problem import get_problem, get_problem_root
 from hacksport.operations import execute
 
 from os.path import join
