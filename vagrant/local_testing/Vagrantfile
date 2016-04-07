@@ -4,9 +4,10 @@
 Vagrant.configure("2") do |config|
 
   config.vm.define "db", primary: true do |db|
-    # Vanilla debian base box from: https://atlas.hashicorp.com/debian/
-    # includes vboxsf module for synchronization
-    db.vm.box = "debian/contrib-jessie64"
+    # For efficiency start with base box with dependencies installed
+    # Could be changed to a completley fresh base with:
+    # db.vm.box = "debian/contrib-jessie64"
+    db.vm.box = "picoCTF/web-base"
     db.vm.network "private_network", ip: "10.0.5.20"
     # Disable synced folder to simulate remote evnironement
     db.vm.synced_folder ".", "/vagrant", disabled: true
@@ -17,7 +18,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "shell", primary: true do |shell|
-    shell.vm.box = "debian/contrib-jessie64"
+    shell.vm.box = "picoCTF/shell-base"
     shell.vm.network "private_network", ip: "10.0.5.11"
     shell.vm.synced_folder ".", "/vagrant", disabled: true
     shell.vm.provider "virtualbox" do |vb|
@@ -27,7 +28,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "web", primary: true do |web|
-    web.vm.box = "debian/contrib-jessie64"
+    web.vm.box = "picoCTF/web-base"
     web.vm.network "private_network", ip: "10.0.5.10"
     web.vm.synced_folder ".", "/vagrant", disabled: true
     web.vm.provider "virtualbox" do |vb|
