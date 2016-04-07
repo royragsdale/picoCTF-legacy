@@ -4,7 +4,7 @@ The picoCTF platform is the infrastructure which is used to run [picoCTF](https:
 
 The platform is designed to be easily adapted to other CTF or programming competitions. Additional documentation can be found on the [wiki](https://github.com/picoCTF/picoCTF/wiki).
 
-## Quick Start
+## Development Environment Quick Start
 
 The following steps will use [Vagrant](https://www.vagrantup.com/) to get you  quickly up and running with the picoCTF platform by deploying the code base to two local virtual machines.
 
@@ -16,19 +16,24 @@ The following steps will use [Vagrant](https://www.vagrantup.com/) to get you  q
 
 ## Current Development
 
-The picoCTF platform is actively being developed towards version 3 and additional documentation on significant platform changes are located on the [wiki](https://github.com/picoCTF/picoCTF/wiki).
+The picoCTF platform is currently being developed towards version 3. This adds a number of features such as:
+- Standardized challenge deployment
+- Auto generated/Templated challenges
+- Shell server support
+- Automated provisioning, locally and in the cloud
 
 If you are coming from [picoCTF-Platform-2](https://github.com/picoCTF/picoCTF-platform-2) please read the documentation on the wiki for [forks of picoCTF-Platform-2](https://github.com/picoCTF/picoCTF/wiki/Repository-linage#forks-of-picoctf-platform-2).
 
 ## Project Overview
 
-This project is broken down into a few discreet components that compose to build a robust and featureful CTF platform that remains flexible for adaptation. Specifically the project is consists of the following:
+This project is broken down into a few discreet components that compose to build a robust and full featured CTF platform. Specifically the project is consists of the following:
 
 1. [picoCTF-web](./picoCTF-web)
 2. [picoCTF-shell](./picoCTF-shell)
 3. [problems](./problems)
-4. automation for [provisioning](./ansible) and [AWS deployment](./terraform)
-5. local deployment [examples](./vagrant)
+4. [ansible](./ansible)
+5. [terraform](./terraform)
+5. [vagrant examples](./vagrant)
 
 ### picoCTF-web
 The competitor facing web site, the API for running a CTF, and the management functionality for CTF organizers.  The development [Vagrantfile](./Vagrantfile)) deploys picoCTF-web to a virtual machine (web) at http://192.168.2.2/. If you want to modify the look and feel of the website, this is the place to start.
@@ -39,11 +44,12 @@ The tools to create, package, and deploy challenges for use with the picoCTF pla
 ### picoCTF Compatible Problems
 Example challenges that are compatible with the picoCTF platform.  These challenges can be easily shared, deployed, or adapted for use in a CTF.  The development [Vagrantfile](./Vagrantfile) installs these examples to the shell server and loads them into the web interface.  If you want to see how to create challenges or leverage the hacksport library, this is the place to start.
 
-### Terraform for deployment to AWS
+### Ansible for Automated System Administration
+The tool we use to install, configure, deploy, and administer the picoCTF platform is [Ansible](https://www.ansible.com/).  This allows us to create flexible, parameterized, automated playbooks and roles that apply across development, staging, and production environments.  If you want to modify way the platform is configured, this is the place to start.
+
+### Terraform for automated AWS deployment
 The tool we use to codify our infrastructure as code is [Terraform](https://www.terraform.io/). This allows a simple process for creating, destroying, and managing a public deployment of the platform.  If you want to run a live competition on AWS, this is the place to start.
 
-### Ansible for Provisioning
-The tool we use to install, configure, deploy, and administer the picoCTF platform is [Ansible](https://www.ansible.com/).  This allows us to create flexible, parameterized, automated playbooks and roles that apply across development, staging, and production environments.  If you want to modify way the platform is configured, this is the place to start.
 
 ## Contact
 
