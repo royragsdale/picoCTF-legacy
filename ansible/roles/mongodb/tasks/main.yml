@@ -14,7 +14,10 @@
 
 - include: configure_mongo.yml
 
+# Default to running the database with authentication.  The development
+# environment is the only place `mongodb_conf_auth` should be false
 - include: configure_auth.yml
+  when: mongodb_conf_auth
 
 - name: Ensure mongodb is started
   service: 
