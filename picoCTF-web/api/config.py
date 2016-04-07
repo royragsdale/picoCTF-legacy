@@ -12,35 +12,6 @@ import json
 
 import api.app
 
-""" FLASK """
-
-#api.app.session_cookie_domain = "0.0.0.0"
-api.app.session_cookie_path = "/"
-api.app.session_cookie_name = "flask"
-
-# KEEP THIS SECRET
-api.app.secret_key = "5XVbne3AjPH35eEH8yQI"
-
-""" SECURITY """
-
-api.common.allowed_protocols = ["https", "http"]
-api.common.allowed_ports = [8080]
-
-""" MONGO """
-# moved to api/default_settings.py to enable environmental configuration
-
-
-""" TESTING """
-
-testing_mongo_db_name = "ctf_test"
-testing_mongo_addr = "127.0.0.1"
-testing_mongo_port = 27017
-
-""" SETUP """
-competition_name = "ctf"
-competition_urls = ["http://192.168.2.2"]
-
-
 # Helper class for timezones
 class EST(datetime.tzinfo):
     def __init__(self, utc_offset):

@@ -9,16 +9,10 @@ from hashlib import md5
 
 import api
 
-allowed_protocols = []
-allowed_ports = []
-
 cache = SimpleCache()
-admin_emails = None
 
 __connection = None
 __client = None
-
-external_client = None
 
 def get_conn():
     """
@@ -27,9 +21,6 @@ def get_conn():
     Ensures that only one global database connection exists per thread.
     If the connection does not exist a new one is created and returned.
     """
-
-    if external_client is not None:
-        return external_client
 
     global __client, __connection
     if not __connection:
