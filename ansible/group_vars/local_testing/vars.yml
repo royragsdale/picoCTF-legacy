@@ -45,6 +45,7 @@ shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwH
 # Database settings (env specific)
 ##
 db_private_ip: 10.0.5.20
+mongodb_conf_auth: True
 picoAdmin_db_password:  "insecure-password"
 picoWeb_db_password:    "insecure-password"
 
