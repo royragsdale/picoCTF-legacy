@@ -40,17 +40,7 @@ shell_admin_password_crypt: "$6$0GcSqMClzx$qEKEiL78VE/Xe0gzuGGuWyUqAlZMObkGnRYwH
 # Database settings (env specific)
 ##
 db_private_ip: 127.0.0.1
-picoAdmin_db_password:  "insecure-password"
-picoWeb_db_password:    "insecure-password"
-
-# [TODO] remove auth for development
-env_db_users:
-  - {
-    name: picoWeb,
-    password: "{{ picoWeb_db_password }}",
-    roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
-  }
+mongodb_conf_auth: False
 
 ##
 # Problem Settings
