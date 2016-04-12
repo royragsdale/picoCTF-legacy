@@ -47,6 +47,10 @@ variable "shell_private_ip" {
     description = "Internal IP address for shell server"
     default = "10.0.1.11"
 }
+variable "db_private_ip" {
+    description = "Internal IP address for db"
+    default = "10.0.1.20"
+}
 
 # Instances
 variable "web_instance_type" {
@@ -55,6 +59,10 @@ variable "web_instance_type" {
 }
 variable "shell_instance_type" {
     description = "AWS instance type for shell server"
+    default = "t2.micro"
+}
+variable "db_instance_type" {
+    description = "AWS instance type for db"
     default = "t2.micro"
 }
 
@@ -81,6 +89,10 @@ variable "web_name" {
 }
 variable "shell_name" {
     description = "Name tag for shell server"
+    default = "picoCTF-shell"
+}
+variable "db_name" {
+    description = "Name tag for db"
     default = "picoCTF-shell"
 }
 variable "db_ebs_name" {

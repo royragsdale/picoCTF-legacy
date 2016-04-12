@@ -22,7 +22,7 @@ output "web_eip" {
 output "shell_eip" {
     value = "${module.elastic_ip.shell_eip}"
 }
-output "Database Elastic IP address" {
+output "db_eip" {
     value = "${module.standalone_db.db_eip}"
 }
 
