@@ -88,7 +88,7 @@ module "servers" {
 
 # Create stand alone database in a second tier
 module "standalone_db" {
-    source = "../modules/standalone_db"
+    source = "../standalone_db"
 
     # Inputs can be overloaded in environment (eg: production, testing)
     user = "${var.user}"
@@ -122,7 +122,7 @@ module "elastic_ip" {
 
 # Create persistent data stores
 module "ebs_volumes" {
-    source = "../modules/ebs_volumes"
+    source = "../ebs_volumes"
 
     # Variables from varaibles.tf and terraform.tfvars
     availability_zone = "${var.availability_zone}"
