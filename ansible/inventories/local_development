@@ -2,9 +2,6 @@
 # Used by the toplevel Vagrantfile
 # Also for manual provisioning when ansible is used within a vm
 
-[common:children]
-local_development
-
 [local_development:children]
 db
 shell
