@@ -53,7 +53,7 @@ env_db_users:
     name: picoWeb,
     password: "{{ picoWeb_db_password }}",
     roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
+    database: "{{ db_name }}"
   }
 
 ##
