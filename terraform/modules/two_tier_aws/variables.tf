@@ -1,23 +1,20 @@
-# Variables to deploy picoCTF to AWS
-# provided defaults can be overridden in terraform.tfvars
+# Varaibles used by the two_tier_aws module
 
-# AWS Credentials
-# Currently configured to use environment variables. Consult the documentation
-# for additional configuration methods. https://www.terraform.io/docs/providers/aws/
-#variable "access_key" {}
-#variable "secret_key" {}
-
+###
+# Input Variables:
+# These are sane defaults that can be overloaded in an environment specific 
+# configuration (eg: production, testing).
+###
 
 # SSH
 variable "key_name" {
     description = "SSH key used to insert as authorized on the machines"
-    default = "pico_two_tier"
+    default = "pico_production"
 }
 variable "public_key_path" {
     description = "Local path to SSH public key"
-    default = "~/.ssh/picoCTF_two_tier_rsa.pub"
+    default = "~/.ssh/picoCTF_production_rsa.pub"
 }
-
 
 # AWS Configuration
 variable "region" {
@@ -26,13 +23,12 @@ variable "region" {
 }
 variable "availability_zone" {
     description = "AWS Availability zone to launch resources in"
-    default = "us-east-1d"
+    default = "us-east-1b"
 }
 variable "user" {
     description = "User to connect to machines with"
     default = "admin"
 }
-
 
 # Network
 variable "vpc_cidr" {
@@ -51,7 +47,10 @@ variable "shell_private_ip" {
     description = "Internal IP address for shell server"
     default = "10.0.1.11"
 }
-
+variable "db_private_ip" {
+    description = "Internal IP address for db"
+    default = "10.0.1.20"
+}
 
 # Instances
 variable "web_instance_type" {
@@ -62,7 +61,10 @@ variable "shell_instance_type" {
     description = "AWS instance type for shell server"
     default = "t2.micro"
 }
-
+variable "db_instance_type" {
+    description = "AWS instance type for db"
+    default = "t2.micro"
+}
 
 # EBS Volumes
 variable "db_ebs_data_size" {
@@ -74,13 +76,12 @@ variable "db_ebs_data_device_name" {
     default = "/dev/xvdf"
 }
 
-
 # Tags
 variable "competition_tag" {
     default = "picoCTF"
 }
 variable "env_tag" {
-    default = "testing-two-tier"
+    default = "production"
 }
 variable "web_name" {
     description = "Name tag for web server"
@@ -90,11 +91,14 @@ variable "shell_name" {
     description = "Name tag for shell server"
     default = "picoCTF-shell"
 }
+variable "db_name" {
+    description = "Name tag for db"
+    default = "picoCTF-shell"
+}
 variable "db_ebs_name" {
     description = "Name tag of database Elastic Block Storage"
     default = "picoCTF-db-ebs"
 }
-
 
 # Default AMI mapping
 # Debian Jessie 8.3 hvm x86_64 ebs
@@ -113,19 +117,4 @@ variable "amis" {
         us-west-1 = "ami-f28bfa92"
         us-west-2 = "ami-837093e3"
     }
-}
-
-
-# Stand Alone Database Configuration
-variable "db_instance_type" {
-    description = "AWS instance type for stand alone database"
-    default = "t2.micro"
-}
-variable "db_private_ip" {
-    description = "Internal IP address for stand alone database"
-    default = "10.0.1.20"
-}
-variable "db_name" {
-    description = "Name tag for stand alone database"
-    default = "picoCTF-db"
 }
