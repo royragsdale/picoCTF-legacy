@@ -21,7 +21,6 @@
 
 - include: deploy_problems.yml
 
-# [TODO] - refactor
 - name: Ensure nginx is running
   service: 
     name: nginx

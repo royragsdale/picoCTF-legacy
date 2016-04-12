@@ -2,7 +2,6 @@
 # Playbook that installs and configures services on the shell_server
 
 # Extracted from picoCTF-platform/scripts/shell_setup.sh
-# [TODO] service files need examination
 - name: Template shellinaboxd Service file
   template: 
     src: "shellinaboxd.service.j2"
@@ -44,8 +43,6 @@
     group: root
     mode: 0644
 
-
-# [TODO] should be templated
 - name: Copy over sshd configs
   copy:
     src: sshd_config

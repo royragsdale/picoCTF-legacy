@@ -5,8 +5,6 @@
 # environment variable is set prior to running this script. This script is best
 # run from the pico-web role (ansible/roles/pico-web/tasks/main.yml)
 
-# [TODO] consider consolidating into an updated picoCTF-web/api/api_manager.py
-
 import sys
 
 # The picoCTF API

@@ -1,6 +1,5 @@
 ---
 # Playbook that configures nginx on picoCTF-shell
-# [TODO] factor out to common, or remove all together ideally
 
 - name: Add picoCTF site configuration to nginx
   template: 

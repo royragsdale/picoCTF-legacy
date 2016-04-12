@@ -3,9 +3,6 @@
 # follows the official instalation guide
 # https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions
 
-# nodejs-legacy npm
-# npm install -g coffee-script react-tools jsxhint coffee-react 
-
 - name: Check if nodejs repository is installed
   stat:
     path: /etc/apt/sources.list.d/nodesource.list
@@ -38,7 +35,6 @@
     - build-essential
 
 # Extracted from picoCTF-platform/scripts/web_setup.sh
-# Review necessity [TODO]
 - name: Install nodejs packages (globally)
   npm: 
     name: "{{ item }}"
