@@ -19,6 +19,8 @@
 
 - include: gunicorn.yml
 
+- include: daemons.yml
+
 - include: auto_configure.yml
 
 - name: Ensure nginx is running

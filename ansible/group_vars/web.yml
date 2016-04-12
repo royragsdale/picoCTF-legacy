@@ -38,4 +38,4 @@ pico_site_config_name: "ctf"
 # [TODO] factor out
 pico_internal_allow: "10.0.1.0/24"
 
-
+daemon_src_dir: "{{ pico_web_api_dir}}/daemons"

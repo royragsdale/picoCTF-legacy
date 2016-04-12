@@ -16,7 +16,7 @@ def run_modules(modules, interval):
         time.sleep(max(interval - (time.time() - start_time), 0))
 
 def main():
-    parser = argparse.ArgumentParser(description="{} daemon manager".format(api.config.competition_name))
+    parser = argparse.ArgumentParser(description="CTF daemon manager")
     parser.add_argument("-l", action="store_true", dest="show_list", help="List all daemons")
     parser.add_argument("-a", "--all", dest="run_all", action="store_true", help="Run all daemons")
     parser.add_argument("-i", "--interval", action="store", type=int, help="The interval in which to run the daemons", default=60)
