@@ -13,9 +13,9 @@ deploy_private_key_file: "deploy.picoCTF.private-repo.id_rsa"
 # Web settings (env specific)
 ##
 web_fqdn: "{{ hostvars['remote_testing_web']['ansible_host'] }}"
+web_address_internal: "http://10.0.1.10"
 nginx_server_name: "{{ web_fqdn }}"
 web_address: "{{ web_fqdn }}"
-web_address_internal: "http://10.0.1.10"
 htpasswd_accounts: "{{ vault_htpasswd_accounts }}"
 
 flask_app_server_name: "{{ web_fqdn }}"
@@ -61,7 +61,7 @@ env_db_users:
     name: picoWeb,
     password: "{{ picoWeb_db_password }}",
     roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
+    database: "{{ db_name }}"
     }
 mongodb_web_user: "picoWeb"
 

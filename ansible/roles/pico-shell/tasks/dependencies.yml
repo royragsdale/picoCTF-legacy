@@ -26,8 +26,7 @@
     - shellinabox
 
     
-# [TODO] check if these are relevant for challenge templates, or what?
-# document need
+# Needed by templated challenge types
 - name: Install uwsgi and plugins for shell server
   apt:
     name: "{{ item }}"
@@ -39,7 +38,6 @@
     - uwsgi-plugin-python
     - python-flask
 
-# [TODO] factor out
 - name: Install pam dependencies
   apt:
     name: "{{ item }}"
@@ -48,7 +46,7 @@
     - libpam-python
     - python-setuptools
 
-# [TODO] needed for pam module
+# needed for pam module
 - name: Install requests
   pip:
     name: requests

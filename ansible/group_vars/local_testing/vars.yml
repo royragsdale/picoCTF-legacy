@@ -14,10 +14,9 @@ deploy_private_key_file: "deploy.picoCTF.private-repo.id_rsa"
 # Web settings (env specific)
 ##
 web_fqdn: "localhost"
+web_address: "http://10.0.5.10"
 nginx_server_name: "_"
 flask_app_server_name: "{{ web_fqdn }}"
-#[TODO] refactor based on "facts"
-web_address: "http://10.0.5.10"
 web_address_internal: "{{ web_address }}"
 
 # optional web automation
@@ -54,7 +53,7 @@ env_db_users:
     name: picoWeb,
     password: "{{ picoWeb_db_password }}",
     roles: readWrite,
-    database: "{{ picoCTF_db_name }}"
+    database: "{{ db_name }}"
   }
 
 ##

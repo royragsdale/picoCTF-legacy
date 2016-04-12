@@ -3,6 +3,18 @@
 # and can easily be overridden in group_vars, host_vars, or command line.
 # Largely these should be sensible defaults and show not require changing.
 
+db_name: picoCTF
+db_data_path: "/data"
+
+# MongoDB User Variables (used in configure_auth.yml task)
+# Passwords should be stored outside version control or in an 
+# ansible-vault protected file.
+initial_admin_name: picoAdmin
+initial_admin_password: "{{ picoAdmin_db_password }}"
+
+# Add additional users an environement specific group_vars file
+mongodb_users: "{{ env_db_users }}"
+
 ###
 # MongoDB Configuration Variables (used in configure_mongo.yml task)
 ###
@@ -21,7 +33,6 @@ mongodb_conf_journal: true                                            # Enable j
 mongodb_conf_logappend: true                                          # Append instead of over-writing
 mongodb_conf_logpath: /var/log/mongodb/{{ mongodb_daemon_name }}.log  # Log to file (not stdout)
 mongodb_conf_dbpath: "{{ db_data_path }}"                             # Directory for datafiles (Static)
-
 
 ###
 # AWS specific mount points (defined in Terrafrom - static)

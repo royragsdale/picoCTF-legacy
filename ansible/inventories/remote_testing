@@ -3,9 +3,6 @@
 # In order to use this inventory change these values to match the output
 # from Terraform or your own manual configuration of remote servers.
 
-[common:children]
-remote_testing
-
 [remote_testing:children]
 db
 shell

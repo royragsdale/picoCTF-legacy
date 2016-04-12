@@ -18,7 +18,6 @@
 - name: Compile CoffeeScript
   command: "cjsx -bc -o {{ pico_web_js_out_path }} {{ pico_web_coffescript_in_path }}"
 
-# [TODO] no need for this to be root
 - name: Run Jekyll to rebuild new web
   shell: "cd {{ pico_web_api_dir }}/web && jekyll build"
   become: yes
