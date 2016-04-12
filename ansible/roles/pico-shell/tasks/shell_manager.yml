@@ -4,7 +4,7 @@
 # Source was cloned in main
 - name: Install picoCTF-shell-manager from source
   pip:
-    name: "file://{{ pico_shell_manager_dir }}"
+    name: "file://{{ shell_manager_dir }}"
     executable: pip3
     extra_args: "--upgrade"
 
