@@ -20,7 +20,7 @@
 - name: Install problems
   apt:
     deb: "{{ item }}"
-  with_items: deb_files.stdout_lines
+  with_items: "{{deb_files.stdout_lines}}"
 
 - name: Package bundle sources
   command: "shell_manager bundle -o {{ bundle_dir }} -s {{ staging_dir }} {{ item.source }}"
@@ -33,7 +33,7 @@
 - name: Install bundles
   apt:
     deb: "{{ item }}"
-  with_items: bundle_files.stdout_lines
+  with_items: "{{bundle_files.stdout_lines}}"
 
 - name: Install any missing dependencies
   apt:
