@@ -18,8 +18,12 @@
 - include: nginx.yml
 
 - include: pam_and_services.yml
+  tags:
+    - pam
 
 - include: deploy_problems.yml
+  tags:
+    - problems
 
 - name: Ensure nginx is running
   service: 
