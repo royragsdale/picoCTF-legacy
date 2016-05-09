@@ -16,8 +16,9 @@ shellinaboxd_port: "4242"
 shellinabox_server_path: "http://127.0.0.1:{{ shellinaboxd_port }}/"
 
 # problem settings
-deb_dir:    "/picoCTF-debs"
-bundle_dir: "/picoCTF-bundles"
+deb_dir:     "/picoCTF-debs"
+bundle_dir:  "/picoCTF-bundles"
+staging_dir: "/tmp/picoCTF-staging"
 
 ##
 # Problem Settings
