@@ -20,7 +20,9 @@ TIMEOUT=5
 pamh = None
 
 def run_login(user, password):
-    r = requests.post(SERVER+"/api/user/login", data={"username": user, "password": password}, timeout=TIMEOUT)
+    # login is in the form shell_<username>
+    web_user = user[6:]
+    r = requests.post(SERVER+"/api/user/login", data={"username": web_user, "password": password}, timeout=TIMEOUT)
     return str(json.loads(r.text)['message'])
 
 def display(string):
@@ -64,6 +66,7 @@ def pam_sm_authenticate(pam_handle, flags, argv):
     pamh = pam_handle
 
     try:
+        # this is the shell user which is prefixed by "shell_"
         user = pamh.get_user(None)
     except pamh.exception, e:
         return e.pam_result
@@ -83,6 +86,9 @@ def pam_sm_authenticate(pam_handle, flags, argv):
 
     # local user account does not exist
     except KeyError as e:
+        if user[:6] != "shell_":
+            display("Your shell username must be prefixed with 'shell_'")
+            display("For example if your website username is 'alice'. Login as 'shell_alice'@")
         try:
             if server_user_exists(user):
                 subprocess.check_output(["/usr/sbin/useradd", "-m", "-G", COMPETITORS_GROUP, "-s", "/bin/bash", user])
@@ -90,6 +96,7 @@ def pam_sm_authenticate(pam_handle, flags, argv):
 
                 display("Welcome {}!".format(user))
                 display("Your shell server account has been created.")
+                display("Please remember to prepend 'shell_' when you login to your shell account.")
                 prompt("Please press enter and reconnect.")
 
                 # this causes the connection to close
@@ -102,3 +109,6 @@ def pam_sm_authenticate(pam_handle, flags, argv):
             pass
 
     return pamh.PAM_AUTH_ERR
+
+def pam_sm_setcred(pam_handle, flags, argv):
+    return pam_handle.PAM_AUTH_ERR
